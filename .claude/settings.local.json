@@ -3,7 +3,21 @@
     "allow": [
       "Bash(npx create-next-app@latest . --typescript --tailwind --app --src-dir --import-alias \"@/*\" --no-git)",
       "Bash(mkdir:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run db:seed:*)",
+      "Bash(npm run dev)",
+      "Bash(\"c:\\Users\\Caramelo\\Documents\\GitHub\\kaniu-webapp\\src\\app\\dashboard\\painel\\page.tsx\")",
+      "Bash(taskkill:*)",
+      "Bash(nul)",
+      "Bash(if exist .next rmdir /s /q .next)",
+      "Bash(cmd /c \"if exist .next rmdir /s /q .next\")",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(cmd /c:*)",
+      "Bash(timeout /t 3 /nobreak)",
+      "Bash(timeout /t 2 /nobreak)"
     ],
     "deny": [],
     "ask": []

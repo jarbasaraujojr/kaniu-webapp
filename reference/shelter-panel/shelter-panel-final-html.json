@@ -1,0 +1,53 @@
+// Gera o html principal da página
+
+const sidebar_html = $('Sidebar Html').first().json.html;
+const sidebar_script = $('Sidebar Script').first().json.script;
+const painel_html = $('Painel Html').first().json.html;
+const painel_css = $('Painel Css').first().json.css;
+
+const html = `
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaniu : : NOME_CANIL</title>
+    
+    <!------------------------------------- Carregar fontes locais ------------------------------------->
+    <link href="https://viralatinhaz.uzd6db.easypanel.host/assets/fontawesome/css/fontawesome.css" rel="stylesheet" />
+    <link href="https://viralatinhaz.uzd6db.easypanel.host/assets/fontawesome/css/solid.css" rel="stylesheet" />
+    <link href="https://viralatinhaz.uzd6db.easypanel.host/assets/css/details.css" rel="stylesheet" />
+    
+    <!------------------------------------- CSS do Painel ------------------------------------->
+    ${painel_css
+}
+</head>
+
+<body>
+  <div class="app-shell">
+  
+    <!------------------------------------- Carregar sidebar  ------------------------------------->
+    ${sidebar_html
+}
+
+    <!------------------------------------- Conteúdo principal da página ------------------------------------->
+    <div class="main-with-sidebar">
+        <main>
+            <div class="content-grid">
+              ${painel_html
+}
+            </div>
+        </main>
+    </div>
+    
+    <!------------------------------------- Script da sidebar ------------------------------------->
+    ${sidebar_script
+}
+  </div>
+</body>
+</html>
+`;
+
+return {html
+};

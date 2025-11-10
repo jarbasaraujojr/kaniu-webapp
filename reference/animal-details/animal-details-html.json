@@ -1,0 +1,3818 @@
+/**********************************************
+/* Kaniu
+/* Sistema de gestão de abrigos de animais
+/* Página do animal
+/**********************************************/
+// Variáveis de trabalho
+const animal = $('Get Details').first().json;
+const especies = JSON.stringify($('Get Tables').first().json.especies);
+const racas = JSON.stringify($('Get Tables').first().json.racas);
+const generos = JSON.stringify($('Get Tables').first().json.generos);
+const portes = JSON.stringify($('Get Tables').first().json.portes);
+const cores = JSON.stringify($('Get Tables').first().json.cores);
+const pelagens = JSON.stringify($('Get Tables').first().json.pelagens);
+const imunizantes = JSON.stringify($('Get Tables').first().json.imunizantes);
+const imunizacao_tipo = JSON.stringify($('Get Tables').first().json.imunizacao_tipo);
+const icones = $('Icons').first().json;
+const canil_id = $('Vars').first().json.canil_id;
+const sidebar_html = $('Sidebar Html').first().json.html;
+const sidebar_script = $('Sidebar Script').first().json.script;
+
+const app_url = $('Vars').first().json.url.split('webhook/')[
+  1
+];
+const img_logo = $('Constants').item.json.img_logo;
+
+// Código para obter o arquivo de estilo
+const estilo = $('Details Style').first().json;
+
+// Função para converter boolean para "Sim" ou "Não"
+const formatBoolean = (value) => value ? 'Sim' : 'Não';
+
+// Função para checar por valores nulos ou 0
+const formatValue = (value) => value === null || value === 0 || value === undefined ? '' : value;
+
+// Função para calcular idade completa em anos, meses e dias
+const calculateAge = (birthDate) => {
+    const today = new Date();
+    const dob = new Date(birthDate);
+
+    let years = today.getFullYear() - dob.getFullYear();
+    let months = today.getMonth() - dob.getMonth();
+    let days = today.getDate() - dob.getDate();
+
+    if (days < 0) {
+        months--;
+        const prevMonth = new Date(today.getFullYear(), today.getMonth(),
+    0);
+        days = today.getDate() + (prevMonth.getDate() - dob.getDate());
+  }
+
+    if (months < 0) {
+        years--;
+        months = 12 + months;
+  }
+
+    let txt_anos = years == 0 ? '' : years == 1 ? '1 ano' : years + ' anos';
+    let txt_meses = months == 0 ? '' : months == 1 ? '1 mês' : months + ' meses';
+    let txt_e = (txt_anos == '' || txt_meses == '') ? '' : ' e ';
+
+    return txt_anos+txt_e+txt_meses;
+};
+
+// Calcula a idade do animal
+const ageString = calculateAge(animal.nascimento);
+
+// Função para retornar um ícone
+function getIcon(icon_name) {
+    const iconValue = icones[icon_name
+  ];
+
+    if (!iconValue) {
+        return '<i class="fa-solid fa-notdef"></i>'; // error icon
+  }
+
+    return '<i class="fa-solid fa-' + iconValue + '"></i>';
+}
+// Função para construir a url completa usando o host de trabalho
+function makeURL(endpoint) {
+  const url = $('Vars').first().json.host;
+  return url+endpoint;
+}
+// Função para gerar o HTML dos ícones com base nas propriedades do animal
+function animalStatusIcons(animal) {
+    let iconsHtml = '';
+
+    // Verifica se o animal está castrado e adiciona o ícone se for verdade
+    if (animal.castrado) {
+        iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-scissors"></i><span class="tooltip">Castrado</span></div>';
+  }
+  // Verifica se o animal está vacinado
+    if (animal.vacinado) {
+        iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-syringe"></i><span class="tooltip">Vacinado</span></div>';
+  }
+  // Verifica se o animal está vermifugado
+    if (animal.vermifugado) {
+        iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-pills"></i><span class="tooltip">Vermifugado</span></div>';
+  }
+  // Verifica se o animal está desparasitado
+    if (animal.desparasitado) {
+        iconsHtml += '<div class="img-button-wrapper"><i class="fa-solid fa-bug-slash"></i><span class="tooltip">Desparasitado</span></div>';
+  }
+
+    return iconsHtml;
+}
+
+function animalPhoto(especie = "Vazio") {
+  const pic_url = {
+    "Cachorro": "https://i.ibb.co/Z6dPncCH/pic-dog.png",
+    "Gato": "https://i.ibb.co/9dWLkZs/pic-cat.png",
+    "Vazio": "https://i.ibb.co/KpVTx4vK/pic-none.png"
+  };
+
+  // Retorna a imagem correspondente ou a de "Vazio" como fallback
+  return pic_url[especie
+  ] || pic_url[
+    "Vazio"
+  ];
+}
+// Gera o html dos ícones indicando o status do animall
+const iconesAnimal = animalStatusIcons(animal);
+const isAnimalDisponivel = (() => {
+    if (typeof animal.disponivel === 'boolean') {
+        return animal.disponivel;
+  }
+    if (typeof animal.abrigado === 'boolean') {
+        return !animal.abrigado;
+  }
+    if (typeof animal.status === 'string') {
+        return animal.status.toLowerCase() !== 'abrigado';
+  }
+    return true;
+})();
+const initialStatusMap = {
+    adotado: !!animal.adotado,
+    desaparecido: !!animal.desaparecido,
+    internado: !!animal.internado,
+    falecido: !!animal.falecido,
+    indisponivel: !isAnimalDisponivel
+};
+
+// =========================================================================
+// O Código DO N8N TERMINA AQUI. A PARTIR DAQUI VEM O HTML E O JAVASCRIPT
+// QUE SERÃO EXECUTADOS NO NAVEGADOR.
+// =========================================================================
+// Gera o html principal da página
+const html = `
+<!DOCTYPE html>
+<html lang="pt-br">
+
+${estilo.style
+}
+
+<!------------------------------------- Carregar script de gráficos locais ------------------------------------->
+<script src="https://viralatinhaz.uzd6db.easypanel.host/assets/js/chart.js"></script>
+<script src="https://viralatinhaz.uzd6db.easypanel.host/assets/js/chartjs-adapter-date-fns"></script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaniu : : ${animal.nome
+}</title>
+    
+    <!------------------------------------- Carregar fontes locais ------------------------------------->
+    <link href="https://viralatinhaz.uzd6db.easypanel.host/assets/fontawesome/css/fontawesome.css" rel="stylesheet" />
+    <link href="https://viralatinhaz.uzd6db.easypanel.host/assets/fontawesome/css/solid.css" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="app-shell">
+  
+    <!------------------------------------- Carregar sidebar  ------------------------------------->
+    ${sidebar_html
+}
+
+    <!------------------------------------- Conteúdo principal da página ------------------------------------->
+    <div class="main-with-sidebar">
+        <main>
+            <div class="content-grid">
+        <header class="app-header">
+          <div class="header-content">
+            <div class="animal-header">
+              <div class="animal-photo-wrapper">
+                <input type="file" id="animal-photo-upload-input" class="animal-photo-input" accept="image/*" style="display: none;" />
+                <img class="animal-photo" id="animal-photo"
+                     src="${animal.foto || animalPhoto(animal.especie)}"
+                     alt="Foto de ${animal.nome}" title="Clique para alterar a foto" />
+              </div>
+        
+              <div class="animal-title">
+                <h1>${animal.nome || ''
+}</h1>
+                <div class="animal-subline">
+                  <button class="chip is-action" id="open-especie-menu">${animal.especie || 'Definir espécie'
+}</button>
+                  <button class="chip is-action" id="open-genero-menu">${animal.sexo || 'Definir gênero'
+}</button>
+                  <button class="chip is-action" id="open-porte-menu">${animal.porte || 'Definir porte'
+}</button>
+                  <button class="chip is-action" id="open-raca-menu">${animal['raça'
+  ] || 'Definir raça'
+}</button>
+                  <button class="chip is-action" id="open-pelagem-menu">Pelo ${animal.pelagem || 'Definir pelagem'
+}</button>
+                  <button class="chip is-action" id="open-cor-menu">${animal.cor || 'Definir cor'
+}</button>
+                  <button class="chip is-action" id="open-nascimento-menu">
+                    ${animal.nascimento ? animal.nascimento : 'Definir nascimento'
+}
+                  </button>
+                  ${ageString ? `<button class="chip">${ageString
+  }</button>` : ''
+}
+                  ${animal.faixa_etaria ? `<button class="chip">${animal.faixa_etaria
+  }</button>` : ''
+}
+                  ${formatValue(animal.peso) ? `<button class="chip">${formatValue(animal.peso)
+  } kg</button>` : ''
+}
+                </div>
+              </div>
+            </div>
+        
+            <!-- Botão de listar animais -->
+            <button class="quick-action" id="open-animals-popup" title="Listar animais" aria-label="Listar animais">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+          </div>
+        </header>
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="resumo">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        Painel
+                    </button>
+                    <button class="tab-btn" data-tab="eventos">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        Histórico
+                    </button>
+                    <button class="tab-btn" data-tab="avaliacoes">
+                        <i class="fa-solid fa-stethoscope"></i>
+                        Avaliação
+                    </button>
+                    <button class="tab-btn" data-tab="pesagens">
+                        <i class="fa-solid fa-weight-scale"></i>
+                        Pesagem
+                    </button>
+                    <button class="tab-btn" data-tab="imunizacoes">
+                        <i class="fa-solid fa-syringe"></i>
+                        Imunização
+                    </button>
+                    <button class="tab-btn" data-tab="tratamentos">
+                        <i class="fa-solid fa-prescription-bottle-medical"></i>
+                        Tratamento
+                    </button>
+                    <button class="tab-btn" data-tab="arquivos">
+                        <i class="fa-solid fa-paperclip"></i>
+                        Arquivos
+                    </button>
+                </div>
+
+                <div class="card tab-container">
+                    <div class="tab-content-area">
+                        <div id="tab-resumo" class="tab-content">
+                    <div class="resume-sections">
+                        <div class="resume-section resume-actions">
+                            <h3 class="resume-title">Ações</h3>
+                            <div class="resume-card">
+                                <div class="resume-action-item">
+                                    <div
+                                        class="resume-action-icon"
+                                        data-caracteristica="adotado"
+                                        data-tooltip-inactive="Marcar como adotado"
+                                        data-tooltip-active="Marcar como não adotado"
+                                        role="button"
+                                        tabindex="0">
+                                        <i class="fa-solid fa-home"></i>
+                                        <span class="resume-action-tooltip">Marcar como adotado</span>
+                                    </div>
+                                    <div
+                                        class="resume-action-icon"
+                                        data-caracteristica="desaparecido"
+                                        data-tooltip-inactive="Marcar como desaparecido"
+                                        data-tooltip-active="Marcar como não desaparecido"
+                                        role="button"
+                                        tabindex="0">
+                                        <i class="fa-solid fa-magnifying-glass-location"></i>
+                                        <span class="resume-action-tooltip">Marcar como desaparecido</span>
+                                    </div>
+                                    <div
+                                        class="resume-action-icon"
+                                        data-caracteristica="internado"
+                                        data-tooltip-inactive="Marcar como internado"
+                                        data-tooltip-active="Marcar como não internado"
+                                        role="button"
+                                        tabindex="0">
+                                        <i class="fa-solid fa-hospital"></i>
+                                        <span class="resume-action-tooltip">Marcar como internado</span>
+                                    </div>
+                                    <div
+                                        class="resume-action-icon"
+                                        data-caracteristica="falecido"
+                                        data-tooltip-inactive="Marcar como falecido"
+                                        data-tooltip-active="Marcar como não falecido"
+                                        role="button"
+                                        tabindex="0">
+                                        <i class="fa-solid fa-cross"></i>
+                                        <span class="resume-action-tooltip">Marcar como falecido</span>
+                                    </div>
+                                    <div
+                                        class="resume-action-icon"
+                                        data-caracteristica="indisponivel"
+                                        data-target="disponivel"
+                                        data-invert="true"
+                                        data-label="Indisponível"
+                                        data-tooltip-inactive="Marcar como indisponível"
+                                        data-tooltip-active="Marcar como disponível"
+                                        role="button"
+                                        tabindex="0">
+                                        <i class="fa-solid fa-ban"></i>
+                                        <span class="resume-action-tooltip">Marcar como indisponível</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="resume-empty-message" class="resume-empty-message">
+                            Nenhum dado de resumo disponível.
+                        </div>
+
+                        <div class="resume-section">
+                            <h3 class="resume-title">Saúde Geral</h3>
+                            <div class="resume-card">
+                                <div id="saude-geral-list" class="resume-list">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resume-section">
+                            <h3 class="resume-title">Vacinação</h3>
+                            <div class="resume-card">
+                                <div id="vacinacao-list" class="resume-list">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resume-section">
+                            <h3 class="resume-title">Controle de Parasitas</h3>
+                            <div class="resume-card">
+                                <div id="parasitas-list" class="resume-list">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resume-section">
+                            <h3 class="resume-title">Avaliação e Peso</h3>
+                            <div class="resume-card">
+                                <div id="peso-list" class="resume-list">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                        <div id="tab-eventos" class="tab-content"></div>
+                        <div id="tab-avaliacoes" class="tab-content"></div>
+                        <div id="tab-pesagens" class="tab-content"></div>
+                        <div id="tab-imunizacoes" class="tab-content"></div>
+                        <div id="tab-tratamentos" class="tab-content"></div>
+                        <div id="tab-arquivos" class="tab-content"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!------------------------------------------ SEÇÃO DE POPUPS ---------------------------------------------->
+
+    <div id="overlay" class="overlay"></div>
+    <div id="pop-up-animais" class="pop-up-menu pop-up-animais">
+        <span class="pop-up-close" onclick="closeAnimaisPopup()">&times;</span>
+        <h2>Lista de Animais</h2>
+        <div class="animals-filters" id="animals-filters"></div>
+        <div id="animals-list-container" class="animals-list-container">
+            <p class="animals-list-placeholder">Selecione um filtro para visualizar os animais.</p>
+        </div>
+    </div>
+    <div id="pop-up-menu" class="pop-up-menu">
+        <span class="pop-up-close" onclick="closeMenu()">&times;</span>
+        <h2>Selecione a Espécie</h2>
+        <div id="pop-up-options-container" class="pop-up-options-container">
+        </div>
+    </div>
+
+    <div id="pop-up-nascimento" class="pop-up-menu" style="width: 280px; padding: 15px;">
+        <span class="pop-up-close"
+            onclick="document.getElementById('pop-up-nascimento').style.display='none'; document.getElementById('overlay').style.display='none';">&times;</span>
+        <h2 id="nascimento-popup-title">Alterar Data de Nascimento</h2>
+        <div class="pop-up-options-container" style="align-items: center; width: 100%; box-sizing: border-box;">
+            <input type="date" id="nascimento-input" class="date-input" style="width: 100%;" />
+        </div>
+        <div class="pop-up-actions" style="margin-top: 5px;">
+            <button id="confirm-nascimento" class="detail-button"
+                style="background-color: var(--primary-color); color: var(--card-background); flex: 1; max-width: 100px;">Salvar</button>
+            <button id="cancel-nascimento" class="detail-button" style="flex: 1; max-width: 100px;">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="alert-popup" class="alert-popup">
+        <span id="alert-message"></span>
+    </div>
+
+    <div id="pop-up-pesagem" class="pop-up-menu" style="width: 280px; padding: 40px;">
+        <span class="pop-up-close" onclick="closePesagemPopup()">&times;</span>
+        <h2>Pesagem</h2>
+        <div class="pop-up-content" style="display: flex; flex-direction: column; gap: 5px;">
+            <input type="hidden" id="pesagem-id" />
+
+            <label style="font-size: 0.8rem; color: var(--text-dark);">Data da Medição</label>
+            <input type="date" id="pesagem-data-input" class="date-input" />
+
+            <label style="font-size: 0.8rem; color: var(--text-dark);">Peso (kg)</label>
+            <input type="number" step="0.1" id="pesagem-peso-input" class="date-input" placeholder="Ex: 5.2" />
+        </div>
+        <div class="pop-up-actions" style="margin-top: 5px;">
+            <button id="cancel-pesagem" class="cancel-button" style="flex: 1; max-width: 100px;">Cancelar</button>
+            <button id="confirm-pesagem" class="confirm-button" flex: 1; max-width: 100px;">Salvar</button>
+        </div>
+    </div>
+
+    <div id="delete-confirmation-popup" class="pop-up-menu" style="width: 280px; padding: 20px; display: none;">
+        <span class="pop-up-close" onclick="cancelDelete()">&times;</span>
+        <h2 style="margin-bottom: 10px;">Confirmar exclusão</h2>
+        <p style="font-size: 0.9rem; text-align: center; margin-bottom: 15px;">
+            Tem certeza que deseja excluir este registro? Esta ação NÃO poderá ser desfeita.
+        </p>
+        <div class="pop-up-actions" style="margin-top: 10px; display: flex; gap: 10px;">
+            <button class="cancel-button" style="flex: 1;" onclick="cancelDelete()">Cancelar</button>
+            <button class="delete-button" style="flex: 1;" onclick="executeDelete()">Excluir</button>
+        </div>
+    </div>
+
+    <div id="pop-up-imunizacao" class="pop-up-menu" style="width: 480px; padding: 20px; display: none;">
+        <span class="pop-up-close" onclick="closeImunizacaoPopup()">&times;</span>
+        <h2>Imunização</h2>
+
+        <div class="pop-up-content" style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="hidden" id="imunizacao-id" />
+
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+                <div>
+                    <label>Data Programada</label>
+                    <input type="date" id="imunizacao-data-prevista" class="date-input" />
+                </div>
+                <div>
+                    <label>Data Aplicada</label>
+                    <input type="date" id="imunizacao-data-realizada" class="date-input" />
+                </div>
+            </div>
+
+            <div>
+                <label>Tipo de Imunização</label>
+                <select id="imunizacao-tipo-select" class="date-input"></select>
+            </div>
+
+            <div>
+                <label>Imunizante</label>
+                <select id="imunizacao-imunizante-select" class="date-input"></select>
+            </div>
+
+            <div>
+                <label>Veterinário Responsável</label>
+                <select id="imunizacao-vet-select" class="date-input"></select>
+            </div>
+
+            <div>
+                <label>Descrição</label>
+                <textarea id="imunizacao-descricao-input" class="date-input" rows="2" placeholder="Resumo da imunização"></textarea>
+            </div>
+
+            <div>
+                <label>Observações</label>
+                <textarea id="imunizacao-observacao-input" class="date-input" rows="3" placeholder="Informações adicionais"></textarea>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                <input type="checkbox" id="imunizacao-aplicada-checkbox" />
+                <label for="imunizacao-aplicada-checkbox" style="margin: 0; font-size: 0.85rem;">Marcar como aplicada</label>
+            </div>
+        </div>
+
+        <div class="pop-up-actions" style="margin-top: 10px;">
+            <button id="cancel-imunizacao" class="cancel-button" style="flex: 1; max-width: 100px;">Cancelar</button>
+            <button id="confirm-imunizacao" class="confirm-button" style="flex: 1; max-width: 100px;">Salvar</button>
+        </div>
+    </div>
+
+    <!-- POP-UP NOVO TRATAMENTO -->
+    <div id="pop-up-tratamento" class="pop-up-menu" style="width: 460px; padding: 20px; display: none;">
+        <span class="pop-up-close" onclick="closeTratamentoPopup()">&times;</span>
+        <h2>Tratamento</h2>
+
+        <div class="pop-up-content" style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="hidden" id="tratamento-id" />
+
+            <!-- Linha 1: Veterinário -->
+            <div>
+                <label>Veterinário</label>
+                <select id="tratamento-vet-select" class="date-input" style="width: 100%;"></select>
+            </div>
+
+            <!-- Linha 2: Medicamento e Via -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div>
+                    <label>Medicamento</label>
+                    <select id="tratamento-med-select" class="date-input"></select>
+                </div>
+                <div>
+                    <label>Via</label>
+                    <select id="tratamento-via-select" class="date-input"></select>
+                </div>
+            </div>
+
+            <!-- Linha 3: Fração, Dosagem e Dose -->
+            <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px; align-items: center;">
+                <div>
+                    <label>Dosagem</label>
+                    <select id="tratamento-dosagem-select" class="date-input"></select>
+                </div>
+                <div>
+                    <label>Quantidade</label>
+                    <div id="tratamento-dose-wrapper"></div>
+                </div>
+                <div>
+                    <label>&nbsp;</label> <!-- espaço reservado -->
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <input type="checkbox" id="tratamento-fracao" />
+                        <label for="tratamento-fracao">Fração</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Linha 4: Data início, Horário, Intervalo -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                <div>
+                    <label>Data Início</label>
+                    <input type="date" id="tratamento-inicio-input" class="date-input" />
+                </div>
+                <div>
+                    <label>Horário</label>
+                    <input type="time" id="tratamento-horario-input" class="date-input" />
+                </div>
+                <div>
+                    <label>Intervalo</label>
+                    <select id="tratamento-intervalo-select" class="date-input"></select>
+                </div>
+            </div>
+
+            <!-- Linha 5: Duração -->
+            <div>
+                <label>Duração</label>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <input type="checkbox" id="tratamento-continuo" />
+                        <label for="tratamento-continuo">Uso contínuo</label>
+                    </div>
+                    <div id="tratamento-dias-wrapper">
+                        <input type="number" min="1" id="tratamento-dias-input" class="date-input" placeholder="Dias"
+                            style="width: 80px;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            <div>
+                <label>Observações</label>
+                <textarea id="tratamento-observacoes-input" class="date-input" rows="3"></textarea>
+            </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="pop-up-actions" style="margin-top: 10px;">
+            <button id="cancel-tratamento" class="cancel-button" style="flex: 1; max-width: 100px;">Cancelar</button>
+            <button id="confirm-tratamento" class="confirm-button" style="flex: 1; max-width: 100px;">Salvar</button>
+        </div>
+    </div>
+
+    <div id="pop-up-historico" class="pop-up-menu" style="width: 420px; padding: 20px; display: none;">
+        <span class="pop-up-close" onclick="closeHistoricoPopup()">&times;</span>
+        <h2>Registro de histórico</h2>
+        <div class="pop-up-content" style="display: flex; flex-direction: column; gap: 12px;">
+            <input type="hidden" id="historico-id" />
+
+            <div>
+                <label>Data do Evento</label>
+                <input type="date" id="historico-data-input" class="date-input" />
+            </div>
+
+            <div>
+                <label>Tipo</label>
+                <select id="historico-tipo-select" class="date-input"></select>
+            </div>
+
+            <div>
+                <label>Veterinário</label>
+                <select id="historico-vet-select" class="date-input"></select>
+            </div>
+
+            <div>
+                <label>Descrição</label>
+                <textarea id="historico-descricao-input" class="date-input" rows="4"></textarea>
+            </div>
+        </div>
+
+        <div class="pop-up-actions" style="margin-top: 10px;">
+            <button id="cancel-historico" class="cancel-button" style="flex: 1; max-width: 100px;">Cancelar</button>
+            <button id="confirm-historico" class="confirm-button" style="flex: 1; max-width: 100px;">Salvar</button>
+        </div>
+    </div>
+
+    <!-- POP-UP NOVA AVALIAÇÃO -->
+    <div id="pop-up-avaliacao" class="pop-up-menu" style="width: 460px; padding: 20px; display: none;">
+        <span class="pop-up-close" onclick="closeAvaliacaoPopup()">&times;</span>
+        <h2>Avaliação / Anamnese</h2>
+
+        <div class="pop-up-content" style="display: flex; flex-direction: column; gap: 10px;">
+            <input type="hidden" id="avaliacao-id" />
+
+            <!-- Linha: Data e Veterinário -->
+            <div style="display: grid; grid-template-columns: 32% 1fr; gap: 8px;">
+                <div>
+                    <label>Data da Avaliação</label>
+                    <input type="date" id="avaliacao-data" class="date-input" />
+                </div>
+                <div>
+                    <label>Veterinário Responsável</label>
+                    <select id="avaliacao-vet-select" class="date-input"></select>
+                </div>
+            </div>
+
+
+            <!-- Linha: Temperatura / Peso / Score -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                <div>
+                    <label>Temperatura (°C)</label>
+                    <input type="number" step="0.1" min="0" id="avaliacao-temp" class="date-input"
+                        placeholder="Ex: 38.5" />
+                </div>
+                <div>
+                    <label>Peso (kg)</label>
+                    <input type="number" step="0.1" min="0" id="avaliacao-peso" class="date-input"
+                        placeholder="Ex: 10.2" />
+                </div>
+                <div>
+                    <label>Score Corporal</label>
+                    <select id="avaliacao-score" class="date-input">
+                        <option value="">Selecione...</option>
+                        <option value="1">1 - Muito magro</option>
+                        <option value="2">2 - Magro</option>
+                        <option value="3">3 - Abaixo</option>
+                        <option value="4">4 - Pouco abaixo</option>
+                        <option value="5">5 - Ideal</option>
+                        <option value="6">6 - Pouco acima</option>
+                        <option value="7">7 - Sobrepeso</option>
+                        <option value="8">8 - Obeso</option>
+                        <option value="9">9 - Muito obeso</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- CONDIÇÕES observadas -->
+            <label for="condicoes-selecionadas" style="font-size:0.8rem; font-weight:600; color:var(--text-dark); display:block;">
+              Condições Identificadas
+            </label>
+            <div id="avaliacao-condicoes-container" class="condicoes-container">
+                <div class="condicoes-container-inner" id="condicoes-selecionadas"></div>
+                <button class="icon-button" id="add-condicao-button" title="Adicionar condição">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+
+            <!-- Observações -->
+            <div>
+                <label>Observações</label>
+                <textarea id="avaliacao-observacao" class="date-input" rows="3"
+                    placeholder="Digite aqui as observações..."></textarea>
+            </div>
+        </div>
+
+        <div class="pop-up-actions" style="margin-top: 10px;">
+            <button id="cancel-avaliacao" class="cancel-button" style="flex: 1;">Cancelar</button>
+            <button id="confirm-avaliacao" class="confirm-button" style="flex: 1;">Salvar</button>
+        </div>
+    </div>
+
+    <!-- POP-UP CONDIÇÕES -->
+    <div id="pop-up-condicoes" class="pop-up-menu"
+        style="width: 520px; height: 80vh; min-height: 600px; padding: 20px; display: none;">
+        <span class="pop-up-close" onclick="closeCondicoesPopup()">&times;</span>
+        <h2>Selecione CONDIÇÕES</h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; height: calc(80vh - 100px);">
+            <!-- Coluna esquerda: PARÂMETROS -->
+            <div id="parametros-list" class="pop-up-options-container"
+                style="border-right: 1px solid var(--border-color); overflow-y: auto;">
+            </div>
+
+            <!-- Coluna direita: CONDIÇÕES -->
+            <div id="condicoes-list" class="pop-up-options-container" style="overflow-y: auto;">
+                <p style="color: var(--text-light); font-size: 0.85rem;">Selecione um parâmetro</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!------------------------------------------ SEÇÃO DE SCRIPTS ---------------------------------------------->
+
+    <script>
+        const cachedData = {};
+        const logDetails = (...args) => console.log('[Details
+]', ...args);
+        const animalUpdateEndpoint = '/webhook/kaniu-animal-update';
+        const statusActionDescriptionMap = {
+            adotado: {
+                on: 'Automático: Animal foi adotado.',
+                off: 'Automático: Adoção cancelada'
+  },
+            desaparecido: {
+                on: 'Automático: Animal marcado como desaparecido',
+                off: 'Automático: Animal marcado como encontrado'
+  },
+            internado: {
+                on: 'Automático: Animal marcado como internado',
+                off: 'Automático: Animal removido da internção'
+  },
+            falecido: {
+                on: 'Automático: Animal marcado como falecido',
+                off: 'Automático: Animal marcado como vivo'
+  },
+            indisponivel: {
+                on: 'Automático: Animal marcado como indisponível',
+                off: 'Automático: Animal marcado como disponível'
+  }
+};
+        let imunizacaoOptionsLoaded = false;
+        let imunizacaoOptionsPromise = null;
+        let observationTypeId = null;
+        let observationTypeLookupPromise = null;
+        let weightChartResizeHandlerRegistered = false;
+
+        // =========================================================================
+// FUNÇÕES DE LÓGICA DO POP-UP DE PESAGEM (AS FUNÇÕES DE ABRIR E CLIQUE FORAM REMOVIDAS/SIMPLIFICADAS)
+// =========================================================================
+// Função de tratamento do clique na linha da tabela.
+// É esperado que a linha tenha o atributo data-record com o JSON do item.
+        function handlePesagemClick(rowElement) {
+  // 1. Obtém a string JSON com as entidades &quot;
+            const itemDataString = rowElement.getAttribute('data-record');
+
+            // 2. Substitui as entidades &quot; pelas aspas duplas reais (")
+            const safeJsonString = itemDataString.replace(/&quot;/g, '"');
+  // 3. Faz o parse da string JSON para um objeto
+            const record = JSON.parse(safeJsonString);
+
+            logDetails('handlePesagemClick',
+  { record
+  });
+            // 4. Abre o pop-up com o registro
+            openPesagemPopup(record);
+}
+
+        function handleAvaliacaoClick(rowElement) {
+            const itemDataString = rowElement.getAttribute('data-record');
+            const safeJsonString = itemDataString.replace(/&quot;/g, '"');
+            const record = JSON.parse(safeJsonString);
+            logDetails('handleAvaliacaoClick',
+  { record
+  });
+            openAvaliacaoPopup(record);
+}
+
+        function handleImunizacaoClick(rowElement) {
+            const itemDataString = rowElement.getAttribute('data-record');
+            const safeJsonString = itemDataString.replace(/&quot;/g, '"');
+            const record = JSON.parse(safeJsonString);
+            logDetails('handleImunizacaoClick',
+  { record
+  });
+            openImunizacaoPopup(record);
+}
+
+        function handleHistoricoClick(rowElement) {
+            const itemDataString = rowElement.getAttribute('data-record');
+            const safeJsonString = itemDataString.replace(/&quot;/g, '"');
+            const record = JSON.parse(safeJsonString);
+            logDetails('handleHistoricoClick',
+  { record
+  });
+            openHistoricoPopup(record);
+}
+// Função para fechar o pop-up da pesagem
+        function closePesagemPopup() {
+            logDetails('closePesagemPopup');
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('pop-up-pesagem').style.display = 'none';
+            // Limpa a mensagem de erro
+            const errorElement = document.getElementById('pop-up-pesagem').querySelector('.error-message-pesagem');
+            if (errorElement) {
+                errorElement.remove();
+  }
+}
+// Função para abrir o popup de pesagem (novo ou editar)
+        function openPesagemPopup(record = null) {
+            logDetails('openPesagemPopup',
+  { record
+  });
+            if (record) {
+    // Edição
+                document.getElementById('pesagem-id').value = record.id;
+                document.getElementById('pesagem-data-input').value = record.data;
+                document.getElementById('pesagem-peso-input').value = record.peso;
+  } else {
+    // Novo registro
+                document.getElementById('pesagem-id').value = "";
+                const today = new Date().toISOString().split('T')[
+      0
+    ]; // pega AAAA-MM-DD
+                document.getElementById('pesagem-data-input').value = today;
+                document.getElementById('pesagem-peso-input').value = "";
+  }
+
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('pop-up-pesagem').style.display = 'flex';
+}
+
+        function openHistoricoPopup(record = null) {
+            logDetails('openHistoricoPopup',
+  { record
+  });
+            const overlay = document.getElementById('overlay');
+            const popup = document.getElementById('pop-up-historico');
+            const idInput = document.getElementById('historico-id');
+            const dataInput = document.getElementById('historico-data-input');
+            const tipoSelect = document.getElementById('historico-tipo-select');
+            const vetSelect = document.getElementById('historico-vet-select');
+            const descricaoInput = document.getElementById('historico-descricao-input');
+
+            const defaultTipoOption = tipoSelect?.querySelector('option[value=""
+  ]');
+            const defaultVetOption = vetSelect?.querySelector('option[value=""
+  ]');
+            if (defaultTipoOption) defaultTipoOption.textContent = 'Selecione...';
+            if (defaultVetOption) defaultVetOption.textContent = 'Selecione...';
+
+            resetFieldBorders('pop-up-historico');
+            logDetails('openHistoricoPopup:resetFieldBorders');
+
+            if (record) {
+                idInput.value = record.id || '';
+
+                if (record.data) {
+                    if (record.data.includes('/')) {
+                        const [dia, mes, ano
+        ] = record.data.split('/');
+                        dataInput.value = ano + '-' + mes + '-' + dia;
+      } else {
+                        dataInput.value = record.data;
+      }
+    } else {
+                    dataInput.value = '';
+    }
+
+                const tipoId = record.tipo ?? record.tipo_evento_id ?? record.tipo_id;
+                if (tipoId !== undefined && tipoId !== null && tipoId !== '') {
+                    tipoSelect.value = String(tipoId);
+    } else {
+                    tipoSelect.value = '';
+                    if (record.tipo && defaultTipoOption) {
+                        defaultTipoOption.textContent = 'Selecione... (Atual: ' + record.tipo + ')';
+      }
+    }
+
+                const vetId = record.veterinario_id ?? record.veterinarioId;
+                if (vetId !== undefined && vetId !== null && vetId !== '') {
+                    vetSelect.value = String(vetId);
+    } else {
+                    vetSelect.value = '';
+                    if (record.veterinario_nome && defaultVetOption) {
+                        defaultVetOption.textContent = 'Selecione... (Atual: ' + record.veterinario_nome + ')';
+      }
+    }
+
+                descricaoInput.value = record.descricao || '';
+  } else {
+                idInput.value = '';
+                const today = new Date().toISOString().split('T')[
+      0
+    ];
+                dataInput.value = today;
+                tipoSelect.value = '';
+                vetSelect.value = '';
+                descricaoInput.value = '';
+
+                logDetails('openHistoricoPopup:newRecord');
+  }
+
+            overlay.style.display = 'block';
+            popup.style.display = 'flex';
+}
+
+        function closeHistoricoPopup() {
+            logDetails('closeHistoricoPopup');
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('pop-up-historico').style.display = 'none';
+
+            const tipoSelect = document.getElementById('historico-tipo-select');
+            const vetSelect = document.getElementById('historico-vet-select');
+            const defaultTipoOption = tipoSelect?.querySelector('option[value=""
+  ]');
+            const defaultVetOption = vetSelect?.querySelector('option[value=""
+  ]');
+            if (defaultTipoOption) defaultTipoOption.textContent = 'Selecione...';
+            if (defaultVetOption) defaultVetOption.textContent = 'Selecione...';
+
+            resetFieldBorders('pop-up-historico');
+}
+// Função para salvar (update ou insert)
+        async function updatePesagemRecord() {
+            const id = document.getElementById('pesagem-id').value;
+            const data = document.getElementById('pesagem-data-input').value;
+            const peso = document.getElementById('pesagem-peso-input').value;
+            logDetails('updatePesagemRecord:start',
+  { id, data, peso
+  });
+
+            const popup = document.getElementById('pop-up-pesagem');
+            const popupActions = popup.querySelector('.pop-up-actions');
+
+            if (!data || !peso || isNaN(parseFloat(peso))) {
+                logDetails('updatePesagemRecord:validationError',
+    { id, data, peso
+    });
+                const errorElement = popup.querySelector('.error-message-pesagem');
+                if (errorElement) errorElement.remove();
+                popupActions.insertAdjacentHTML(
+                    'beforebegin',
+                    '<p class="error-message-pesagem" style="color:var(--primary-color); font-size: 0.8rem; text-align:center; margin-bottom: 5px;">Preencha todos os campos corretamente.</p>'
+                );
+                return;
+  }
+
+            try {
+                let payload = {
+                    table: "pesagem",
+                    animal_id: '${animal.animal_id
+      }',
+                    data: data,
+                    valor: parseFloat(peso)
+    };
+
+                let url = "";
+                if (id) {
+      // atualização
+                    payload.id = id;
+                    url = '/webhook/kaniu-atualizar';
+    } else {
+      // inclusão
+                    url = '/webhook/kaniu-salvar';
+    }
+                logDetails('updatePesagemRecord:request',
+    { url, payload
+    });
+
+                const response = await fetch(url,
+    {
+                    method: "POST",
+                    headers: {
+        "Content-Type": "application/json"
+      },
+                    body: JSON.stringify(payload)
+    });
+
+                if (!response.ok) {
+                    logDetails('updatePesagemRecord:httpError',
+      { status: response.status, statusText: response.statusText
+      });
+                    throw new Error("Falha ao salvar o registro de pesagem.");
+    }
+
+                showAlert(id ? "Pesagem atualizada com sucesso!": "Pesagem incluída com sucesso!",
+    "success",
+    2000);
+
+                cachedData['pesagens'
+    ] = null;
+                await fetchTabData('pesagens');
+                logDetails('updatePesagemRecord:success',
+    { id
+    });
+  } catch (error) {
+                logDetails('updatePesagemRecord:error',
+    { error
+    });
+                showAlert("Erro ao salvar a pesagem: " + error.message,
+    "error",
+    3000);
+  } finally {
+                closePesagemPopup();
+  }
+}
+// =========================================================================
+
+        function renderizarResumo(resumoData) {
+            const resumoTab = document.getElementById('tab-resumo');
+            const resumoSections = resumoTab ? resumoTab.querySelector('.resume-sections') : null;
+            const sectionIds = ['saude-geral-list', 'vacinacao-list', 'parasitas-list', 'peso-list'
+  ];
+            logDetails('renderizarResumo',
+  { hasData: Boolean(resumoData && resumoData.length)
+  });
+
+            if (!resumoSections) {
+                logDetails('renderizarResumo:missingSections');
+                return;
+  }
+
+            if (!resumoData || resumoData.length === 0) {
+                resumoSections.classList.add('resume-empty');
+                sectionIds.forEach(id => {
+                    const container = document.getElementById(id);
+                    if (container) {
+                        container.innerHTML = '';
+      }
+    });
+                return;
+  }
+
+            resumoSections.classList.remove('resume-empty');
+
+            const dados = resumoData[
+    0
+  ];
+
+            const secoes = {
+                'saude-geral-list': [
+      { label: 'Última avaliação', value: dados[
+          "Última avaliação"
+        ] || 'N/A'
+      },
+      { label: 'Score Corporal', value: dados['Score Corporal'
+        ] !== null ? dados[
+          "Score Corporal"
+        ] : 'N/A'
+      },
+      { label: 'Índice de saúde', value: dados['Índice de saúde'
+        ] || 'N/A'
+      },
+      { label: 'Observações', value: dados['Observações'
+        ] || 'N/A'
+      }
+    ],
+                'vacinacao-list': [
+      { label: 'Última vacinação', value: dados['Última vacinação'
+        ] || 'N/A'
+      },
+      { label: 'Próxima vacinação', value: dados['Próxima vacinação'
+        ] || 'N/A'
+      }
+    ],
+                'parasitas-list': [
+      { label: 'Última vermifugação', value: dados['Última vermifugação'
+        ] || 'N/A'
+      },
+      { label: 'Próxima vermifugação', value: dados['Próxima vermifugação'
+        ] || 'N/A'
+      },
+      { label: 'Última desparasitação', value: dados['Última desparasitação'
+        ] || 'N/A'
+      },
+      { label: 'Próxima desparasitação', value: dados['Próxima desparasitação'
+        ] || 'N/A'
+      }
+    ],
+                'peso-list': [
+      { label: 'Data da Última pesagem', value: dados['Data pesagem'
+        ] || 'N/A'
+      },
+      { label: 'Peso atual', value: dados['Último peso'
+        ] !== null ? dados[
+          "Último peso"
+        ] + ' kg' : 'N/A'
+      },
+      { label: 'Peso anterior', value: dados['Peso anterior'
+        ] !== null ? dados[
+          "Peso anterior"
+        ] + ' kg' : "N/A"
+      },
+      { label: 'Variação de peso', value: dados['Variação de peso'
+        ] || 'N/A'
+      }
+    ]
+  };
+
+            for (const [id, itens
+  ] of Object.entries(secoes)) {
+                const container = document.getElementById(id);
+
+                if (container) {
+                    container.innerHTML = ''; // limpa antes
+                    itens.forEach(item => {
+                        const itemHTML = '<div class="resume-item"><span class="resume-label">'+item.label+'</span><span class="resume-value">'+item.value+'</span></div>';
+                        container.innerHTML += itemHTML;
+      });
+    }
+  }
+            logDetails('renderizarResumo:completed');
+}
+
+        async function fetchTabData(tabId) {
+            logDetails('fetchTabData:start',
+  { tabId, cached: Boolean(cachedData[tabId
+    ])
+  });
+            if (cachedData[tabId
+  ]) {
+                logDetails('fetchTabData:cacheHit',
+    { tabId
+    });
+                return;
+  }
+
+            const tabContentElement = document.getElementById('tab-' + tabId);
+            // tabContentElement.innerHTML = '<div class="loading-message">Carregando...</div>';
+
+            try {
+                const payload = {
+                    tab_name: tabId,
+                    animal_id: '${animal.animal_id
+      }'
+    };
+
+                const response = await fetch('/webhook/kaniu-animal-dados',
+    {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json'
+      },
+                    body: JSON.stringify(payload)
+    });
+
+                if (!response.ok) {
+                    throw new Error('Erro na resposta da rede: ' + response.statusText);
+    }
+
+                const data = await response.json();
+                logDetails('fetchTabData:response',
+    { tabId, hasError: Boolean(data?.error), itemCount: Array.isArray(data?.items) ? data.items.length : null
+    });
+
+                // mapeamento de colunas (mantido do original)
+                const columnMappings = {
+                    'eventos': {
+                        'data': 'Data',
+                        'tipo': 'Tipo',
+                        'descricao': 'Descrição',
+                        'veterinario_nome': 'Veterinário'
+      },
+                    'pesagens': {
+                        'data': 'Data',
+                        'peso': 'Medição',
+                        'variacao': 'Variação'
+      },
+                    'avaliacoes': {
+                        'data': 'Data',
+                        'observacao': 'Observação',
+                        'veterinario_nome': 'Veterinário',
+                        'temperatura': 'Temp.',
+                        'score': 'Score',
+                        'peso': 'Peso',
+                        'nota': 'Nota'
+      },
+                    'imunizacoes': {
+                        'data_exibicao': 'Data',
+                        'tipo': 'Tipo',
+                        'nome_imunizante': 'Imunizante',
+                        'veterinario_nome': 'Veterinário',
+                        'aplicada': 'Aplicada'
+      },
+                    'tratamentos': {},
+                    'arquivos': {
+                        'data': 'Data',
+                        'nome': 'Nome',
+                        'observacao': 'Observação',
+                        'url': 'Visualizar'
+      }
+    };
+
+                // Lista fixa de chaves a excluir
+                const excludedKeys = ['id', 'animal_id', 'concluido', 'programado', 'atrasado'
+    ];
+
+                // Função para decidir se uma chave deve ser exibida ou NÃO
+                function shouldDisplayKey(key) {
+      // exclui qualquer chave na lista ou que termine com 'id' (case insensitive)
+                    return !excludedKeys.includes(key) && !key.toLowerCase().endsWith('id');
+    }
+
+                const renderTable = (items, tabId) => {
+                    const currentMapping = columnMappings[tabId
+      ] || {};
+                    const headers = Object.keys(items[
+        0
+      ]).filter(shouldDisplayKey);
+
+                    let tableHTML = '<table class="tab-table"><thead><tr>';
+
+                    headers.forEach(header => {
+                        const normalizedHeader = header.toLowerCase();
+                        const isLongTextColumn = ['descricao', 'descrição', 'description', 'observacao', 'observação', 'observacoes', 'observações'
+        ].includes(normalizedHeader);
+                        const columnClass = isLongTextColumn ? ' class="table-col-long"' : '';
+                        let title;
+                        if (header === '__status__') {
+                            title = 'Status';
+        } else {
+                            title = currentMapping[header
+          ] || header.charAt(0).toUpperCase() + header.slice(1);
+        }
+                        tableHTML += '<th' + columnClass + '>' + title + '</th>';
+      });
+
+                    if (tabId !== 'resumo') {
+                        tableHTML += '<th style="min-width:40px; width:auto;"></th>'; // ações
+      }
+
+                    tableHTML += '</tr></thead><tbody>';
+
+                    items.forEach(item => {
+                        let rowAttributes = '';
+
+                        if (tabId === 'pesagens') {
+                            const safeJson = JSON.stringify(item).replace(/"/g, '&quot;');
+                            rowAttributes = 'data-record="' + safeJson + '" onclick="handlePesagemClick(this)" style="cursor:pointer;"';
+        }
+
+                        if (tabId === 'eventos') {
+                            const safeJson = JSON.stringify(item).replace(/"/g, '&quot;');
+                            rowAttributes = 'data-record="' + safeJson + '" onclick="handleHistoricoClick(this)" style="cursor:pointer;"';
+        }
+
+                        if (tabId === 'tratamentos') {
+                            const safeJson = JSON.stringify(item).replace(/"/g, '&quot;');
+                            rowAttributes = 'data-record="' + safeJson + '" onclick="handleTratamentoClick(this)" style="cursor:pointer;"';
+        }
+
+                        if (tabId === 'avaliacoes') {
+                            const safeJson = JSON.stringify(item).replace(/"/g, '&quot;');
+                            rowAttributes =
+                                'data-record="' + safeJson + '" onclick="handleAvaliacaoClick(this)" style="cursor:pointer;"';
+        }
+
+                        if (tabId === 'imunizacoes') {
+                            const safeJson = JSON.stringify(item).replace(/"/g, '&quot;');
+                            rowAttributes =
+                                'data-record="' + safeJson + '" onclick="handleImunizacaoClick(this)" style="cursor:pointer;"';
+        }
+
+
+                        tableHTML += '<tr ' + rowAttributes + '>';
+
+                        headers.forEach(header => {
+                            const normalizedHeader = header.toLowerCase();
+                            const isLongTextColumn = ['descricao', 'descrição', 'description', 'observacao', 'observação', 'observacoes', 'observações'
+          ].includes(normalizedHeader);
+                            const columnClass = isLongTextColumn ? ' class="table-col-long"' : '';
+
+                            // Demais colunas
+                            let formattedContent = '';
+                            const cellContent = item[header
+          ];
+
+                            if (['data', 'data_exibicao'
+          ].includes(header) && cellContent) {
+                                const [year, month, day
+            ] = cellContent.split('-');
+                                formattedContent = day + '/' + month + '/' + year;
+          } else if (header === 'peso' && cellContent !== null) {
+                                formattedContent = cellContent + ' kg';
+          } else if (header === 'medicamentos' && Array.isArray(cellContent)) {
+                                formattedContent = '<ul>' + cellContent.map(med => '<li>' + med + '</li>').join('') + '</ul>';
+          } else if (header === 'url' && cellContent) {
+                                formattedContent = '<a href="' + cellContent + '" target="_blank">Visualizar</a>';
+          } else if (typeof cellContent === 'boolean') {
+                                formattedContent = cellContent ? 'Sim' : 'Não';
+          } else {
+                                formattedContent = cellContent || '';
+          }
+
+                            tableHTML += '<td' + columnClass + '>' + formattedContent + '</td>';
+        });
+
+                        // Coluna de ações (somente o deletar aqui)
+                        if (tabId !== 'resumo') {
+                            const ASPAS = String.fromCharCode(39);
+                            const onclick_string = 'event.stopPropagation(); confirmDelete(' + ASPAS + tabId + ASPAS + ',' + ASPAS + item.id + ASPAS + ');';
+                            tableHTML += '<td class="action-cell"><button class="icon-button delete-button" title="Excluir" onclick="' + onclick_string + '"><i class="fa-solid fa-trash"></i></button></td>';
+        }
+
+                        tableHTML += '</tr>';
+      });
+
+                    tableHTML += '</tbody></table>';
+                    return '<div class="tab-table-wrapper">' + tableHTML + '</div>';
+    };
+                // --- fim da função substituída ---
+    // SEMPRE começamos com a faixa "Novo" (exceto Resumo)
+                let contentHTML = '';
+                let newButtonHTML = '';
+                if (tabId !== 'resumo') {
+                    const ap = "'";
+                    newButtonHTML = '<div class="new-button-fixed"><button class="action-button" onclick="handleNewRecord(' + ap + tabId + ap + ')"><i class="fa-solid fa-plus"></i></button></div>';
+    }
+    // Estados possíveis
+                let shouldRenderChart = false;
+                let chartDataBuffer = null;
+
+                if (data.error) {
+                    contentHTML += '<div class="no-data-message">' + data.error + '</div>';
+                    if (newButtonHTML) {
+                        contentHTML += newButtonHTML;
+      }
+                    tabContentElement.innerHTML = contentHTML;
+                    cachedData[tabId
+      ] = true;
+                    return;
+    }
+
+                if (tabId === 'resumo') {
+      // Resumo NÃO tem botão e usa o renderizador específico
+      //tabContentElement.innerHTML = '<div class="no-data-message">Carregando resumo...</div>';
+                    renderizarResumo(data.items);
+                    cachedData[tabId
+      ] = true;
+                    logDetails('fetchTabData:cached',
+      { tabId, mode: 'resumo'
+      });
+                    return;
+    }
+    // Aplica DOM de uma vez só
+                if (newButtonHTML) {
+                    contentHTML += newButtonHTML;
+    }
+    // Demais guias:
+                if (!data.items || data.items.length === 0 || data.items[
+      0
+    ].id == null) {
+      // Sem registros - mantém o botão visível e mostra msg
+                    contentHTML += '<div class="no-data-message">Nenhum item encontrado.</div>';
+                    tabContentElement.innerHTML = contentHTML;
+                    cachedData[tabId
+      ] = true;
+                    return;
+    }
+    // Com registros - renderiza tabela
+                contentHTML += renderTable(data.items, tabId);
+
+                // Gráfico de Pesagens
+                if (tabId === 'pesagens' && data.chartData) {
+                    contentHTML += '<div class="chart-container"><canvas id="weightChart"></canvas></div>';
+                    shouldRenderChart = true;
+                    chartDataBuffer = data.chartData;
+    }
+
+                tabContentElement.innerHTML = contentHTML;
+
+                // Renderiza o gráfico após existir o canvas no DOM
+                if (shouldRenderChart && chartDataBuffer) {
+                    renderChart(chartDataBuffer);
+    }
+
+                cachedData[tabId
+    ] = true;
+                logDetails('fetchTabData:cached',
+    { tabId, mode: 'default'
+    });
+  } catch (error) {
+                logDetails('fetchTabData:error',
+    { tabId, error
+    });
+                tabContentElement.innerHTML = '<div class="error-message">Ocorreu um erro ao carregar os dados: ' + error.message + '</div>';
+  }
+}
+
+
+        function adjustWeightChartContainerHeight() {
+            const tabPesagens = document.getElementById('tab-pesagens');
+            if (!tabPesagens) {
+                return;
+  }
+            const chartContainer = tabPesagens.querySelector('.chart-container');
+            if (!chartContainer) {
+                return;
+  }
+            let availableHeight = tabPesagens.clientHeight;
+            if (!availableHeight) {
+                const rect = tabPesagens.getBoundingClientRect();
+                availableHeight = rect.height || tabPesagens.scrollHeight;
+  }
+            if (!availableHeight) {
+                return;
+  }
+            chartContainer.style.maxHeight = Math.max(0, Math.floor(availableHeight / 2)) + 'px';
+}
+
+        function renderChart(chartData) {
+  // Converte dados do backend em pontos {x,y}
+            const dataPoints = chartData.map(item => ({
+                x: new Date(item.data),
+                y: item.peso
+  }));
+            logDetails('renderChart',
+  { pointCount: dataPoints.length
+  });
+
+            const maxWeight = Math.max(...dataPoints.map(p => p.y));
+            const maxYValue = Math.ceil(maxWeight / 10) * 10;
+
+            const ctx = document.getElementById('weightChart').getContext('2d');
+
+            // pega primeira e Última data reais do dataset
+            const dates = chartData.map(item => new Date(item.data));
+            const minDate = new Date(Math.min(...dates));
+            const today = new Date();
+
+            // adiciona margem de 15 dias antes da primeira data
+            const paddedMinDate = new Date(minDate);
+            paddedMinDate.setDate(minDate.getDate() - 15);
+
+            new Chart(ctx,
+  {
+                type: 'line',
+                data: {
+                    datasets: [
+        {
+                        label: 'Peso',
+                        data: dataPoints,
+                        borderColor: '#4A90E2',
+                        backgroundColor: 'rgba(74,
+          144,
+          226,
+          0.2)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 3
+        }
+      ]
+    },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'month',
+                                displayFormats: {
+                                    month: 'MMM yy' // Exibe Jan 23, Fev 23, etc.
+            }
+          },
+                            ticks: {
+                                callback: function (value, index, ticks) {
+                                    const date = new Date(value);
+                                    // Verifica se é o primeiro mês do ano (Janeiro, que é o mês 0)
+                                    if (date.getMonth() === 0) {
+                                        return date.getFullYear(); // Exibe o ano completo
+              } else {
+                // Retorna a primeira letra do mês
+                                        const month = date.toLocaleString('pt-BR',
+                {
+                                            month: 'short'
+                });
+                                        return month.charAt(0).toUpperCase();
+              }
+            },
+                                autoSkip: true,
+                                maxRotation: 0,
+                                minRotation: 0
+          },
+                            min: paddedMinDate,
+                            max: today,
+                            grid: {
+                                drawTicks: true
+          }
+        },
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: maxYValue
+        }
+      },
+                    plugins: {
+                        legend: {
+                            display: false
+        }
+      }
+    }
+  });
+
+            requestAnimationFrame(adjustWeightChartContainerHeight);
+            if (!weightChartResizeHandlerRegistered) {
+                weightChartResizeHandlerRegistered = true;
+                window.addEventListener('resize', adjustWeightChartContainerHeight);
+                logDetails('renderChart:registeredResizeHandler');
+  }
+}
+
+        function handleNewRecord(tabId) {
+            logDetails('handleNewRecord',
+  { tabId
+  });
+            if (tabId === 'pesagens') {
+                openPesagemPopup();
+  } else if (tabId === 'eventos') {
+                openHistoricoPopup();
+  } else if (tabId === 'tratamentos') {
+                openTratamentoPopup();
+  } else if (tabId === 'avaliacoes') {
+                openAvaliacaoPopup();
+  } else if (tabId === 'imunizacoes') {
+                openImunizacaoPopup();
+  } else {
+                showAlert('Abrindo formulário de novo registro em: ' + tabId, 'info',
+    2500);
+  }
+}
+// Funções para inicializar o sistema de guias, pop-ups e outras funcionalidades
+        function initTabs() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            logDetails('initTabs',
+  { buttonCount: tabButtons.length
+  });
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+                    logDetails('tabClick',
+      { tabId
+      });
+
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    button.classList.add('active');
+                    document.getElementById('tab-' + tabId).classList.add('active');
+
+                    fetchTabData(tabId);
+    });
+  });
+}
+
+        let currentButton = null;
+        let currentType = null;
+
+        function isValidIdValue(value) {
+            return value !== undefined && value !== null && value !== '';
+}
+
+        const characteristicTypesWithLabelId = new Set(['especie', 'raca', 'genero', 'porte', 'cor', 'pelagem'
+]);
+
+        function shouldUseLabelAsId(type) {
+            if (!type) {
+                return false;
+  }
+            return characteristicTypesWithLabelId.has(type.trim().toLowerCase());
+}
+
+        function extractOptionLabel(item, labelKey) {
+            if (item === undefined || item === null) {
+                return '';
+  }
+
+            if (typeof item === 'string' || typeof item === 'number') {
+                return String(item);
+  }
+
+            if (labelKey && item[labelKey
+  ] !== undefined && item[labelKey
+  ] !== null) {
+                return String(item[labelKey
+    ]);
+  }
+
+            const fallbackKeys = ['nome', 'label', 'descricao', 'description', 'titulo', 'title'
+  ];
+            for (const key of fallbackKeys) {
+                if (item[key
+    ] !== undefined && item[key
+    ] !== null) {
+                    return String(item[key
+      ]);
+    }
+  }
+
+            const firstStringValue = Object.values(item).find(value => typeof value === 'string' && value.trim() !== '');
+            if (firstStringValue) {
+                return String(firstStringValue);
+  }
+
+            return '';
+}
+
+        function extractOptionId(item, type) {
+            if (!item || typeof item !== 'object') {
+                return null;
+  }
+
+            if ('id' in item && isValidIdValue(item.id)) {
+                return item.id;
+  }
+
+            const normalizedType = typeof type === 'string' ? type.trim().toLowerCase() : '';
+            const camelType = normalizedType
+                ? normalizedType.charAt(0).toUpperCase() + normalizedType.slice(1)
+                : '';
+
+            const candidateKeys = [];
+            if (normalizedType) {
+                candidateKeys.push(normalizedType + '_id');
+                candidateKeys.push(normalizedType + 'Id');
+                candidateKeys.push(normalizedType + 'ID');
+                candidateKeys.push('id_' + normalizedType);
+                candidateKeys.push('id' + camelType);
+                candidateKeys.push(normalizedType + '_uuid');
+                candidateKeys.push(normalizedType + 'Uuid');
+                candidateKeys.push(normalizedType + 'UUID');
+  }
+
+            const fallbackKeys = ['value', 'valor', 'codigo', 'code'
+  ];
+            candidateKeys.push(...fallbackKeys);
+
+            for (const key of candidateKeys) {
+                if (!key) continue;
+                if (Object.prototype.hasOwnProperty.call(item, key) && isValidIdValue(item[key
+    ])) {
+                    return item[key
+      ];
+    }
+  }
+
+            if (normalizedType) {
+                const typeIdKey = Object.keys(item).find(k => {
+                    const lowerKey = k.toLowerCase();
+                    return lowerKey.includes('id') && lowerKey.includes(normalizedType) && isValidIdValue(item[k
+      ]);
+    });
+                if (typeIdKey) {
+                    return item[typeIdKey
+      ];
+    }
+  }
+
+            const dynamicKey = Object.keys(item).find(k => k.toLowerCase().endsWith('_id') && isValidIdValue(item[k
+  ]));
+            if (dynamicKey) {
+                return item[dynamicKey
+    ];
+  }
+
+            return null;
+}
+
+        function openMenu(data, button, type, labelKey) {
+            logDetails('openMenu',
+  { type, labelKey, optionCount: Array.isArray(data) ? data.length : null
+  });
+            currentButton = button;
+            currentType = type;
+
+            const menu = document.getElementById('pop-up-menu');
+            const overlay = document.getElementById('overlay');
+            const optionsContainer = document.getElementById('pop-up-options-container');
+
+            menu.querySelector('h2').textContent = "Selecione " + type.charAt(0).toUpperCase() + type.slice(1);
+
+            optionsContainer.innerHTML = '';
+            data.forEach(item => {
+                const option = document.createElement('div');
+                option.classList.add('pop-up-option');
+                const optionLabelRaw = extractOptionLabel(item, labelKey);
+                const optionLabel = optionLabelRaw ?? '';
+                const trimmedOptionLabel = typeof optionLabel === 'string' ? optionLabel.trim() : String(optionLabel).trim();
+                const optionId = extractOptionId(item, type);
+                const defaultedOptionId = isValidIdValue(optionId)
+                    ? optionId
+                    : (shouldUseLabelAsId(type) && trimmedOptionLabel !== '' ? trimmedOptionLabel : null);
+                option.textContent = optionLabel;
+                option.dataset.optionId = defaultedOptionId != null ? defaultedOptionId : '';
+
+                option.onclick = () => selectOption('${animal.animal_id
+    }', defaultedOptionId, optionLabel, item);
+                optionsContainer.appendChild(option);
+  });
+
+            overlay.style.display = 'block';
+            menu.style.display = 'flex';
+}
+
+        function closeMenu() {
+            logDetails('closeMenu');
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('pop-up-menu').style.display = 'none';
+}
+
+        function selectOption(idAnimal, valueId, valueText, rawItem) {
+            const trimmedLabel = typeof valueText === 'string' ? valueText.trim() : (valueText ?? '');
+            const fallbackId = extractOptionId(rawItem, currentType);
+            let resolvedId = isValidIdValue(valueId) ? valueId : null;
+
+            if (!isValidIdValue(resolvedId) && isValidIdValue(fallbackId)) {
+                resolvedId = fallbackId;
+  }
+
+            const canUseLabelAsId = shouldUseLabelAsId(currentType) && trimmedLabel !== '';
+            if (!isValidIdValue(resolvedId) && canUseLabelAsId) {
+                resolvedId = trimmedLabel;
+  }
+
+            logDetails('selectOption',
+  {
+                idAnimal,
+                currentType,
+                capturedId: valueId,
+                fallbackId,
+                labelAsId: canUseLabelAsId,
+                resolvedId,
+                valueText: trimmedLabel || valueText,
+                rawItem
+  });
+            if (currentButton && currentType) {
+                updateCharacteristic(idAnimal, currentType, resolvedId, trimmedLabel || valueText);
+  }
+            closeMenu();
+}
+
+        async function updateCharacteristic(animalId, type, valueId, valueText) {
+            const trimmedLabel = typeof valueText === 'string' ? valueText.trim() : (valueText ?? '');
+            let resolvedValue = isValidIdValue(valueId) ? valueId : null;
+            if (!isValidIdValue(resolvedValue) && shouldUseLabelAsId(type) && trimmedLabel !== '') {
+                resolvedValue = trimmedLabel;
+  }
+
+            const payload = {
+                animal_id: animalId,
+                caracteristica: type,
+                valor: resolvedValue === undefined ? null : resolvedValue
+  };
+
+            try {
+                logDetails('updateCharacteristic:request', payload);
+                await fetch(animalUpdateEndpoint,
+    {
+                    method: "POST",
+                    headers: {
+        "Content-Type": "application/json"
+      },
+                    body: JSON.stringify(payload)
+    });
+
+                currentButton.textContent = trimmedLabel || valueText || '';
+                showAlert('Item salvo com sucesso.');
+                logDetails('updateCharacteristic:success',
+    { type, valor: payload.valor
+    });
+  } catch (error) {
+                logDetails('updateCharacteristic:error',
+    { error, type, valor: payload.valor
+    });
+                showAlert('Erro ao atualizar: ' + type + ' - ', error);
+  }
+}
+
+        async function callAnimalUpdate(caracteristica, valor, animalIdOverride = null) {
+            const payload = {
+                animal_id: animalIdOverride !== null && animalIdOverride !== undefined ? animalIdOverride : '${animal.animal_id
+    }',
+                caracteristica,
+                valor: valor === undefined ? null : valor
+  };
+            logDetails('callAnimalUpdate:request', payload);
+
+            const response = await fetch(animalUpdateEndpoint,
+  {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+    },
+                body: JSON.stringify(payload)
+  });
+
+            if (!response.ok) {
+                logDetails('callAnimalUpdate:httpError',
+    { status: response.status, statusText: response.statusText
+    });
+                throw new Error('Falha ao atualizar (HTTP ' + response.status + ')');
+  }
+
+            try {
+                const json = await response.json();
+                logDetails('callAnimalUpdate:success',
+    { caracteristica, valor: payload.valor
+    });
+                return json;
+  } catch (error) {
+                logDetails('callAnimalUpdate:noJson',
+    { error
+    });
+                return null;
+  }
+}
+
+        function normalizeString(value) {
+            return (value || '')
+                .toString()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f
+  ]/g, '')
+                .toLowerCase()
+                .trim();
+}
+
+        async function ensureObservationTypeId() {
+            logDetails('ensureObservationTypeId:start',
+  { cached: observationTypeId !== null, inflight: Boolean(observationTypeLookupPromise)
+  });
+            if (observationTypeId !== null) {
+                logDetails('ensureObservationTypeId:cacheHit',
+    { observationTypeId
+    });
+                return observationTypeId;
+  }
+            if (observationTypeLookupPromise) {
+                logDetails('ensureObservationTypeId:awaitInflight');
+                return observationTypeLookupPromise;
+  }
+
+            observationTypeLookupPromise = (async () => {
+                try {
+                    const registros = await fetchOptions('registros');
+                    const observation = (registros || []).find(item => {
+                        const label = normalizeString(item?.nome || item?.label);
+                        return label === 'observacao' || label === 'observaca';
+      });
+                    if (observation) {
+                        observationTypeId = observation.id;
+                        logDetails('ensureObservationTypeId:found',
+        { observationTypeId
+        });
+      } else {
+                        logDetails('ensureObservationTypeId:notFound');
+      }
+    } catch (error) {
+                    logDetails('ensureObservationTypeId:error',
+      { error
+      });
+    } finally {
+                    observationTypeLookupPromise = null;
+    }
+                return observationTypeId;
+  })();
+
+            return observationTypeLookupPromise;
+}
+
+        function getStatusActionDescription(caracteristica, isActive, friendlyName) {
+            const mapping = statusActionDescriptionMap[caracteristica
+  ];
+            if (mapping) {
+                return isActive ? mapping.on : mapping.off;
+  }
+            const label = friendlyName || caracteristica;
+            return 'Observacao automatica: acao ' + label + ' ' + (isActive ? 'ativada.' : 'desativada.');
+}
+
+        async function logObservationEvent(description) {
+            if (!description) {
+                return;
+  }
+            logDetails('logObservationEvent:start',
+  { description
+  });
+
+            try {
+                const eventPayload = {
+                    table: 'eventos',
+                    load: {
+                        animal_id: '${animal.animal_id
+        }',
+                        data_realizado: new Date().toISOString().split('T')[
+          0
+        ],
+                        descricao: description
+      }
+    };
+
+                const tipoId = await ensureObservationTypeId();
+                if (tipoId) {
+                    eventPayload.load.tipo_evento_id = tipoId;
+    }
+                logDetails('logObservationEvent:request', eventPayload);
+
+                const response = await fetch('/webhook/kaniu-salvar',
+    {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json'
+      },
+                    body: JSON.stringify(eventPayload)
+    });
+
+                if (!response.ok) {
+                    logDetails('logObservationEvent:httpError',
+      { status: response.status, statusText: response.statusText
+      });
+                    throw new Error('HTTP ' + response.status);
+    }
+
+                cachedData['eventos'
+    ] = null;
+
+                const eventosTabButton = document.querySelector('.tab-btn[data-tab="eventos"
+    ]');
+                if (eventosTabButton && eventosTabButton.classList.contains('active')) {
+                    await fetchTabData('eventos');
+    }
+                logDetails('logObservationEvent:success');
+  } catch (error) {
+                logDetails('logObservationEvent:error',
+    { error
+    });
+  }
+}
+
+function updateStatusActionButton(button, isActive) {
+  if (!button) return;
+  const activeState = Boolean(isActive);
+  button.classList.toggle('active', activeState);
+  button.dataset.state = activeState ? 'true' : 'false';
+
+  const tooltip = button.querySelector('.resume-action-tooltip');
+  if (tooltip) {
+    const activeText = button.getAttribute('data-tooltip-active');
+    const inactiveText = button.getAttribute('data-tooltip-inactive');
+    if (activeState && activeText) {
+      tooltip.textContent = activeText;
+    } else if (!activeState && inactiveText) {
+      tooltip.textContent = inactiveText;
+    }
+  }
+}
+
+function initStatusActionButtons() {
+  const buttons = document.querySelectorAll('.resume-action-icon[data-caracteristica
+  ]');
+  logDetails('initStatusActionButtons',
+  { count: buttons.length
+  });
+  buttons.forEach(button => {
+    const caracteristica = button.getAttribute('data-caracteristica');
+    const targetCaracteristica = button.getAttribute('data-target') || caracteristica;
+    const invertValue = button.getAttribute('data-invert') === 'true';
+    const friendlyName =
+      button.getAttribute('data-label') ||
+      caracteristica.charAt(0).toUpperCase() + caracteristica.slice(1);
+
+    // Garante estado inicial consistente nos atributos de dados
+    updateStatusActionButton(button, button.classList.contains('active'));
+
+    const handleToggle = async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (button.dataset.statusProcessing === 'true') return;
+      button.dataset.statusProcessing = 'true';
+
+      const currentState = button.dataset.state === 'true';
+      const newState = !currentState;
+      const valueToSend = invertValue ? !newState : newState;
+      logDetails('statusActionToggle:start',
+      { caracteristica, targetCaracteristica, currentState, newState, valueToSend
+      });
+
+      try {
+        await callAnimalUpdate(targetCaracteristica, Boolean(valueToSend));
+        updateStatusActionButton(button, newState);
+        showAlert(friendlyName + ' ' + (newState ? 'ativado' : 'desativado') + ' com sucesso!', 'success',
+        2000);
+        const description = getStatusActionDescription(caracteristica, newState, friendlyName);
+        void logObservationEvent(description);
+        logDetails('statusActionToggle:success',
+        { caracteristica, newState
+        });
+      } catch (error) {
+        logDetails('statusActionToggle:error',
+        { caracteristica, error
+        });
+        const message = (error && error.message) ? error.message : error;
+        showAlert('Erro ao atualizar ' + friendlyName + ': ' + message, 'error',
+        3000);
+      } finally {
+        delete button.dataset.statusProcessing;
+      }
+    };
+
+    button.addEventListener('click', handleToggle);
+    button.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        handleToggle(event);
+      }
+    });
+  });
+}
+
+        function initDatePopup() {
+            const nascimentoButton = document.getElementById("open-nascimento-menu");
+            const nascimentoPopup = document.getElementById("pop-up-nascimento");
+            const nascimentoInput = document.getElementById("nascimento-input");
+            const confirmNascimento = document.getElementById("confirm-nascimento");
+            const cancelNascimento = document.getElementById("cancel-nascimento");
+            const overlay = document.getElementById("overlay");
+            const popupActions = nascimentoPopup.querySelector('.pop-up-actions');
+
+            nascimentoButton.onclick = function () {
+                if (nascimentoButton.textContent !== "Definir Data") {
+                    nascimentoInput.value = nascimentoButton.textContent;
+    } else {
+                    nascimentoInput.value = "";
+    }
+    // Limpa a mensagem de erro ao abrir
+                clearErrorMessage();
+                overlay.style.display = "block";
+                nascimentoPopup.style.display = "flex";
+  };
+
+            function clearErrorMessage() {
+                const errorElement = nascimentoPopup.querySelector('.error-message-nascimento');
+                if (errorElement) {
+                    errorElement.remove();
+    }
+  }
+
+            function showErrorMessage(message) {
+                clearErrorMessage();
+                popupActions.insertAdjacentHTML('beforebegin', '<p class="error-message-nascimento" style="color:var(--primary-color); font-size: 0.8rem; text-align:center; margin-bottom: 5px;">' + message + '</p>');
+  }
+
+            function closeNascimentoPopup() {
+                clearErrorMessage();
+                overlay.style.display = "none";
+                nascimentoPopup.style.display = "none";
+  }
+
+            cancelNascimento.onclick = closeNascimentoPopup;
+
+            confirmNascimento.onclick = async function () {
+                const novaData = nascimentoInput.value;
+                if (!novaData) {
+                    showErrorMessage('Selecione uma data válida.');
+                    return;
+    }
+
+                try {
+                    await callAnimalUpdate('nascimento', novaData);
+                    nascimentoButton.textContent = novaData;
+                    showAlert("Data de nascimento atualizada com sucesso!");
+    } catch (error) {
+                    console.error('Erro ao atualizar data de nascimento', error);
+                    showAlert("Erro ao atualizar data de nascimento: " + (error?.message || error), 'error',
+      3000);
+    }
+
+                closeNascimentoPopup();
+  };
+
+            document.addEventListener("keydown", function (event) {
+                if (event.key !== "Escape" && event.key !== "Esc") {
+                    return;
+    }
+
+                const isVisible = (el) => !!el && window.getComputedStyle(el).display !== 'none';
+                const animaisPopup = document.getElementById('pop-up-animais');
+                const condicoesPopup = document.getElementById('pop-up-condicoes');
+                const avaliacaoPopup = document.getElementById('pop-up-avaliacao');
+
+                if (isVisible(animaisPopup) && typeof closeAnimaisPopup === 'function') {
+                    closeAnimaisPopup();
+                    return;
+    }
+
+                if (isVisible(condicoesPopup) && typeof closeCondicoesPopup === 'function') {
+                    closeCondicoesPopup(true);
+                    return;
+    }
+
+                if (isVisible(avaliacaoPopup) && typeof closeAvaliacaoPopup === 'function') {
+                    closeAvaliacaoPopup();
+    }
+
+                closeMenu();
+                closeNascimentoPopup();
+                closePesagemPopup();
+                closeHistoricoPopup();
+                closeTratamentoPopup();
+                cancelDelete();
+  });
+}
+
+        document.addEventListener('DOMContentLoaded', function () {
+            initTabs();
+            initDatePopup();
+            initStatusActionButtons();
+
+            document.getElementById('open-especie-menu').onclick = () => openMenu(${especies
+  }, document.getElementById('open-especie-menu'), 'especie', 'especie');
+            document.getElementById('open-raca-menu').onclick = () => openMenu(${racas
+  }, document.getElementById('open-raca-menu'), 'raca', 'raca');
+            document.getElementById('open-genero-menu').onclick = () => openMenu(${generos
+  }, document.getElementById('open-genero-menu'), 'genero', 'genero');
+            document.getElementById('open-porte-menu').onclick = () => openMenu(${portes
+  }, document.getElementById('open-porte-menu'), 'porte', 'porte');
+            document.getElementById('open-cor-menu').onclick = () => openMenu(${cores
+  }, document.getElementById('open-cor-menu'), 'cor', 'cor');
+            document.getElementById('open-pelagem-menu').onclick = () => openMenu(${pelagens
+  }, document.getElementById('open-pelagem-menu'), 'pelagem', 'pelagem');
+
+            // Configura os botões do pop-up de pesagem (MANTIDO CASO O POP-UP SEJA USADO PARA 'NOVO')
+            document.getElementById('confirm-pesagem').onclick = updatePesagemRecord;
+            document.getElementById('cancel-pesagem').onclick = closePesagemPopup;
+            document.getElementById('confirm-historico').onclick = saveHistoricoRecord;
+            document.getElementById('cancel-historico').onclick = closeHistoricoPopup;
+
+            // Permite atualizar a foto do animal ao clicar na imagem
+            const animalPhotoImg = document.getElementById('animal-photo');
+            const animalPhotoInput = document.getElementById('animal-photo-upload-input');
+            const uploadEndpoint = '/webhook/kaniu-image-save';
+
+            if (animalPhotoImg && animalPhotoInput) {
+                animalPhotoImg.style.cursor = 'pointer';
+
+                animalPhotoImg.addEventListener('click', () => {
+                    if (animalPhotoInput.disabled) {
+                        return;
+      }
+                    animalPhotoInput.click();
+    });
+
+                animalPhotoInput.addEventListener('change', async (event) => {
+                    const file = event.target.files && event.target.files[
+        0
+      ];
+                    if (!file) {
+                        return;
+      }
+
+                    if (file.type && !file.type.startsWith('image/')) {
+                        showAlert('Selecione um arquivo de imagem valido.', 'error',
+        3000);
+                        animalPhotoInput.value = '';
+                        return;
+      }
+
+                    animalPhotoInput.disabled = true;
+                    const previousOpacity = animalPhotoImg.style.opacity;
+                    animalPhotoImg.style.opacity = '0.6';
+                    showAlert('Enviando nova foto...', 'info',
+      2000);
+
+                    try {
+                        const formData = new FormData();
+                        formData.append('animal_id', '${animal.animal_id
+        }');
+                        formData.append('image', file, file.name);
+
+                        const response = await fetch(uploadEndpoint,
+        {
+                            method: 'POST',
+                            body: formData
+        });
+
+                        if (!response.ok) {
+                            throw new Error('Falha na requisicao: ' + response.status);
+        }
+
+                        let data = null;
+                        try {
+                            data = await response.json();
+        } catch (jsonError) {
+                            console.warn('[animal-photo-upload
+          ] Resposta sem JSON valido', jsonError);
+        }
+
+                        const newUrl = data && (data.imageUrl || data.url || data.image || data.path);
+                        if (newUrl) {
+                            animalPhotoImg.src = newUrl;
+        }
+
+                        showAlert('Foto enviada com sucesso.', 'success',
+        2500);
+      } catch (error) {
+                        console.error('[animal-photo-upload
+        ] Erro ao enviar foto', error);
+                        showAlert('Nao foi possivel enviar a foto.', 'error',
+        3000);
+      } finally {
+                        animalPhotoInput.value = '';
+                        animalPhotoInput.disabled = false;
+                        animalPhotoImg.style.opacity = previousOpacity;
+      }
+    });
+  }
+  // Carrega a guia de resumo por padrão
+            document.querySelector('[data-tab="resumo"
+  ]').click();
+});
+
+        function showAlert(message, type = 'success', duration = 1500) {
+            logDetails('showAlert',
+  { message, type, duration
+  });
+            const popup = document.getElementById('alert-popup');
+            const icon = document.getElementById('alert-icon');
+            const messageText = document.getElementById('alert-message');
+
+            // Limpa classes anteriores e adiciona a nova
+            popup.className = 'alert-popup';
+            popup.classList.add(type);
+            popup.classList.add('show');
+
+            // Define o texto da mensagem
+            messageText.textContent = message;
+
+            // Limpa e define o conteúdo do ícone
+  //icon.innerHTML = '';
+  //icon.classList.add(type);
+  // Define um temporizador para esconder o pop-up
+            setTimeout(() => {
+                popup.classList.remove('show');
+  }, duration);
+}
+// Função para simular o início da criação de um novo registro
+        function newRecord(tabId) {
+            showAlert('Iniciando a criação de um novo registro em: ' + tabId, 'info',
+  2500);
+            // Coloque aqui a lógica para abrir um pop-up/formulário 
+  // para a criação do novo item para a guia (tabId)
+}
+    </script>
+
+    <script>
+
+        let deleteContext = { tabId: null, recordId: null
+};
+
+        function confirmDelete(tabId, recordId) {
+            deleteContext.tabId = tabId;
+            deleteContext.recordId = recordId;
+
+            const overlay = document.getElementById('overlay');
+            const popup = document.getElementById('delete-confirmation-popup');
+
+            overlay.style.display = 'block';
+            popup.style.display = 'flex';
+}
+
+        function cancelDelete() {
+            deleteContext = { tabId: null, recordId: null
+  };
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('delete-confirmation-popup').style.display = 'none';
+}
+
+        async function executeDelete() {
+            if (!deleteContext.tabId || !deleteContext.recordId) {
+                cancelDelete();
+                return;
+  }
+
+            try {
+                const payload = {
+                    table: deleteContext.tabId,
+                    id: deleteContext.recordId
+    };
+
+                const response = await fetch('/webhook/kaniu-excluir',
+    {
+                    method: "POST",
+                    headers: {
+        "Content-Type": "application/json"
+      },
+                    body: JSON.stringify(payload)
+    });
+
+                if (!response.ok) throw new Error('Falha ao excluir o registro.');
+
+                showAlert('Registro excluído com sucesso!', 'success',
+    2000);
+                cachedData[deleteContext.tabId
+    ] = null;
+                await fetchTabData(deleteContext.tabId);
+  } catch (error) {
+                showAlert('Erro ao excluir: ' + error.message, 'error',
+    3000);
+  } finally {
+                cancelDelete();
+  }
+}
+
+    </script>
+
+    <script>
+        // ===========================
+// POPUP DE AVALIAÇÃO / ANAMNESE
+// ===========================
+
+        async function openAvaliacaoPopup(record = null) {
+            logDetails('openAvaliacaoPopup',
+  { record
+  });
+            const popup = document.getElementById('pop-up-avaliacao');
+            const overlay = document.getElementById('overlay');
+
+            // Limpa campos
+            document.querySelectorAll('#pop-up-avaliacao .date-input, #pop-up-avaliacao textarea').forEach(el => el.value = '');
+
+            if (record) {
+                document.getElementById('avaliacao-id').value = record.id || '';
+                document.getElementById('avaliacao-data').value = record.data || '';
+                document.getElementById('avaliacao-vet-select').value = record.veterinario_id || '';
+                document.getElementById('avaliacao-temp').value = record.Temperatura || '';
+                document.getElementById('avaliacao-peso').value = record.Peso || '';
+                document.getElementById('avaliacao-score').value = record.Score || '';
+                document.getElementById('avaliacao-observacao').value = record.Observação || '';
+                if (!parametros.length || !condicoes.length) {
+                  await loadParametrosECondicoes();
+    }
+                hydrateCondicoesSelecionadasFromIds(record.condicoes_ids || []);
+                renderCondicoesSelecionadas();
+  } else {
+                document.getElementById('avaliacao-id').value = '';
+                document.getElementById('avaliacao-data').value = new Date().toISOString().split('T')[
+      0
+    ];
+                condicoesSelecionadas = [];
+                renderCondicoesSelecionadas();
+  }
+
+            overlay.style.display = 'block';
+            popup.style.display = 'flex';
+}
+
+        function closeAvaliacaoPopup() {
+            logDetails('closeAvaliacaoPopup');
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('pop-up-avaliacao').style.display = 'none';
+}
+
+        async function saveAvaliacaoRecord() {
+            try {
+    // Validação
+                const data = document.getElementById('avaliacao-data').value;
+                const vet = document.getElementById('avaliacao-vet-select').value;
+                const temp = document.getElementById('avaliacao-temp').value;
+                const peso = document.getElementById('avaliacao-peso').value;
+                const score = document.getElementById('avaliacao-score').value;
+                const observacao = document.getElementById('avaliacao-observacao').value;
+                const id = document.getElementById('avaliacao-id').value;
+
+                if (!data || !vet) {
+                    showAlert('Preencha os campos obrigatórios.', 'error',
+      2000);
+                    return;
+    }
+
+                const condicaoIds = condicoesSelecionadas.map(c => c.id);
+
+                const payload = {
+                    table: 'avaliacoes', // anamneses
+                    load: {
+                        animal_id: '${animal.animal_id
+        }',
+                        data: data,
+                        veterinario_id: vet || null,
+                        temperatura: temp ? parseFloat(temp) : null,
+                        peso: peso ? parseFloat(peso) : null,
+                        score: score ? parseFloat(score) : null,
+                        observacao: observacao || '',
+                        condicoes_ids: condicaoIds
+      }
+    };
+
+                if (id) payload.load.id = parseInt(id);
+
+                const endpoint = id
+                    ? '/webhook/kaniu-atualizar'
+                    : '/webhook/kaniu-salvar';
+
+                const response = await fetch(endpoint,
+    {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json'
+      },
+                    body: JSON.stringify(payload)
+    });
+
+                if (!response.ok) throw new Error('Falha ao salvar avaliação.');
+
+                showAlert(id ? 'Avaliação atualizada com sucesso!' : 'Avaliação salva com sucesso!', 'success',
+    2000);
+
+                cachedData['avaliacoes'
+    ] = null;
+                await fetchTabData('avaliacoes');
+                closeAvaliacaoPopup();
+  } catch (err) {
+                console.error('Erro ao salvar avaliação:', err);
+                showAlert('Erro ao salvar avaliação: ' + err.message, 'error',
+    3000);
+  }
+}
+// ===========================
+// Inicialização
+// ===========================
+        document.addEventListener('DOMContentLoaded', async () => {
+  // Preenche veterinários dinamicamente
+            await populateSelect('avaliacao-vet-select', 'veterinarios');
+
+            document.getElementById('cancel-avaliacao').onclick = closeAvaliacaoPopup;
+            document.getElementById('confirm-avaliacao').onclick = saveAvaliacaoRecord;
+});
+
+        function normalizeImunizacaoDate(value) {
+            if (!value) {
+                return '';
+  }
+            if (typeof value === 'string') {
+                const parts = value.split('T');
+                return parts[
+      0
+    ];
+  }
+            return '';
+}
+
+        async function ensureImunizacaoOptions() {
+            if (imunizacaoOptionsLoaded) {
+                return;
+  }
+            if (imunizacaoOptionsPromise) {
+                await imunizacaoOptionsPromise;
+                return;
+  }
+
+            imunizacaoOptionsPromise = (async () => {
+                await Promise.all([
+                    populateSelect('imunizacao-tipo-select', 'imunizacao_tipo'),
+                    populateSelect('imunizacao-imunizante-select', 'imunizante'),
+                    populateSelect('imunizacao-vet-select', 'veterinarios')
+    ]);
+                imunizacaoOptionsLoaded = true;
+  })();
+
+            try {
+                await imunizacaoOptionsPromise;
+  } catch (error) {
+                console.error('Erro ao carregar opções de imunização:', error);
+                showAlert('Não foi possível carregar as opções de imunização.', 'error',
+    3000);
+                throw error;
+  } finally {
+                imunizacaoOptionsPromise = null;
+  }
+}
+
+        async function openImunizacaoPopup(record = null) {
+            try {
+                await ensureImunizacaoOptions();
+  } catch {
+                return;
+  }
+
+            resetFieldBorders('pop-up-imunizacao');
+
+            const overlay = document.getElementById('overlay');
+            const popup = document.getElementById('pop-up-imunizacao');
+
+            const idInput = document.getElementById('imunizacao-id');
+            const dataPrevistaInput = document.getElementById('imunizacao-data-prevista');
+            const dataRealizadaInput = document.getElementById('imunizacao-data-realizada');
+            const tipoSelect = document.getElementById('imunizacao-tipo-select');
+            const imunizanteSelect = document.getElementById('imunizacao-imunizante-select');
+            const vetSelect = document.getElementById('imunizacao-vet-select');
+            const descricaoInput = document.getElementById('imunizacao-descricao-input');
+            const observacaoInput = document.getElementById('imunizacao-observacao-input');
+            const aplicadaCheckbox = document.getElementById('imunizacao-aplicada-checkbox');
+
+            if (record) {
+                idInput.value = record.id != null ? String(record.id) : '';
+                dataPrevistaInput.value = normalizeImunizacaoDate(
+                    record.data_prevista || record.data_previsto || record.data_programada || record.data
+                );
+                dataRealizadaInput.value = normalizeImunizacaoDate(
+                    record.data_realizada || record.data_realizado || record.data_aplicada
+                );
+                tipoSelect.value = record.tipo_id || record.tipo || '';
+
+                const imunizanteValue = record.imunizante_id ?? record.imunizante;
+                imunizanteSelect.value = imunizanteValue != null ? String(imunizanteValue) : '';
+
+                const vetValue = record.veterinario_id || record.veterinario;
+                vetSelect.value = vetValue || '';
+
+                descricaoInput.value = record.descricao || record['Descrição'
+    ] || '';
+                observacaoInput.value = record.observacao || record.observacao_texto || record['Observações'
+    ] || '';
+
+                const appliedValue = record.aplicada;
+                aplicadaCheckbox.checked = appliedValue === true
+                    || appliedValue === 'Sim'
+                    || appliedValue === 'true'
+                    || appliedValue === 'Aplicada'
+                    || appliedValue === 1;
+  } else {
+                idInput.value = '';
+                const today = new Date().toISOString().split('T')[
+      0
+    ];
+                dataPrevistaInput.value = today;
+                dataRealizadaInput.value = '';
+                tipoSelect.value = '';
+                imunizanteSelect.value = '';
+                vetSelect.value = '';
+                descricaoInput.value = '';
+                observacaoInput.value = '';
+                aplicadaCheckbox.checked = false;
+  }
+
+            overlay.style.display = 'block';
+            popup.style.display = 'flex';
+}
+
+        function closeImunizacaoPopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('pop-up-imunizacao').style.display = 'none';
+}
+
+        async function saveImunizacaoRecord() {
+            try {
+                const id = document.getElementById('imunizacao-id').value;
+                const dataPrevistaInput = document.getElementById('imunizacao-data-prevista');
+                const dataRealizadaInput = document.getElementById('imunizacao-data-realizada');
+                const tipoSelect = document.getElementById('imunizacao-tipo-select');
+                const imunizanteSelect = document.getElementById('imunizacao-imunizante-select');
+                const vetSelect = document.getElementById('imunizacao-vet-select');
+                const descricaoInput = document.getElementById('imunizacao-descricao-input');
+                const observacaoInput = document.getElementById('imunizacao-observacao-input');
+                const aplicadaCheckbox = document.getElementById('imunizacao-aplicada-checkbox');
+
+                const requiredFields = [tipoSelect, imunizanteSelect, dataPrevistaInput
+    ];
+                if (aplicadaCheckbox.checked) {
+                    requiredFields.push(dataRealizadaInput);
+    }
+
+                let allValid = true;
+                requiredFields.forEach(field => {
+                    if (!field) {
+                        return;
+      }
+                    const value = field.value?.trim?.() || '';
+                    if (!value) {
+                        field.style.border = '1px solid #d9534f';
+                        allValid = false;
+                        field.addEventListener('input', () => {
+                            field.style.border = '1px solid var(--border-color)';
+        },
+        { once: true
+        });
+      } else {
+                        field.style.border = '1px solid var(--border-color)';
+      }
+    });
+
+                if (!allValid) {
+                    showAlert('Preencha os campos obrigatórios.', 'error',
+      2500);
+                    return;
+    }
+
+                const payload = {
+                    table: 'imunizacoes',
+                    load: {
+                        animal_id: '${animal.animal_id
+        }',
+                        tipo: tipoSelect.value || null,
+                        imunizante_id: imunizanteSelect.value ? parseInt(imunizanteSelect.value,
+        10) : null,
+                        veterinario_id: vetSelect.value || null,
+                        data_previsto: dataPrevistaInput.value || null,
+                        data_realizado: dataRealizadaInput.value || null,
+                        descricao: descricaoInput.value.trim() || '',
+                        observacao: observacaoInput.value.trim() || '',
+                        aplicada: aplicadaCheckbox.checked
+      }
+    };
+
+                if (id) {
+                    payload.load.id = parseInt(id,
+      10);
+    }
+
+                const endpoint = id ? '/webhook/kaniu-atualizar' : '/webhook/kaniu-salvar';
+
+                const response = await fetch(endpoint,
+    {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json'
+      },
+                    body: JSON.stringify(payload)
+    });
+
+                if (!response.ok) {
+                    throw new Error('Falha ao salvar o registro de imunização. Código: ' + response.status);
+    }
+
+                showAlert(id ? 'Imunização atualizada com sucesso!' : 'Imunização registrada com sucesso!', 'success',
+    2000);
+                cachedData['imunizacoes'
+    ] = null;
+                await fetchTabData('imunizacoes');
+                closeImunizacaoPopup();
+  } catch (error) {
+                console.error('Erro ao salvar imunização:', error);
+                showAlert('Erro ao salvar imunização: ' + error.message, 'error',
+    3000);
+  }
+}
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cancelButton = document.getElementById('cancel-imunizacao');
+            const confirmButton = document.getElementById('confirm-imunizacao');
+            const appliedCheckbox = document.getElementById('imunizacao-aplicada-checkbox');
+            const appliedDateInput = document.getElementById('imunizacao-data-realizada');
+
+            if (cancelButton) {
+                cancelButton.onclick = closeImunizacaoPopup;
+  }
+            if (confirmButton) {
+                confirmButton.onclick = saveImunizacaoRecord;
+  }
+            if (appliedCheckbox && appliedDateInput) {
+                appliedCheckbox.addEventListener('change', () => {
+                    if (!appliedCheckbox.checked) {
+                        appliedDateInput.style.border = '1px solid var(--border-color)';
+      }
+    });
+  }
+});
+
+        document.addEventListener('DOMContentLoaded', () => {
+            ensureImunizacaoOptions().catch(() => {});
+});
+
+        /****************************
+         * Popup de novo tratamento 
+         ****************************/
+
+        function openTratamentoPopup(record = null) {
+  //console.log('openTratamentoPopup::', ' record:', record);
+            const popup = document.getElementById('pop-up-tratamento');
+            const overlay = document.getElementById('overlay');
+
+            if (record) {
+    // Preenche campos para edição
+                document.getElementById('tratamento-id').value = record.id || '';
+
+                // Seleciona as opções correspondentes nos combos
+                document.getElementById('tratamento-vet-select').value = record.veterinario_id || '';
+                document.getElementById('tratamento-med-select').value = record.medicamento_id || '';
+                document.getElementById('tratamento-via-select').value = record.via_id || '';
+                document.getElementById('tratamento-dosagem-select').value = record.dosagem_id || '';
+
+                // Fração x Dose
+                const fracaoCheckbox = document.getElementById('tratamento-fracao');
+                const isFracao = record.fracao_id;
+
+                fracaoCheckbox.checked = isFracao;
+                //console.log('--> createDoseInput:: isFracao: ', isFracao, ' | dose: ', record.Dose)
+    //console.log('--> record: ', record);
+                createDoseInput(isFracao, record.Dose);
+
+                // Data início, horário e intervalo
+                document.getElementById('tratamento-inicio-input').value = record.data || '';
+                document.getElementById('tratamento-horario-input').value = record.horario_id || '';
+                document.getElementById('tratamento-intervalo-select').value = record.intervalo_id || '';
+
+                // Duração / contínuo (nova lógica com continuo_id)
+                const chkContinuo = document.getElementById('tratamento-continuo');
+                const diasInput = document.getElementById('tratamento-dias-input');
+                const diasWrapper = document.getElementById('tratamento-dias-wrapper');
+
+                chkContinuo.checked = !!record.continuo_id;
+
+                if (record.continuo_id) {
+                    diasInput.value = ''; // limpa o campo de dias quando contínuo
+                    diasWrapper.style.display = 'none';
+    } else {
+                    diasInput.value = record.duracao_id || '';
+                    diasWrapper.style.display = 'block';
+    }
+    // Observações
+                document.getElementById('tratamento-observacoes-input').value = record.Observações || '';
+  } else {
+    // Novo registro
+                document.getElementById('tratamento-id').value = '';
+                document.getElementById('tratamento-vet-select').value = '';
+                document.getElementById('tratamento-med-select').value = '';
+                document.getElementById('tratamento-via-select').value = '';
+                document.getElementById('tratamento-dosagem-select').value = '';
+                document.getElementById('tratamento-fracao').checked = false;
+                createDoseInput(false);
+
+                const hoje = new Date().toISOString().split('T')[
+      0
+    ];
+                document.getElementById('tratamento-inicio-input').value = hoje;
+                document.getElementById('tratamento-horario-input').value = '08: 00';
+                document.getElementById('tratamento-intervalo-select').value = '';
+                document.getElementById('tratamento-continuo').checked = false;
+                document.getElementById('tratamento-dias-input').value = '';
+                document.getElementById('tratamento-observacoes-input').value = '';
+  }
+
+            overlay.style.display = 'block';
+            popup.style.display = 'flex';
+}
+
+        const doseFractionOptions = [
+            '1/8',
+            '1/6',
+            '1/4',
+            '1/3',
+            '1/2',
+            '2/3',
+            '3/4'
+];
+
+        function createDoseInput(isFraction, initialValue = null) {
+  //console.log('createDoseInput:: isFraction', isFraction);
+  //console.log('createDoseInput:: initialValue', initialValue);
+            const wrapper = document.getElementById('tratamento-dose-wrapper');
+            wrapper.innerHTML = '';
+            const normalizedInitialValue = (initialValue ?? '').toString().trim();
+            if (isFraction) {
+                const select = document.createElement('select');
+                select.className = 'date-input';
+                select.id = 'tratamento-dose-select';
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = 'Selecione...';
+                select.appendChild(placeholderOption);
+
+                const options = [...doseFractionOptions
+    ];
+                if (normalizedInitialValue && !options.includes(normalizedInitialValue)) {
+                    options.push(normalizedInitialValue);
+    }
+
+                options.forEach(optText => {
+                    const opt = document.createElement('option');
+                    opt.value = optText;
+                    opt.textContent = optText;
+                    select.appendChild(opt);
+    });
+                wrapper.appendChild(select);
+                if (normalizedInitialValue) {
+                    select.value = normalizedInitialValue;
+    }
+  } else {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.step = '0.1';
+                input.id = 'tratamento-dose-input';
+                input.className = 'date-input';
+                wrapper.appendChild(input);
+                if (normalizedInitialValue !== '') {
+                    input.value = normalizedInitialValue;
+    }
+  }
+}
+
+
+        function closeTratamentoPopup() {
+            const popup = document.getElementById('pop-up-tratamento');
+            const overlay = document.getElementById('overlay');
+
+            // Fecha popup e overlay
+            popup.style.display = 'none';
+            overlay.style.display = 'none';
+
+            // Limpa todos os campos destacados em vermelho
+            document.querySelectorAll('.date-input').forEach(el => {
+                el.style.border = '1px solid var(--border-color)';
+  });
+
+            // (opcional) limpa também o campo de observações e valores temporários
+            document.querySelectorAll('#pop-up-tratamento input, #pop-up-tratamento select, #pop-up-tratamento textarea').forEach(el => {
+                el.style.border = '1px solid var(--border-color)';
+  });
+}
+// Associa os botões ao popup
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('cancel-tratamento').onclick = closeTratamentoPopup;
+            document.getElementById('confirm-tratamento').onclick = saveTratamentoRecord;
+});
+    </script>
+
+    <script>
+        // cache e fila global
+        const fetchPromises = {};
+
+        async function fetchOptions(table) {
+            logDetails('fetchOptions:start',
+  { table, cached: Boolean(cachedData[table
+    ]), inflight: Boolean(fetchPromises[table
+    ])
+  });
+            // já em cache?
+            if (cachedData[table
+  ]) {
+                logDetails('fetchOptions:cacheHit',
+    { table
+    });
+                return cachedData[table
+    ];
+  }
+  // já existe uma requisição em andamento? aguarda ela
+            if (fetchPromises[table
+  ]) {
+                logDetails('fetchOptions:awaitInflight',
+    { table
+    });
+                return await fetchPromises[table
+    ];
+  }
+  // inicia uma nova requisição e guarda a promise
+            fetchPromises[table
+  ] = (async () => {
+                const url = '/webhook/kaniu-data-tables';
+                const payload = { table, canil_id: ${canil_id
+      }
+    };
+
+            const response = await fetch(url,
+    {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json'
+      },
+                body: JSON.stringify(payload)
+    });
+            logDetails('fetchOptions:responseStatus',
+    { table, status: response.status
+    });
+
+            const rawText = await response.text();
+            const trimmedText = rawText.trim();
+
+            if (!response.ok) {
+                throw new Error('Falha ao carregar "' + table + '" (HTTP ' + response.status + ').');
+    }
+            if (!trimmedText) return [];
+
+            try {
+                const data = JSON.parse(trimmedText);
+                const items = Array.isArray(data) ? (data[
+        0
+      ]?.items || []) : (data.items || []);
+
+                cachedData[table
+      ] = items;
+                logDetails('fetchOptions:parsed',
+      { table, count: items.length
+      });
+                return items;
+    } catch (parseError) {
+                logDetails('fetchOptions:parseError',
+      { table, error: parseError, raw: trimmedText
+      });
+                throw new Error('Erro ao carregar "' + table + '".');
+    }
+  })();
+
+        try {
+            const result = await fetchPromises[table
+    ];
+            logDetails('fetchOptions:resolved',
+    { table, count: Array.isArray(result) ? result.length : null
+    });
+            return result;
+  } finally {
+    // limpa a fila, mantendo apenas o cache
+            delete fetchPromises[table
+    ];
+            logDetails('fetchOptions:cleanup',
+    { table
+    });
+  }
+}
+    </script>
+
+
+    <script>
+
+        async function populateSelect(selectId, table) {
+            logDetails('populateSelect:start',
+  { selectId, table
+  });
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">Selecione...</option>';
+
+            const items = await fetchOptions(table);
+            logDetails('populateSelect:data',
+  { selectId, table, count: items.length
+  });
+
+            items.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.id; // valor sempre = id
+                opt.textContent = item.nome; // texto sempre = nome
+                select.appendChild(opt);
+  });
+            logDetails('populateSelect:completed',
+  { selectId, table
+  });
+}
+
+        async function initHistoricoPopup() {
+            try {
+                await Promise.all([
+                    populateSelect('historico-tipo-select', 'registros'),
+                    populateSelect('historico-vet-select', 'veterinarios')
+    ]);
+                logDetails('initHistoricoPopup:ready');
+  } catch (error) {
+                logDetails('initHistoricoPopup:error',
+    { error
+    });
+                showAlert('Não foi possível carregar os dados do histórico.', 'error',
+    3000);
+  }
+}
+
+        async function saveHistoricoRecord() {
+            try {
+    // Limpa bordas
+                document.querySelectorAll('#pop-up-historico .date-input').forEach(el => {
+                    el.style.border = '1px solid var(--border-color)';
+    });
+
+                const id = document.getElementById('historico-id').value;
+                const dataInput = document.getElementById('historico-data-input');
+                const tipoSelect = document.getElementById('historico-tipo-select');
+                const vetSelect = document.getElementById('historico-vet-select');
+                const descricaoInput = document.getElementById('historico-descricao-input');
+
+                const requiredFields = [dataInput, tipoSelect, descricaoInput
+    ];
+                let allValid = true;
+
+                requiredFields.forEach(el => {
+                    if (!el) return;
+                    const value = el.value?.trim?.() || '';
+
+                    if (!value) {
+                        el.style.border = '1px solid #d9534f';
+                        allValid = false;
+      } else {
+                        el.style.border = '1px solid var(--border-color)';
+      }
+
+                    el.addEventListener('input', () => {
+                        el.style.border = '1px solid var(--border-color)';
+      },
+      { once: true
+      });
+    });
+
+                if (!allValid) {
+                    showAlert('Preencha todos os campos obrigatórios.', 'error',
+      2500);
+                    return;
+    }
+    // Payload final É ENVIADO EXATAMENTE COMO O NÓ Add Evento ESPERA
+                const payload = {
+                    table: 'eventos',
+                    load: {
+                        animal_id: '${animal.animal_id
+        }',
+                        data_realizado: dataInput.value,
+                        descricao: descricaoInput.value.trim(),
+                        tipo_evento_id: tipoSelect.value ? tipoSelect.value : null,
+                        veterinario_id: vetSelect.value ? vetSelect.value : null
+      }
+    };
+
+                if (id) payload.load.id = parseInt(id);
+
+                const endpoint = id
+                    ? '/webhook/kaniu-atualizar'
+                    : '/webhook/kaniu-salvar';
+
+                const response = await fetch(endpoint,
+    {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json'
+      },
+                    body: JSON.stringify(payload)
+    });
+
+                if (!response.ok) throw new Error('Falha ao salvar o evento. Código: ' + response.status);
+
+                showAlert(id ? 'histórico atualizado com sucesso!' : 'histórico salvo com sucesso!', 'success',
+    2000);
+                cachedData['eventos'
+    ] = null;
+                await fetchTabData('eventos');
+                closeHistoricoPopup();
+  } catch (error) {
+                console.error('Erro ao salvar evento:', error);
+                showAlert('Erro ao salvar evento: ' + error.message, 'error',
+    3000);
+  }
+}
+
+
+        function closeTratamentoPopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('pop-up-tratamento').style.display = 'none';
+}
+
+        async function initTratamentoPopup() {
+  // Combos dinâmicos
+            await populateSelect('tratamento-vet-select', 'veterinarios');
+            await populateSelect('tratamento-med-select', 'medicamentos');
+            await populateSelect('tratamento-via-select', 'vias', 'id');
+            await populateSelect('tratamento-dosagem-select', 'dosagens', 'id');
+
+            // Intervalos fixos
+            const intervalos = [
+    1,
+    2,
+    4,
+    6,
+    8,
+    12,
+    24,
+    36,
+    48,
+    72
+  ];
+            const intervaloSelect = document.getElementById('tratamento-intervalo-select');
+            intervalos.forEach(i => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = i + ' h';
+                intervaloSelect.appendChild(opt);
+  });
+
+            // Dose dinâmica
+            const fracaoCheckbox = document.getElementById('tratamento-fracao');
+            fracaoCheckbox.addEventListener('change', () => createDoseInput(fracaoCheckbox.checked));
+            createDoseInput(false);
+
+            // Botões
+            document.getElementById('cancel-tratamento').onclick = closeTratamentoPopup;
+            document.getElementById('confirm-tratamento').onclick = saveTratamentoRecord;
+}
+
+        async function saveTratamentoRecord() {
+            try {
+    // Limpa destaques anteriores
+                document.querySelectorAll('.date-input').forEach(el => {
+                    el.style.border = '1px solid var(--border-color)';
+    });
+
+                // 1º Coleta os valores
+                const id = document.getElementById('tratamento-id').value;
+                const veterinario = document.getElementById('tratamento-vet-select');
+                const medicamento = document.getElementById('tratamento-med-select');
+                const via = document.getElementById('tratamento-via-select');
+                const dosagem = document.getElementById('tratamento-dosagem-select');
+                const intervalo = document.getElementById('tratamento-intervalo-select');
+                const inicio = document.getElementById('tratamento-inicio-input');
+                const horario = document.getElementById('tratamento-horario-input');
+                const descricao = document.getElementById('tratamento-observacoes-input');
+                const chkContinuo = document.getElementById('tratamento-continuo');
+                const duracaoInput = document.getElementById('tratamento-dias-input');
+                const isFraction = document.getElementById('tratamento-fracao').checked;
+
+                let dose = '';
+                const doseSelect = document.getElementById('tratamento-dose-select');
+                const doseInput = document.getElementById('tratamento-dose-input');
+                if (isFraction && doseSelect) dose = doseSelect.value;
+                if (!isFraction && doseInput) dose = doseInput.value;
+
+                // 2º Campos obrigatórios
+                const requiredFields = [
+                    veterinario, medicamento, via, dosagem,
+                    inicio, horario, intervalo
+    ];
+
+                if (isFraction) {
+                    if (!doseSelect || !doseSelect.value) requiredFields.push(document.getElementById('tratamento-dose-wrapper'));
+    } else {
+                    if (!doseInput || !doseInput.value) requiredFields.push(document.getElementById('tratamento-dose-wrapper'));
+    }
+
+                if (!chkContinuo.checked) requiredFields.push(duracaoInput);
+
+                // 3º Validação visual
+                let allValid = true;
+
+                requiredFields.forEach(el => {
+                    if (!el) return;
+
+                    // Se for o wrapper do campo de dose, pega o input/select interno
+                    let targetEl = el;
+                    if (el.id === 'tratamento-dose-wrapper') {
+                        targetEl = el.querySelector('input, select');
+      }
+
+                    const value = targetEl?.value?.trim?.() || '';
+                    const isInvalid = !value || value === 'null' || value === 'undefined';
+
+                    if (isInvalid) {
+                        targetEl.style.border = '1px solid #d9534f';
+                        allValid = false;
+      } else {
+                        targetEl.style.border = '1px solid var(--border-color)';
+      }
+      // Remove o destaque ao corrigir
+                    targetEl.addEventListener('input', () => {
+                        targetEl.style.border = '1px solid var(--border-color)';
+      },
+      { once: true
+      });
+    });
+
+                if (!allValid) {
+                    showAlert('Preencha todos os campos obrigatórios.', 'error',
+      2500);
+                    return;
+    }
+    // 4º Monta payload
+                const payload = {
+                    table: 'tratamentos',
+                    load: {
+                        animal_id: '${animal.animal_id
+        }',
+                        veterinario_id: veterinario.value || null,
+                        inicio: inicio.value || null,
+                        inicio_horario: horario.value || null,
+                        medicamento: medicamento.value ? parseInt(medicamento.value) : null,
+                        via: via.value || '',
+                        dosagem: dosagem.value || '',
+                        intervalo_horas: intervalo.value ? parseInt(intervalo.value) : null,
+                        descricao: descricao.value.trim() || '',
+                        continuo: chkContinuo.checked,
+                        duracao_dias: chkContinuo.checked ? null : (duracaoInput.value ? parseInt(duracaoInput.value) : null),
+                        dose: dose || '',
+                        finalizada: false,
+                        salva: true
+      }
+    };
+
+                if (id) payload.load.id = parseInt(id);
+
+                logDetails('saveTratamentoRecord:submit', payload);
+
+                // 5º Envio CORRIGIDO
+                const endpoint = id
+                    ? '/webhook/kaniu-atualizar' // ⇦ EDITAR
+                    : '/webhook/kaniu-salvar'; // ⇦ NOVO
+
+                const response = await fetch(endpoint,
+    {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json'
+      },
+                    body: JSON.stringify(payload)
+    });
+
+
+                if (!response.ok) throw new Error('Falha ao salvar a prescrição. Código: ' + response.status);
+
+                showAlert(id ? 'Tratamento atualizado com sucesso!' : 'Tratamento salvo com sucesso!', 'success',
+    2000);
+                cachedData['tratamentos'
+    ] = null;
+                await fetchTabData('tratamentos');
+                closeTratamentoPopup();
+  } catch (error) {
+                console.error('Erro ao salvar tratamento:', error);
+                showAlert('Erro ao salvar tratamento: ' + error.message, 'error',
+    3000);
+  }
+}
+
+
+        document.addEventListener('DOMContentLoaded', initHistoricoPopup);
+        document.addEventListener('DOMContentLoaded', initTratamentoPopup);
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chkContinuo = document.getElementById('tratamento-continuo');
+            const diasWrapper = document.getElementById('tratamento-dias-wrapper');
+            const diasInput = document.getElementById('tratamento-dias-input');
+
+            function toggleDiasField() {
+                if (chkContinuo.checked) {
+                    diasWrapper.style.display = 'none';
+                    diasInput.value = 9999; // valor especial para submissão
+    } else {
+                    diasWrapper.style.display = 'block';
+                    diasInput.value = ''; // limpa quando desmarca
+    }
+  }
+
+            chkContinuo.addEventListener('change', toggleDiasField);
+
+            // estado inicial
+            toggleDiasField();
+});
+
+        // Função para tratar o clique em um tratamento existente
+        function handleTratamentoClick(rowElement) {
+            const itemDataString = rowElement.getAttribute('data-record');
+            const safeJsonString = itemDataString.replace(/&quot;/g, '"');
+            const record = JSON.parse(safeJsonString);
+
+            openTratamentoPopup(record);
+}
+
+        function resetFieldBorders(containerId) {
+            document.querySelectorAll('#' + containerId + ' input, #' + containerId + ' select, #' + containerId + ' textarea').forEach(el => {
+                el.style.border = '1px solid var(--border-color)';
+  });
+}
+
+    </script>
+
+    <script>
+        let condicoes = [];
+        let parametros = [];
+        let condicoesSelecionadas = [];
+
+        // ===================================================
+// ABRIR POPUP
+// ===================================================
+        async function openCondicoesPopup() {
+            const overlay = document.getElementById('overlay');
+            const popupCond = document.getElementById('pop-up-condicoes');
+            const popupAvaliacao = document.getElementById('pop-up-avaliacao');
+
+            // Oculta popup principal
+            popupAvaliacao.style.display = 'none';
+
+            // Busca os dados apenas uma vez
+            if (!parametros.length || !condicoes.length) {
+                await loadParametrosECondicoes();
+  }
+
+            renderParametrosList();
+
+            overlay.style.display = 'block';
+            popupCond.style.display = 'flex';
+}
+// ===================================================
+// FECHAR POPUP
+// ===================================================
+        function closeCondicoesPopup(returnToAvaliacao = true) {
+            const condicoesPopup = document.getElementById('pop-up-condicoes');
+            const avaliacaoPopup = document.getElementById('pop-up-avaliacao');
+            const overlay = document.getElementById('overlay');
+
+            if (condicoesPopup) {
+                condicoesPopup.style.display = 'none';
+  }
+
+            if (returnToAvaliacao) {
+                if (avaliacaoPopup) {
+                    avaliacaoPopup.style.display = 'flex'; // reexibe popup de avaliação
+    }
+                if (overlay) {
+                    overlay.style.display = 'block';
+    }
+  } else {
+                if (avaliacaoPopup) {
+                    avaliacaoPopup.style.display = 'none';
+    }
+                if (overlay) {
+                    overlay.style.display = 'none';
+    }
+  }
+}
+// ===================================================
+// CARREGAR PARÂMETROS E CONDIÇÕES DO ENDPOINT
+// ===================================================
+        async function loadParametrosECondicoes() {
+            try {
+                const [respParam, respCond
+    ] = await Promise.all([
+                    fetchOptions('parametros'),
+                    fetchOptions('condicoes')
+    ]);
+
+                // Agora respParam e respCond já são arrays de itens normalizados
+                parametros = respParam || [];
+                condicoes = respCond || [];
+
+                // Ordenações (opcional)
+                parametros.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+                condicoes.sort((a, b) => (a.parametro || '').localeCompare(b.parametro || ''));
+  } catch (err) {
+                console.error('Erro ao carregar PARÂMETROS/CONDIÇÕES:', err);
+                showAlert('Falha ao carregar PARÂMETROS e CONDIÇÕES.', 'error',
+    2500);
+  }
+}
+
+
+        let parametroSelecionado = null;
+
+        // ===================================================
+// RENDERIZAR LISTA DE PARÂMETROS
+// ===================================================
+        function renderParametrosList() {
+            const container = document.getElementById('parametros-list');
+            container.innerHTML = '';
+
+            if (!parametros.length) {
+                container.innerHTML =
+                    '<p style="color: var(--text-light); font-size: 0.85rem;">Nenhum parâmetro encontrado.</p>';
+                return;
+  }
+
+            parametros.forEach(param => {
+                const div = document.createElement('div');
+                div.className = 'pop-up-option';
+                div.textContent = param.nome;
+
+                // marca como ativo
+                if (parametroSelecionado && parametroSelecionado === param.nome) {
+                    div.classList.add('parametro-ativo');
+    }
+
+                div.onclick = () => {
+                    parametroSelecionado = param.nome;
+                    renderParametrosList(); // re-renderiza pra destacar o ativo
+                    renderCondicoesList(param.nome);
+    };
+
+                container.appendChild(div);
+  });
+}
+// ===================================================
+// RENDERIZAR LISTA DE CONDIÇÕES DO PARÂMETRO
+// ===================================================
+        function renderCondicoesList(parametroNome) {
+          const container = document.getElementById('condicoes-list');
+          container.innerHTML = '';
+        
+          const condsFiltradas = condicoes
+            .filter(c => c.parametro === parametroNome)
+            .sort((a, b) => (Number(a.valor) || 0) - (Number(b.valor) || 0));
+        
+          if (!condsFiltradas.length) {
+            container.innerHTML = '<p style="color: var(--text-light); font-size: 0.85rem;">Nenhuma condição cadastrada.</p>';
+            return;
+  }
+        
+          condsFiltradas.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'condicao-item';
+            div.textContent = c.nome;
+        
+            const valor = Number(c.valor) || 0;
+            const baseColor = c.negativo ? '255,
+    0,
+    0' : '0,
+    128,
+    0';
+            const alpha = c.negativo ? Math.min(0.2 + valor * 0.15,
+    0.8) : 0.15 + valor * 0.05;
+        
+            div.style.backgroundColor = 'rgba(' + baseColor + ', ' + alpha + ')';
+            div.onclick = function () { selectCondicao(c);
+    };
+        
+            container.appendChild(div);
+  });
+}
+// ===================================================
+// SELECIONAR CONDIÇÃO
+// ===================================================
+        function selectCondicao(cond) {
+          if (condicoesSelecionadas.some(c => c.id === parseInt(cond.id))) {
+            showAlert('Condição já adicionada.', 'info',
+    1500);
+            return;
+  }
+        
+          condicoesSelecionadas.push({
+            id: parseInt(cond.id),
+            nome: cond.nome,
+            parametro: cond.parametro,
+    // garanta que estes dois venham do master:
+            negativo: !!cond.negativo,
+            valor: Number(cond.valor) || 0
+  });
+        
+          renderCondicoesSelecionadas();
+          closeCondicoesPopup();
+}
+
+        function hydrateCondicoesSelecionadasFromIds(ids) {
+          if (!Array.isArray(ids)) { condicoesSelecionadas = []; return;
+  }
+  // garanta que a lista mestre 'condicoes' já foi carregada:
+          const mapa = new Map(condicoes.map(c => [parseInt(c.id), c
+  ]));
+          condicoesSelecionadas = ids
+            .map(id => mapa.get(parseInt(id)))
+            .filter(Boolean)
+            .map(c => ({
+              id: parseInt(c.id),
+              nome: c.nome,
+              parametro: c.parametro,
+              negativo: !!c.negativo,
+              valor: Number(c.valor) || 0
+  }));
+}
+// ===================================================
+// RENDERIZAR CONDIÇÕES SELECIONADAS NA AVALIAÇÃO
+// ===================================================
+        function renderCondicoesSelecionadas() {
+            const container = document.getElementById('condicoes-selecionadas');
+            if (!container) return;
+        
+            container.innerHTML = ''; // limpa badges anteriores
+        
+            // Ordena por valor
+            const lista = condicoesSelecionadas.sort((a, b) => a.valor - b.valor);
+        
+            lista.forEach(cond => {
+                const badge = document.createElement('div');
+                badge.className = 'condicao-badge';
+        
+                const valor = Number(cond.valor) || 0;
+                const baseColor = cond.negativo ? '255,
+    0,
+    0' : '0,
+    128,
+    0';
+                const alpha = cond.negativo
+                    ? Math.min(0.2 + valor * 0.15,
+    0.8)
+                    : 0.15 + valor * 0.05;
+        
+                badge.style.backgroundColor = 'rgba(' + baseColor + ', ' + alpha + ')';
+        
+                badge.innerHTML =
+                    (cond.parametro ? '<strong>' + cond.parametro + ':</strong> ' : '') +
+                    cond.nome +
+                    ' <i class="fa-solid fa-xmark" title="Remover" style="margin-left:6px; cursor:pointer;" onclick="removeCondicao(' +
+                    cond.id +
+                    ')"></i>';
+        
+                container.appendChild(badge);
+  });
+}
+// ===================================================
+// REMOVER CONDIÇÃO
+// ===================================================
+        function removeCondicao(id) {
+            condicoesSelecionadas = condicoesSelecionadas.filter(c => c.id !== id);
+            renderCondicoesSelecionadas();
+}
+// ===================================================
+// INICIALIZAÇÃO
+// ===================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            const addButton = document.getElementById('add-condicao-button');
+            if (addButton) addButton.onclick = openCondicoesPopup;
+});
+    </script>
+
+    <script>
+        const animalsStatusFilters = [
+  { status: 'Abrigado', label: 'Abrigados'
+  },
+  { status: 'Adotado', label: 'Adotados'
+  },
+  { status: 'Internado', label: 'Internados'
+  }
+];
+
+        const animalsPopupCache = {};
+        let currentAnimalsFilter = null;
+        let animalsFiltersInitialized = false;
+        const animalsListPageUrl = '${app_url ? app_url.replace(/\\/g, '\\\\').replace(/'/g,
+  "\\'") : ''
+}';
+
+        function getListPageBaseUrl() {
+            logDetails('animalsPopup:getListPageBaseUrl:start',
+  { animalsListPageUrl
+  });
+            if (!animalsListPageUrl) {
+                const path = window.location.pathname.split('?')[
+      0
+    ];
+                logDetails('animalsPopup:getListPageBaseUrl:fallbackPath',
+    { path
+    });
+                return path;
+  }
+            const base = animalsListPageUrl.split('?')[
+    0
+  ];
+            const normalized = base.startsWith('/') ? base : '/' + base;
+            logDetails('animalsPopup:getListPageBaseUrl:normalized',
+  { normalized
+  });
+            return normalized;
+}
+
+        function ensureAnimalsFilters() {
+            logDetails('animalsPopup:ensureFilters:start',
+  { initialized: animalsFiltersInitialized
+  });
+            if (animalsFiltersInitialized) return;
+            const container = document.getElementById('animals-filters');
+            if (!container) return;
+
+            animalsStatusFilters.forEach(filter => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'animals-filter-button';
+                button.setAttribute('data-animals-filter', filter.status);
+                button.textContent = filter.label;
+                button.addEventListener('click', () => handleAnimalsFilterClick(filter.status));
+                container.appendChild(button);
+  });
+
+            animalsFiltersInitialized = true;
+            logDetails('animalsPopup:ensureFilters:ready');
+}
+
+        function openAnimaisPopup() {
+            logDetails('animalsPopup:open');
+            ensureAnimalsFilters();
+            const defaultStatus = 'Adotado';
+            currentAnimalsFilter = null;
+            const buttons = document.querySelectorAll('.animals-filter-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            const listContainer = document.getElementById('animals-list-container');
+            if (listContainer) {
+                listContainer.innerHTML = '<p class="animals-list-placeholder">Carregando animais...</p>';
+  }
+
+            const popup = document.getElementById('pop-up-animais');
+            const overlay = document.getElementById('overlay');
+
+            if (popup && overlay) {
+                overlay.style.display = 'block';
+                popup.style.display = 'flex';
+  }
+
+            handleAnimalsFilterClick(defaultStatus);
+}
+
+        function closeAnimaisPopup() {
+            logDetails('animalsPopup:close');
+            const popup = document.getElementById('pop-up-animais');
+            const overlay = document.getElementById('overlay');
+            if (popup) popup.style.display = 'none';
+            if (overlay) overlay.style.display = 'none';
+            currentAnimalsFilter = null;
+}
+
+        async function handleAnimalsFilterClick(status) {
+            logDetails('animalsPopup:filterClick',
+  { status
+  });
+            const buttons = document.querySelectorAll('.animals-filter-button');
+            const listContainer = document.getElementById('animals-list-container');
+            if (!listContainer) return;
+
+            if (currentAnimalsFilter === status) {
+                logDetails('animalsPopup:filterToggleOff',
+    { status
+    });
+                currentAnimalsFilter = null;
+                buttons.forEach(btn => btn.classList.remove('active'));
+                listContainer.innerHTML = '<p class="animals-list-placeholder">Selecione um filtro para visualizar os animais.</p>';
+                return;
+  }
+
+            buttons.forEach(btn => {
+                if (btn.getAttribute('data-animals-filter') === status) {
+                    btn.classList.add('active');
+    } else {
+                    btn.classList.remove('active');
+    }
+  });
+
+            currentAnimalsFilter = status;
+            listContainer.innerHTML = '<p class="animals-list-placeholder">Carregando animais...</p>';
+
+            try {
+                const animals = await fetchAnimalsByStatus(status);
+                logDetails('animalsPopup:filterData',
+    { status, count: animals.length
+    });
+                renderAnimalsList(animals);
+  } catch (error) {
+                logDetails('animalsPopup:filterError',
+    { status, error
+    });
+                listContainer.innerHTML = '<p class="animals-list-error">Não foi possível carregar os animais agora.</p>';
+  }
+}
+
+        function renderAnimalsList(animals) {
+            logDetails('animalsPopup:renderList',
+  { count: Array.isArray(animals) ? animals.length : null
+  });
+            const listContainer = document.getElementById('animals-list-container');
+            if (!listContainer) return;
+
+            if (!Array.isArray(animals) || !animals.length) {
+                listContainer.innerHTML = '<p class="animals-list-placeholder">Nenhum animal encontrado para este filtro.</p>';
+                return;
+  }
+
+            const fragment = document.createDocumentFragment();
+            const sortedAnimals = [...animals
+  ].sort((a, b) => {
+                const nameA = (a.nome || '').trim();
+                const nameB = (b.nome || '').trim();
+                return nameA.localeCompare(nameB, 'pt',
+    { sensitivity: 'base'
+    });
+  });
+
+            sortedAnimals.forEach(animal => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'animals-list-button';
+                button.textContent = (animal.nome || 'Animal sem nome').trim();
+                button.addEventListener('click', () => navigateToAnimalDetail(animal.animal_id || animal.id));
+                fragment.appendChild(button);
+  });
+
+            listContainer.innerHTML = '';
+            listContainer.appendChild(fragment);
+}
+
+        function navigateToAnimalDetail(id) {
+            logDetails('animalsPopup:navigate',
+  { id
+  });
+            if (!id) return;
+            const basePath = window.location.pathname.split('?')[
+    0
+  ];
+            window.location.href = basePath + '?animal_id=' + encodeURIComponent(id);
+}
+
+        async function fetchAnimalsByStatus(status) {
+            logDetails('animalsPopup:fetchByStatus:start',
+  { status
+  });
+            if (animalsPopupCache[status
+  ]) {
+                logDetails('animalsPopup:fetchByStatus:cacheHit',
+    { status, count: animalsPopupCache[status
+      ].length
+    });
+                return animalsPopupCache[status
+    ];
+  }
+
+            const requestUrl = '/webhook/kaniu-animals-list';
+
+            const response = await fetch(requestUrl,
+  {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+    },
+                body: JSON.stringify({
+                    status: status,
+                    canil_id: ${canil_id
+      }
+    })
+  });
+            if (!response.ok) {
+                logDetails('animalsPopup:fetchByStatus:httpError',
+    { status: response.status, statusText: response.statusText
+    });
+                throw new Error('Resposta inválida (' + response.status + ')');
+  }
+
+            let data = null;
+            try {
+                data = await response.json();
+  } catch (error) {
+                logDetails('animalsPopup:fetchByStatus:jsonError',
+    { error
+    });
+                data = null;
+  }
+
+            let animals = [];
+            if (data) {
+                if (Array.isArray(data.animals)) {
+                    animals = data.animals;
+    } else if (Array.isArray(data.items)) {
+                    animals = data.items;
+    } else if (Array.isArray(data)) {
+                    animals = data;
+    } else if (data.animals && Array.isArray(data.animals.items)) {
+                    animals = data.animals.items;
+    }
+  }
+
+            animals = animals.map(item => ({
+                animal_id: item.animal_id || item.id || item.animalId || '',
+                nome: (item.nome || item.name || '').trim()
+  })).filter(item => item.animal_id && item.nome);
+
+            animalsPopupCache[status
+  ] = animals;
+            logDetails('animalsPopup:fetchByStatus:parsed',
+  { status, count: animals.length
+  });
+            return animals;
+}
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const animalsButton = document.getElementById('open-animals-popup');
+            if (animalsButton) {
+                logDetails('animalsPopup:registerButton');
+                animalsButton.addEventListener('click', openAnimaisPopup);
+  }
+});
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const statusMap = ${JSON.stringify(initialStatusMap)
+  };
+          Object.entries(statusMap).forEach(([key, value
+  ]) => {
+            const selector = '.resume-action-icon[data-caracteristica="' + key + '"
+    ]';
+            const btn = document.querySelector(selector);
+            if (!btn) {
+              return;
+    }
+            updateStatusActionButton(btn, Boolean(value));
+  });
+});
+    </script>
+
+    <script>
+        function aplicarEstadosIniciaisAcoes() {
+        document.querySelectorAll('.resume-action-icon').forEach(el => {
+          const tipo = el.dataset.caracteristica;
+          if (tipo && initialStatusMap[tipo
+    ]) {
+            el.classList.add('active');
+            // Atualiza tooltip para refletir o estado ativo
+            const tooltip = el.querySelector('.resume-action-tooltip');
+            if (tooltip) tooltip.textContent = el.dataset.tooltipActive || 'Ativo';
+    }
+  });
+}
+// Executar após o DOM estar pronto
+      document.addEventListener('DOMContentLoaded', aplicarEstadosIniciaisAcoes);
+    </script>
+    
+    // script para recolher sidebar
+    ${sidebar_script
+}
+    
+    </div>
+  </div>
+</body>
+
+
+</html>
+`;
+
+return [
+  { json: { html: html
+    }
+  }
+];

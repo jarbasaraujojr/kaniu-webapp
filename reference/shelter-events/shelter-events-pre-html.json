@@ -1,0 +1,263 @@
+/**********************************************
+/* Kaniu
+/* Sistema de gestão de abrigos de animais
+/* Página do histórico de eventos
+/**********************************************/
+
+const css = $('Historico Css').first().json.css;
+
+const html = `
+
+  <div class="main-container">
+    <div class="tab-nav">
+        <button class="tab-btn active" data-tab="realizados">
+            <i class="fa-solid fa-check-circle"></i>
+            Realizados
+        </button>
+        <button class="tab-btn" data-tab="programados">
+            <i class="fa-solid fa-calendar-days"></i>
+            Programados
+        </button>
+        <button class="tab-btn" data-tab="atrasados">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            Atrasados
+        </button>
+    </div>
+  </div>
+  
+  <section class="historico-content">
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">
+          <i class="fa-solid fa-list"></i>
+          <span id="table-title">Eventos Realizados</span>
+        </div>
+        <div class="table-info">
+          <span id="records-count">0 registros</span>
+        </div>
+      </div>
+      
+      <div class="table-wrapper">
+        <table class="eventos-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Animal</th>
+              <th>Tipo</th>
+              <th>Descrição</th>
+              <th>Veterinário</th>
+              <th>Clínica</th>
+              <th class="actions-col">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="eventos-tbody">
+            <tr>
+              <td colspan="7" class="empty-message">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                Carregando eventos...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="table-pagination">
+        <button class="btn-page" id="prev-page" disabled>
+          <i class="fa-solid fa-chevron-left"></i>
+          Anterior
+        </button>
+        <span class="page-info">
+          Página <span id="current-page">1</span> de <span id="total-pages">1</span>
+        </span>
+        <button class="btn-page" id="next-page" disabled>
+          Próxima
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+<script>
+const CANIL_ID = 1;
+const ENDPOINT = "https://karah-n8n.uzd6db.easypanel.host/webhook/canil-eventos";
+const ITEMS_PER_PAGE = 50;
+
+let todosEventos = [];
+let eventosFiltrados = [];
+let currentPage = 1;
+let currentFilter = 'realizados';
+
+// Tipos de evento com ícones
+const tipoIcons = {
+  'Pesagem': 'fa-weight-scale',
+  'Internação': 'fa-hospital',
+  'Vermifugação': 'fa-pills',
+  'Observação': 'fa-eye',
+  'Vacinação': 'fa-syringe',
+  'Consulta': 'fa-stethoscope',
+  'Cirurgia': 'fa-user-doctor',
+  'Exame': 'fa-flask',
+  'Banho': 'fa-shower',
+  'Tosa': 'fa-scissors'
+};
+
+// Carrega eventos do endpoint
+async function carregarEventos() {
+  try {
+    const resp = await fetch(ENDPOINT,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ canil_id: CANIL_ID
+      })
+    });
+
+    let data = await resp.json();
+    
+    // Extrai o array de eventos
+    if (Array.isArray(data) && data[
+      0
+    ].eventos) {
+      todosEventos = data[
+        0
+      ].eventos;
+    } else if (Array.isArray(data.eventos)) {
+      todosEventos = data.eventos;
+    } else {
+      todosEventos = [];
+    }
+
+    console.log('data ->',data);
+    console.log('data.eventos ->', data.eventos);
+    console.log('todosEventos ->', todosEventos);
+
+    aplicarFiltro(currentFilter);
+  } catch (err) {
+    console.error("Erro ao carregar eventos:", err);
+    document.getElementById('eventos-tbody').innerHTML = 
+      '<tr><td colspan="7" class="empty-message error-message"><i class="fa-solid fa-exclamation-circle"></i> Erro ao carregar eventos</td></tr>';
+  }
+}
+// Aplica filtro baseado na aba selecionada
+function aplicarFiltro(tipo) {
+  currentFilter = tipo;
+  currentPage = 1;
+  
+  eventosFiltrados = todosEventos.filter(evento => {
+    // Filtro por status
+    if (tipo === 'realizados') {
+      return evento.concluido && !evento.atrasado;
+    } else if (tipo === 'programados') {
+      return evento.programado || (!evento.concluido && !evento.atrasado);
+    } else if (tipo === 'atrasados') {
+      return evento.atrasado;
+    }
+    return false;
+  });
+  
+  // Ordena por data (mais recente primeiro)
+  eventosFiltrados.sort((a, b) => {
+    const dataA = new Date(a.data_exibicao || a.data);
+    const dataB = new Date(b.data_exibicao || b.data);
+    return dataB - dataA;
+  });
+  
+  renderizarTabela();
+}
+// Renderiza a tabela com paginação
+function renderizarTabela() {
+  const tbody = document.getElementById('eventos-tbody');
+  const totalPages = Math.ceil(eventosFiltrados.length / ITEMS_PER_PAGE);
+  
+  // Atualiza informações
+  document.getElementById('records-count').textContent = eventosFiltrados.length + ' registro' + (eventosFiltrados.length !== 1 ? 's' : '');
+  document.getElementById('current-page').textContent = currentPage;
+  document.getElementById('total-pages').textContent = totalPages || 1;
+  
+  // Atualiza botões de paginação
+  document.getElementById('prev-page').disabled = currentPage <= 1;
+  document.getElementById('next-page').disabled = currentPage >= totalPages;
+  
+  // Se não há eventos
+  if (eventosFiltrados.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-message"><i class="fa-solid fa-inbox"></i> Nenhum evento encontrado</td></tr>';
+    return;
+  }
+  // Calcula items da página atual
+  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIdx = startIdx + ITEMS_PER_PAGE;
+  const pageItems = eventosFiltrados.slice(startIdx, endIdx);
+  
+  // Renderiza linhas
+  tbody.innerHTML = pageItems.map(evento => {
+    const data = evento.data_exibicao || evento.data;
+    const dataFormatada = data ? new Date(data).toLocaleDateString('pt-BR') : '-';
+    const icon = tipoIcons[evento.tipo
+    ] || 'fa-circle';
+    const statusClass = evento.atrasado ? 'status-atrasado' : evento.concluido ? 'status-concluido' : 'status-programado';
+    
+    return '<tr class="'+statusClass+'"><td class="date-col">'+dataFormatada+'</td><td class="animal-col">'+(evento.nome_animal || '-')+'</td><td class="tipo-col"><i class="fa-solid '+icon+'"></i>'+(evento.tipo || '-')+'</td><td class="desc-col">'+(evento.descricao || '-')+'</td><td>'+(evento.nome_veterinario || '-')+'</td><td>'+(evento.clinica || '-')+'</td><td class="actions-col"><button class="btn-action" title="Ver detalhes" onclick="verDetalhes('+evento.registro_id+')"><i class="fa-solid fa-eye"></i></button></td></tr>';
+  }).join('');
+}
+// Inicializa navegação por tabs
+function initTabNavigation() {
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const targetTab = button.getAttribute('data-tab');
+      
+      // Atualiza botões ativos
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      
+      // Atualiza título da tabela
+      const titulos = {
+        'realizados': 'Eventos Realizados',
+        'programados': 'Eventos Programados',
+        'atrasados': 'Eventos Atrasados'
+      };
+      document.getElementById('table-title').textContent = titulos[targetTab
+      ];
+      
+      // Aplica filtro
+      aplicarFiltro(targetTab);
+    });
+  });
+}
+// Inicializa paginação
+function initPaginacao() {
+  document.getElementById('prev-page').addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderizarTabela();
+    }
+  });
+  
+  document.getElementById('next-page').addEventListener('click', () => {
+    const totalPages = Math.ceil(eventosFiltrados.length / ITEMS_PER_PAGE);
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderizarTabela();
+    }
+  });
+}
+// Função para ver detalhes (placeholder)
+function verDetalhes(registroId) {
+  console.log('Ver detalhes do registro:', registroId);
+  // TODO: Implementar modal ou redirecionamento
+  alert('Detalhes do evento #' + registroId);
+}
+// Inicializa tudo quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', () => {
+  initTabNavigation();
+  initPaginacao();
+  carregarEventos();
+});
+</script>
+`;
+
+return {html
+};

@@ -1,0 +1,359 @@
+// ===================================================
+// NÓ CODE (JavaScript) – n8n
+// LISTAGEM DE ANIMAIS PARA ADOÇÃO
+// Revisão e otimização sem alterar comportamento
+// ===================================================
+// ---------- VARIÁVEIS DE ENTRADA ----------
+const animals = $input.first().json.animals;
+const constants = $('Constants').item.json;
+const vars = $('Vars').first().json;
+const style = $('List Style').first().json.style;
+const sidebar_html = $('Sidebar Html').first().json.html;
+const sidebar_script = $('Sidebar Script').first().json.script;
+
+// ---------- VARIÁVEIS BASE ----------
+const img_logo = constants.img_logo;
+const fav_icon = constants.fav_icon;
+const dog_font = constants.dog_font;
+const webhook_url = vars.url;
+const canil_id = vars.canil_id;
+const APPLIED_STATUS = vars.query?.status || 'Abrigado';
+const options_endpoint = '/webhook/kaniu-animal-data-tables';
+
+// ---------- FUNÇÕES AUXILIARES ----------
+const normalizeAccents = (str = '') =>
+  str.normalize('NFD').replace(/[\u0300-\u036f
+]/g, '');
+
+const animalPhoto = (especie = 'Vazio') => ({
+  'Cachorro': 'https: //i.ibb.co/Z6dPncCH/pic-dog.png',
+  'Gato': 'https: //i.ibb.co/9dWLkZs/pic-cat.png',
+  'Vazio': 'https: //i.ibb.co/KpVTx4vK/pic-none.png',
+}[especie
+] || 'https: //i.ibb.co/KpVTx4vK/pic-none.png');
+// Função para checar por valores nulos ou 0
+const formatValue = (value) => value === null || value === 0 || value === undefined ? '' : value;
+
+// ---------- RENDERIZAÇÃO DE CARDS ----------
+let cardsHtml = '';
+
+if (Array.isArray(animals) && animals.length > 0) {
+  cardsHtml = animals.map(animal => {
+    const nome = normalizeAccents(animal.nome);
+    const foto = animal.foto || animalPhoto(animal.especie);
+
+    return `
+      <a href="${webhook_url}?animal_id=${animal.animal_id}" class="animal-list-link">
+        <header class="app-header">
+          <div class="header-content">
+            <div class="animal-header">
+              <div class="animal-photo-wrapper">
+                <input type="file" id="animal-photo-upload-input" class="animal-photo-input" accept="image/*" style="display: none;" />
+                <img class="animal-photo" id="animal-photo"
+                     src="${animal.foto || animalPhoto(animal.especie)}"
+                     alt="Foto de ${animal.nome}" title="Clique para alterar a foto" />
+              </div>
+        
+              <div class="animal-title">
+                <h1>${animal.nome || ''
+    }</h1>
+                <div class="animal-subline">
+                  <button class="chip" id="open-especie-menu">${animal.especie || ':Espécie:'
+    }</button>
+                  <button class="chip" id="open-genero-menu">${animal.sexo || ':Sexo:'
+    }</button>
+                  <button class="chip" id="open-porte-menu">${animal.porte || ':Porte:'
+    }</button>
+                  <button class="chip" id="open-raca-menu">${animal['raça'
+      ] || ':Raça:'
+    }</button>
+                  <button class="chip" id="open-pelagem-menu">Pelo ${animal.pelagem || ':Pelagem:'
+    }</button>
+                  <button class="chip" id="open-cor-menu">${animal.cor || ':Cor:'
+    }</button>
+                  <button class="chip" id="open-nascimento-menu">
+                    ${animal.nascimento ? animal.nascimento : 'Definir nascimento'
+    }
+                  </button>
+                  ${animal.faixa_etaria ? `<button class="chip">${animal.faixa_etaria
+      }</button>` : ''
+    }
+                  ${formatValue(animal.peso) ? `<button class="chip">${formatValue(animal.peso)
+      } kg</button>` : ''
+    }
+                </div>
+              </div>
+            </div>
+        
+            <!-- Botão de listar animais -->
+            <button class="quick-action" id="open-animals-popup" title="Listar animais" aria-label="Listar animais">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+          </div>
+        </header>
+
+      </a>
+    `;
+  }).join('');
+} else {
+  cardsHtml = `
+    <p class="no-results">
+      Nenhum item encontrado.
+    </p>`;
+}
+// ---------- HTML FINAL ----------
+const html = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="${fav_icon}" />
+  <title>Animais para Adoção</title>
+  <!------------------------------------- Carregar fontes locais ------------------------------------->
+  <link href="https://viralatinhaz.uzd6db.easypanel.host/assets/fontawesome/css/fontawesome.css" rel="stylesheet" />
+  <link href="https://viralatinhaz.uzd6db.easypanel.host/assets/fontawesome/css/solid.css" rel="stylesheet" />
+</head>
+
+${style
+}
+
+<body>
+
+  <div class="app-shell">
+  
+    <!-- Inclui a Sidebar -->
+    ${sidebar_html
+}
+    
+    <div class="main-with-sidebar">
+      <main class="main-container">
+        <header class="header">
+          <div class="tab-nav">
+            ${
+  ['Abrigado', 'Adotado', 'Internado', 'Desaparecido', 'Falecido'
+  ]
+            .map(status => `
+            <button class="tab-btn ${APPLIED_STATUS === status ? 'active' : ''}" data-status="${status}">
+              ${status + 's'
+  }
+            </button>
+            `).join('')
+}
+          </div>
+        </header>
+        <div class="list-container">
+          ${cardsHtml
+}
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Overlay (já segue padrão dos popups existentes) -->
+  <div id="overlay" class="overlay"></div>
+
+  <!-- POP-UP NOVO ANIMAL -->
+  <div id="pop-up-novo-animal" class="pop-up-menu" style="width: 480px; padding: 20px; display: none;">
+    <span class="pop-up-close" onclick="closeNovoAnimalPopup()">&times;</span>
+    <h2>Novo Animal</h2>
+
+    <div class="pop-up-content" style="display: flex; flex-direction: column; gap: 12px;">
+
+      <!-- Nome + Data de Nascimento na mesma linha -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
+        <div>
+          <label>Nome</label>
+          <input type="text" id="novo-animal-nome" class="date-input" placeholder="Digite o nome do animal" />
+        </div>
+        <div>
+          <label>Data de Nascimento</label>
+          <input type="date" id="novo-animal-nascimento" class="date-input" />
+        </div>
+      </div>
+
+      <!-- Espécie + Sexo -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div>
+          <label>Espécie</label>
+          <select id="novo-animal-especie" class="date-input">
+            <option value="">Carregando...</option>
+          </select>
+        </div>
+        <div>
+          <label>Raça</label>
+          <select id="novo-animal-raca" class="date-input">
+            <option value="">Selecione a espécie primeiro</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Raça + Porte -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div>
+          <label>Sexo</label>
+          <select id="novo-animal-sexo" class="date-input">
+            <option value="">Carregando...</option>
+          </select>
+        </div>
+        <div>
+          <label>Porte</label>
+          <select id="novo-animal-porte" class="date-input">
+            <option value="">Carregando...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Cor + Pelagem -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div>
+          <label>Cor</label>
+          <select id="novo-animal-cor" class="date-input">
+            <option value="">Carregando...</option>
+          </select>
+        </div>
+        <div>
+          <label>Pelagem</label>
+          <select id="novo-animal-pelagem" class="date-input">
+            <option value="">Carregando...</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="pop-up-actions" style="margin-top: 20px;">
+      <button class="cancel-button" onclick="closeNovoAnimalPopup()">Cancelar</button>
+      <button class="action-button" onclick="salvarNovoAnimal()">Salvar</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const ENDPOINT_URL = ${ JSON.stringify(webhook_url)
+  };
+    const DEFAULT_STATUS = 'Abrigado';
+    let currentStatus = ${ JSON.stringify(APPLIED_STATUS)
+  };
+
+    const header = document.querySelector('.header');
+    const listContainer = document.querySelector('.list-container');
+    const statusButtons = document.querySelectorAll('.tab-btn');
+
+
+
+    // ---------- ATUALIZA BOTÕES ATIVOS ----------
+    const updateButtonStatus = () => {
+      statusButtons.forEach(btn => {
+        const isActive = btn.dataset.status === currentStatus;
+        btn.classList.toggle('active', isActive);
+    });
+  };
+    updateButtonStatus();
+
+    // ---------- HISTÓRICO ----------
+    if (!window.history.state || window.history.state.status !== currentStatus) {
+      window.history.replaceState({ status: currentStatus
+    }, '', window.location.href);
+  }
+  // ---------- FUNÇÕES DE URL ----------
+    const buildUrlForStatus = (statusValue) => {
+      try {
+        const url = new URL(ENDPOINT_URL, window.location.origin);
+        url.searchParams.set('status', statusValue);
+        return url.toString();
+    } catch {
+        const sep = ENDPOINT_URL.includes('?') ? '&' : '?';
+        return ENDPOINT_URL + sep + 'status=' + encodeURIComponent(statusValue);
+    }
+  };
+
+    const updateUrl = (statusValue) => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('status', statusValue);
+      window.history.pushState({ status: statusValue
+    }, '', url.toString());
+  };
+
+    // ---------- RECARREGAR LISTA VIA FETCH ----------
+    const fetchAndRenderList = async (statusValue,
+  { updateHistory = true
+  } = {}) => {
+      const newUrl = buildUrlForStatus(statusValue);
+
+      if (!listContainer) {
+        window.location.href = newUrl;
+        return;
+    }
+
+      try {
+        const response = await fetch(newUrl,
+      {
+          headers: { 'X-Requested-With': 'XMLHttpRequest'
+        },
+          credentials: 'same-origin'
+      });
+
+        if (!response.ok) throw new Error('Erro ao carregar a lista.');
+
+        const htmlText = await response.text();
+        const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+        const updatedList = doc.querySelector('.list-container');
+
+        if (!updatedList) throw new Error('Estrutura da lista não encontrada.');
+
+        listContainer.innerHTML = updatedList.innerHTML;
+        currentStatus = statusValue;
+        updateButtonStatus();
+
+        if (updateHistory) updateUrl(statusValue);
+    } catch (err) {
+        console.error(err);
+        window.location.href = newUrl;
+    }
+  };
+
+    window.refreshAnimalList = (statusValue, extraOptions = {}) => {
+      const statusToUse = statusValue || currentStatus;
+      const options = { updateHistory: false, ...extraOptions
+    };
+      return fetchAndRenderList(statusToUse, options);
+  };
+
+    // ---------- EVENTOS DOS BOTÕES ----------
+    statusButtons.forEach(button => {
+      button.addEventListener('click', event => {
+        event.preventDefault();
+        const statusToFilter = button.dataset.status;
+        const nextStatus = (statusToFilter === currentStatus) ? DEFAULT_STATUS : statusToFilter;
+        fetchAndRenderList(nextStatus);
+    });
+  });
+
+    // ---------- POPSTATE ----------
+    window.addEventListener('popstate', event => {
+      const status = event.state?.status;
+      if (status) fetchAndRenderList(status,
+    { updateHistory: false
+    });
+      else window.location.reload();
+  });
+}) ();
+  </script>
+
+  // AQUI ESTAVA O SCRIPT PARA NOVO ANIMAL
+
+  ${sidebar_script
+}
+</body>
+
+</html>
+`;
+
+// ---------- SAÍDA ----------
+return [
+  { json: { html
+    }
+  }
+];

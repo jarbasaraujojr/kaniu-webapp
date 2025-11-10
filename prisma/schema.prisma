@@ -20,6 +20,7 @@ model Catalog {
 
   animalsSpecies Animal[] @relation("AnimalSpecies")
   animalsBreed   Animal[] @relation("AnimalBreed")
+  animalsStatus  Animal[] @relation("AnimalStatus")
 
   @@unique([category, name])
   @@index([category])
@@ -43,12 +44,14 @@ model User {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name       String   @db.VarChar
   email      String   @unique @db.VarChar
+  password   String   @db.VarChar
   phone      String?  @db.VarChar
   address    Json?
   documentId String?  @unique @map("document_id") @db.VarChar
   roleId     Int      @map("role_id")
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   role                     Role                   @relation(fields: [roleId], references: [id], onDelete: Restrict)
   sheltersOwned            Shelter[]              @relation("ShelterOwner")
@@ -69,6 +72,7 @@ model User {
   @@index([email])
   @@index([phone])
   @@index([roleId])
+  @@index([deletedAt])
   @@map("users")
 }
 
@@ -84,12 +88,14 @@ model Shelter {
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   owner   User     @relation("ShelterOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   animals Animal[]
 
   @@index([ownerId])
   @@index([isActive])
+  @@index([deletedAt])
   @@map("shelters")
 }
 
@@ -104,7 +110,7 @@ model Animal {
   size          String?  @db.VarChar(20)
   birthDate     DateTime? @map("birth_date") @db.Date
   microchipId   String?  @unique @map("microchip_id") @db.VarChar
-  status        String   @default("available") @db.VarChar(30)
+  statusId      Int?     @map("status_id")
   castrated     Boolean?
   healthStatus  Json?    @map("health_status")
   behavior      Json?
@@ -113,10 +119,12 @@ model Animal {
   updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   createdBy     String?  @map("created_by") @db.Uuid
   updatedBy     String?  @map("updated_by") @db.Uuid
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   shelter              Shelter               @relation(fields: [shelterId], references: [id], onDelete: Restrict)
   species              Catalog?              @relation("AnimalSpecies", fields: [speciesId], references: [id])
   breed                Catalog?              @relation("AnimalBreed", fields: [breedId], references: [id])
+  status               Catalog?              @relation("AnimalStatus", fields: [statusId], references: [id])
   createdByUser        User?                 @relation("AnimalCreatedBy", fields: [createdBy], references: [id])
   updatedByUser        User?                 @relation("AnimalUpdatedBy", fields: [updatedBy], references: [id])
   photos               AnimalPhoto[]
@@ -131,9 +139,10 @@ model Animal {
   @@index([shelterId])
   @@index([speciesId])
   @@index([breedId])
-  @@index([status])
+  @@index([statusId])
   @@index([name])
   @@index([microchipId])
+  @@index([deletedAt])
   @@map("animals")
 }
 

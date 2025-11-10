@@ -1,0 +1,371 @@
+/**********************************************
+/* Kaniu
+/* Sistema de gestão de abrigos de animais
+/* Página do histórico - CSS
+/**********************************************/
+
+const css = `
+<style>
+/* ===== CONTAINER DO CONTEÚDO ===== */
+.content-grid {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-top: 1.25rem;
+}
+/* ===== CONTEÚDO DO HISTÓRICO ===== */
+.historico-content {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.table-card {
+  background: var(--card-background, #fff);
+  border: 1px solid var(--border-color, #E5E7F2);
+  border-radius: var(--radius-lg,
+  14px);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(15,
+  23,
+  42,.04);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: var(--background-soft, #F5F6FB);
+  border-bottom: 1px solid var(--border-color, #E5E7F2);
+  flex-shrink: 0;
+}
+
+.table-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-dark, #1e293b);
+}
+
+.table-title i {
+  color: var(--primary-color, #5A5D7F);
+}
+
+.table-info {
+  color: var(--text-light, #6B7280);
+  font-size: 0.875rem;
+}
+/* ===== TABELA ===== */
+.table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  min-height: 0;
+}
+
+.eventos-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.eventos-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--background-soft, #F5F6FB);
+}
+
+.eventos-table th {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-light, #6B7280);
+  border-bottom: 2px solid var(--border-color, #E5E7F2);
+  white-space: nowrap;
+}
+
+.eventos-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-color, #E5E7F2);
+  font-size: 0.875rem;
+  color: var(--text-dark, #374151);
+}
+
+.eventos-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.eventos-table tbody tr:hover {
+  background: var(--background-light, #F9FAFB);
+}
+/* Colunas específicas */
+.date-col {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.animal-col {
+  font-weight: 600;
+  color: var(--primary-color, #5A5D7F);
+}
+
+.tipo-col {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.tipo-col i {
+  color: var(--primary-color, #5A5D7F);
+}
+
+.desc-col {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions-col {
+  text-align: center;
+  width: 80px;
+}
+/* Status das linhas */
+.status-concluido {
+  background: rgba(16,
+  185,
+  129,
+  0.03);
+}
+
+.status-programado {
+  background: rgba(59,
+  130,
+  246,
+  0.03);
+}
+
+.status-atrasado {
+  background: rgba(239,
+  68,
+  68,
+  0.05);
+}
+
+.status-atrasado .date-col {
+  color: #DC2626;
+  font-weight: 600;
+}
+/* ===== AÇÕES ===== */
+.btn-action {
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border-color, #E5E7F2);
+  border-radius: var(--radius-sm,
+  6px);
+  color: var(--text-light, #6B7280);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+  background: var(--primary-color, #5A5D7F);
+  border-color: var(--primary-color, #5A5D7F);
+  color: white;
+}
+/* ===== MENSAGENS VAZIAS ===== */
+.empty-message {
+  text-align: center !important;
+  padding: 3rem 1rem !important;
+  color: var(--text-faded, #9CA3AF) !important;
+  font-style: italic;
+}
+
+.empty-message i {
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.error-message {
+  color: #DC2626 !important;
+}
+/* ===== PAGINAÇÃO ===== */
+.table-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: var(--background-soft, #F5F6FB);
+  border-top: 1px solid var(--border-color, #E5E7F2);
+  flex-shrink: 0;
+}
+
+.btn-page {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  background: var(--card-background, #fff);
+  border: 1px solid var(--border-color, #E5E7F2);
+  border-radius: var(--radius-md,
+  8px);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-dark, #1e293b);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-page:hover:not(:disabled) {
+  background: var(--primary-color, #5A5D7F);
+  border-color: var(--primary-color, #5A5D7F);
+  color: white;
+}
+
+.btn-page:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-info {
+  color: var(--text-light, #6B7280);
+  font-size: 0.875rem;
+}
+
+.page-info span {
+  font-weight: 600;
+  color: var(--text-dark, #1e293b);
+}
+/* ===== SCROLLBAR ===== */
+.table-wrapper: :-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.table-wrapper: :-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-wrapper: :-webkit-scrollbar-thumb {
+  background: var(--border-color, #CBD5E1);
+  border-radius: 3px;
+}
+
+.table-wrapper: :-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color, #94A3B8);
+}
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px) {
+  .tab-nav {
+    gap: 0.25rem;
+    overflow-x: auto;
+    padding-bottom: 0.75rem;
+  }
+  
+  .tab-btn {
+    padding: 0.65rem 1rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+  
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .eventos-table th,
+  .eventos-table td {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  
+  .desc-col {
+    max-width: 200px;
+  }
+  
+  .table-pagination {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  
+  .page-info {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-nav {
+    gap: 0.25rem;
+  }
+  
+  .tab-btn {
+    padding: 0.6rem 0.85rem;
+    font-size: 0.8rem;
+  }
+  
+  .tab-btn i {
+    font-size: 0.9rem;
+  }
+  
+  .eventos-table {
+    min-width: 700px;
+  }
+  
+  .desc-col {
+    max-width: 150px;
+  }
+}
+/* ===== MODO ESCURO ===== */
+@media (prefers-color-scheme: dark) {
+  .table-card,
+  .filters-bar {
+    background: var(--card-background, #1E293B);
+    border-color: var(--border-color, #334155);
+  }
+  
+  .table-header {
+    background: var(--background-soft, #0F172A);
+    border-bottom-color: var(--border-color, #334155);
+  }
+  
+  .eventos-table thead {
+    background: var(--background-soft, #0F172A);
+  }
+  
+  .eventos-table th {
+    color: var(--text-light, #94A3B8);
+    border-bottom-color: var(--border-color, #334155);
+  }
+  
+  .eventos-table td {
+    border-bottom-color: var(--border-color, #334155);
+    color: var(--text-dark, #CBD5E1);
+  }
+  
+  .eventos-table tbody tr:hover {
+    background: var(--background-light, #334155);
+  }
+}
+</style>
+`;
+
+return {css
+};
