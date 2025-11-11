@@ -9,6 +9,8 @@ declare module 'next-auth' {
       name: string
       role: string
       roleId: number
+      permissions: Record<string, boolean>
+      shelterId: string | null
     }
   }
 
@@ -18,6 +20,8 @@ declare module 'next-auth' {
     name: string
     role: string
     roleId: number
+    permissions: Record<string, boolean>
+    shelterId: string | null
   }
 }
 
@@ -26,5 +30,7 @@ declare module 'next-auth/jwt' {
     id: string
     role: string
     roleId: number
+    permissions: Record<string, boolean>
+    shelterId: string | null
   }
 }

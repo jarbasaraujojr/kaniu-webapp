@@ -1,5 +1,8 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { prisma } from '@/lib/db/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth/auth'
+import { redirect } from 'next/navigation'
 
 const numberFormatter = new Intl.NumberFormat('pt-BR')
 const percentFormatter = new Intl.NumberFormat('pt-BR', {
@@ -117,6 +120,15 @@ const getStatusVariant = (status: string) => {
 }
 
 export default async function PainelPage() {
+  const session = await getServerSession(authOptions)
+
+  if (!session) {
+    redirect('/login')
+  }
+
+  const userRole = session.user.role
+  const userShelterId = session.user.shelterId
+
   const now = new Date()
   const twoWeeksAhead = new Date(now.getTime() + 14 * MS_PER_DAY)
   const last30Days = new Date(now.getTime() - 30 * MS_PER_DAY)
@@ -129,18 +141,32 @@ export default async function PainelPage() {
     prisma.catalog.findFirst({ where: { category: 'animal_status', name: 'Internado' } }),
   ])
 
+  // Construir filtro baseado no role
+  const animalFilter: any = { deletedAt: null }
+  if (userRole === 'shelter_manager' && userShelterId) {
+    animalFilter.shelterId = userShelterId
+  }
+
   const statsPromise = Promise.all([
-    prisma.animal.count(),
-    prisma.animal.count({ where: { statusId: statusAbrigado?.id } }),
-    prisma.animal.count({ where: { statusId: statusAdotado?.id } }),
-    prisma.animal.count({ where: { statusId: statusInternado?.id } }),
-    prisma.shelter.count(),
+    prisma.animal.count({ where: animalFilter }),
+    prisma.animal.count({ where: { ...animalFilter, statusId: statusAbrigado?.id } }),
+    prisma.animal.count({ where: { ...animalFilter, statusId: statusAdotado?.id } }),
+    prisma.animal.count({ where: { ...animalFilter, statusId: statusInternado?.id } }),
+    userRole === 'shelter_manager' && userShelterId
+      ? Promise.resolve(1) // Shelter manager vê apenas seu abrigo
+      : prisma.shelter.count(),
   ])
 
+  const adoptionFilter: any = {}
+  if (userRole === 'shelter_manager' && userShelterId) {
+    adoptionFilter.animal = { shelterId: userShelterId }
+  }
+
   const adoptionCountsPromise = Promise.all([
-    prisma.adoptionEvent.count({ where: { createdAt: { gte: last30Days } } }),
+    prisma.adoptionEvent.count({ where: { ...adoptionFilter, createdAt: { gte: last30Days } } }),
     prisma.adoptionEvent.count({
       where: {
+        ...adoptionFilter,
         createdAt: {
           gte: previous30Days,
           lt: last30Days,
@@ -149,13 +175,18 @@ export default async function PainelPage() {
     }),
   ])
 
-  const medicalFollowUpsPromise = prisma.animalMedicalRecord.findMany({
-    where: {
-      nextDueDate: {
-        not: null,
-        lte: twoWeeksAhead,
-      },
+  const medicalRecordFilter: any = {
+    nextDueDate: {
+      not: null,
+      lte: twoWeeksAhead,
     },
+  }
+  if (userRole === 'shelter_manager' && userShelterId) {
+    medicalRecordFilter.animal = { shelterId: userShelterId }
+  }
+
+  const medicalFollowUpsPromise = prisma.animalMedicalRecord.findMany({
+    where: medicalRecordFilter,
     include: {
       animal: {
         select: {
@@ -174,7 +205,7 @@ export default async function PainelPage() {
   })
 
   const internacoesPromise = prisma.animal.findMany({
-    where: { statusId: statusInternado?.id },
+    where: { ...animalFilter, statusId: statusInternado?.id },
     select: {
       id: true,
       name: true,
@@ -188,6 +219,7 @@ export default async function PainelPage() {
   })
 
   const adoptionPipelinePromise = prisma.adoptionEvent.findMany({
+    where: adoptionFilter,
     orderBy: { createdAt: 'desc' },
     take: 6,
     include: {
@@ -206,7 +238,13 @@ export default async function PainelPage() {
     },
   })
 
+  const weightFilter: any = {}
+  if (userRole === 'shelter_manager' && userShelterId) {
+    weightFilter.animal = { shelterId: userShelterId }
+  }
+
   const weightRecordsPromise = prisma.animalWeight.findMany({
+    where: weightFilter,
     orderBy: { dateTime: 'desc' },
     take: 6,
     include: {
@@ -220,7 +258,13 @@ export default async function PainelPage() {
     },
   })
 
+  const eventFilter: any = {}
+  if (userRole === 'shelter_manager' && userShelterId) {
+    eventFilter.animal = { shelterId: userShelterId }
+  }
+
   const eventsPromise = prisma.animalEvent.findMany({
+    where: eventFilter,
     orderBy: { createdAt: 'desc' },
     take: 8,
     include: {

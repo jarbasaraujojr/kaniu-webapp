@@ -1,13 +1,24 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { AnimalsList } from './animals-list'
 import { prisma } from '@/lib/db/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth/auth'
+import { redirect } from 'next/navigation'
 
 interface AnimaisPageProps {
   searchParams: { status?: string }
 }
 
 export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
+  const session = await getServerSession(authOptions)
+
+  if (!session) {
+    redirect('/login')
+  }
+
   const status = searchParams.status || 'Abrigado'
+  const userRole = session.user.role
+  const userShelterId = session.user.shelterId
 
   // Buscar o status no catálogo
   const statusCatalog = await prisma.catalog.findFirst({
@@ -28,9 +39,20 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
     },
   })
 
-  // Buscar animais do banco com filtro de status
+  // Construir filtro baseado no role
+  const whereClause: any = {
+    statusId: statusCatalog?.id,
+    deletedAt: null,
+  }
+
+  // Se for shelter_manager, filtrar apenas animais do seu abrigo
+  if (userRole === 'shelter_manager' && userShelterId) {
+    whereClause.shelterId = userShelterId
+  }
+
+  // Buscar animais do banco com filtro de status e abrigo (se aplicável)
   const animals = await prisma.animal.findMany({
-    where: { statusId: statusCatalog?.id },
+    where: whereClause,
     include: {
       shelter: {
         select: {

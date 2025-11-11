@@ -1,7 +1,9 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { prisma } from '@/lib/db/prisma'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import AnimalDetailsClient from './AnimalDetailsClient'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth/auth'
 
 interface AnimalDetailsPageProps {
   params: {
@@ -37,6 +39,12 @@ const getAnimalPhoto = (animal: any) => {
 }
 
 export default async function AnimalDetailsPage({ params }: AnimalDetailsPageProps) {
+  const session = await getServerSession(authOptions)
+
+  if (!session) {
+    redirect('/login')
+  }
+
   const animal = await prisma.animal.findUnique({
     where: { id: params.id },
     include: {
@@ -79,6 +87,14 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
 
   if (!animal) {
     notFound()
+  }
+
+  // Verificar se o shelter_manager tem acesso a este animal
+  const userRole = session.user.role
+  const userShelterId = session.user.shelterId
+
+  if (userRole === 'shelter_manager' && userShelterId && animal.shelterId !== userShelterId) {
+    notFound() // Retorna 404 se tentar acessar animal de outro abrigo
   }
 
   // Extract appearance data
@@ -128,7 +144,7 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
       ? ((Number(latestWeight.value) - Number(previousWeight.value)) / Number(previousWeight.value) * 100).toFixed(1)
       : null,
     weights: animal.weights.map(w => ({
-      id: w.id,
+      id: w.id.toString(),
       date: w.dateTime,
       value: Number(w.value),
       unit: w.unit,
@@ -136,7 +152,7 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
       recordedBy: w.recordedByUser?.name || '',
     })),
     medicalRecords: animal.medicalRecords.map(mr => ({
-      id: mr.id,
+      id: mr.id.toString(),
       type: mr.recordType,
       description: mr.description,
       veterinarian: mr.veterinarian,
@@ -146,7 +162,7 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
       createdBy: mr.createdByUser?.name || '',
     })),
     events: animal.events.map(e => ({
-      id: e.id,
+      id: e.id.toString(),
       type: e.eventType,
       description: e.description,
       details: e.details,

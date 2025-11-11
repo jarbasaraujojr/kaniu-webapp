@@ -17,7 +17,11 @@
       "Bash(findstr:*)",
       "Bash(cmd /c:*)",
       "Bash(timeout /t 3 /nobreak)",
-      "Bash(timeout /t 2 /nobreak)"
+      "Bash(timeout /t 2 /nobreak)",
+      "Bash(dir:*)",
+      "Bash(prisma/migrations/20251109210636_add_soft_delete_fields/migration.sql)",
+      "Bash(tasklist:*)",
+      "Bash(timeout /t 5 /nobreak)"
     ],
     "deny": [],
     "ask": []

@@ -3,19 +3,59 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { useSidebar } from './SidebarContext'
+import { useAuth } from '@/hooks/useAuth'
+
+interface NavItem {
+  id: string
+  label: string
+  icon: string
+  path: string
+}
 
 export function Sidebar() {
   const { collapsed, setCollapsed } = useSidebar()
   const pathname = usePathname()
   const router = useRouter()
+  const { user, isAdmin, isShelterManager, isAdopter } = useAuth()
 
-  const menuItems = [
-    { id: 'painel', label: 'Painel', icon: 'fa-chart-line', path: '/dashboard/painel' },
-    { id: 'animais', label: 'Animais', icon: 'fa-paw', path: '/dashboard/animais' },
-    { id: 'historico', label: 'Histórico', icon: 'fa-clock-rotate-left', path: '/dashboard/historico' },
-    { id: 'avaliacoes', label: 'Avaliações', icon: 'fa-file-medical', path: '/dashboard/avaliacoes' },
-    { id: 'tratamentos', label: 'Tratamentos', icon: 'fa-syringe', path: '/dashboard/tratamentos' },
-  ]
+  // Definir itens de navegação baseado no role
+  const getMenuItems = (): NavItem[] => {
+    if (isAdmin) {
+      return [
+        { id: 'dashboard', label: 'Dashboard', icon: 'fa-chart-line', path: '/dashboard/admin' },
+        { id: 'shelters', label: 'Abrigos', icon: 'fa-building', path: '/dashboard/admin/abrigos' },
+        { id: 'users', label: 'Usuários', icon: 'fa-users', path: '/dashboard/admin/usuarios' },
+        { id: 'animals', label: 'Todos Animais', icon: 'fa-paw', path: '/dashboard/admin/animais' },
+        { id: 'statistics', label: 'Estatísticas', icon: 'fa-chart-bar', path: '/dashboard/admin/estatisticas' },
+      ]
+    }
+
+    if (isShelterManager) {
+      return [
+        { id: 'painel', label: 'Painel', icon: 'fa-chart-line', path: '/dashboard/painel' },
+        { id: 'animais', label: 'Animais', icon: 'fa-paw', path: '/dashboard/animais' },
+        { id: 'historico', label: 'Histórico', icon: 'fa-clock-rotate-left', path: '/dashboard/historico' },
+        { id: 'avaliacoes', label: 'Avaliações', icon: 'fa-file-medical', path: '/dashboard/avaliacoes' },
+        { id: 'tratamentos', label: 'Tratamentos', icon: 'fa-syringe', path: '/dashboard/tratamentos' },
+      ]
+    }
+
+    if (isAdopter) {
+      return [
+        { id: 'dashboard', label: 'Meu Dashboard', icon: 'fa-home', path: '/dashboard/usuario' },
+        { id: 'available', label: 'Disponíveis', icon: 'fa-paw', path: '/dashboard/animais' },
+        { id: 'favorites', label: 'Favoritos', icon: 'fa-heart', path: '/dashboard/usuario/favoritos' },
+        { id: 'reports', label: 'Meus Relatórios', icon: 'fa-search', path: '/dashboard/usuario/relatorios' },
+      ]
+    }
+
+    return [
+      { id: 'painel', label: 'Painel', icon: 'fa-chart-line', path: '/dashboard/painel' },
+      { id: 'animais', label: 'Animais', icon: 'fa-paw', path: '/dashboard/animais' },
+    ]
+  }
+
+  const menuItems = getMenuItems()
 
   const handleNavigate = (path: string) => {
     router.push(path)
@@ -57,10 +97,46 @@ export function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
+        {user && !collapsed && (
+          <div style={{
+            padding: '0.75rem 1rem',
+            borderBottom: '1px solid var(--border-color)',
+            marginBottom: '0.5rem'
+          }}>
+            <div style={{
+              fontSize: '0.75rem',
+              color: 'var(--text-light)',
+              marginBottom: '0.25rem'
+            }}>
+              Conectado como
+            </div>
+            <div style={{
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: 'var(--text-dark)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
+              {user.name}
+            </div>
+            <div style={{
+              fontSize: '0.7rem',
+              color: 'var(--text-light)',
+              marginTop: '0.1rem'
+            }}>
+              {isAdmin && 'Administrador'}
+              {isShelterManager && 'Gerente de Abrigo'}
+              {isAdopter && 'Usuário'}
+            </div>
+          </div>
+        )}
+
         <button
           className="sidebar-item"
           onClick={handleLogout}
           title="Sair"
+          style={{ color: 'var(--warning-color)' }}
         >
           <i className="fa-solid fa-right-from-bracket"></i>
           <span>Sair</span>

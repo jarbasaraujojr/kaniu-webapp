@@ -18,6 +18,11 @@ const createPrismaClient = () => {
       return next(params)
     }
 
+    // Ensure params.args exists
+    if (!params.args) {
+      params.args = {}
+    }
+
     // Convert delete to soft delete (update with deletedAt)
     if (params.action === 'delete') {
       params.action = 'update'

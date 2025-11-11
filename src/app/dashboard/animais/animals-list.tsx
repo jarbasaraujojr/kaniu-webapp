@@ -156,7 +156,7 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
 
                 <h3 style={{
                   fontFamily: "'GoodDog', 'Inter', sans-serif",
-                  fontSize: '1.15rem',
+                  fontSize: '1.6rem',
                   fontWeight: 'bold',
                   letterSpacing: '0.01em',
                   color: 'var(--text-dark)',
@@ -168,26 +168,26 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                 <div style={{
                   display: 'flex',
                   flexWrap: 'wrap',
-                  gap: '0.35rem',
+                  gap: '0.4rem',
                   marginBottom: '0.625rem'
                 }}>
                   {animal.species && (
-                    <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem' }}>{animal.species.name}</span>
+                    <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem' }}>{animal.species.name}</span>
                   )}
                   {animal.gender && (
-                    <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem' }}>{animal.gender}</span>
+                    <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem' }}>{animal.gender}</span>
                   )}
                   {animal.size && (
-                    <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem' }}>{animal.size}</span>
+                    <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem' }}>{animal.size}</span>
                   )}
                   {animal.breed && (
-                    <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem' }}>{animal.breed.name}</span>
+                    <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem' }}>{animal.breed.name}</span>
                   )}
                   {animal.birthDate && (
-                    <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem' }}>{calculateAge(animal.birthDate)}</span>
+                    <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem' }}>{calculateAge(animal.birthDate)}</span>
                   )}
                   {animal.weights && animal.weights.length > 0 && (
-                    <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem' }}>{animal.weights[0].value} kg</span>
+                    <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem' }}>{animal.weights[0].value} kg</span>
                   )}
                 </div>
 
@@ -261,7 +261,7 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                     }}>
                       <h3 style={{
                         fontFamily: "'GoodDog', 'Inter', sans-serif",
-                        fontSize: '1.15rem',
+                        fontSize: '1.6rem',
                         fontWeight: 'bold',
                         letterSpacing: '0.01em',
                         color: 'var(--text-dark)',
@@ -293,22 +293,22 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                       overflow: 'hidden'
                     }}>
                       {animal.species && (
-                        <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem', whiteSpace: 'nowrap' }}>{animal.species.name}</span>
+                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{animal.species.name}</span>
                       )}
                       {animal.gender && (
-                        <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem', whiteSpace: 'nowrap' }}>{animal.gender}</span>
+                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{animal.gender}</span>
                       )}
                       {animal.size && (
-                        <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem', whiteSpace: 'nowrap' }}>{animal.size}</span>
+                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{animal.size}</span>
                       )}
                       {animal.breed && (
-                        <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem', whiteSpace: 'nowrap' }}>{animal.breed.name}</span>
+                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{animal.breed.name}</span>
                       )}
                       {animal.birthDate && (
-                        <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem', whiteSpace: 'nowrap' }}>{calculateAge(animal.birthDate)}</span>
+                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{calculateAge(animal.birthDate)}</span>
                       )}
                       {animal.weights && animal.weights.length > 0 && (
-                        <span className="chip" style={{ fontSize: '0.7rem', padding: '0.2rem 0.45rem', whiteSpace: 'nowrap' }}>{animal.weights[0].value} kg</span>
+                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{animal.weights[0].value} kg</span>
                       )}
                     </div>
 

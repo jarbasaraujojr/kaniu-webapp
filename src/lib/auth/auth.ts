@@ -25,6 +25,7 @@ export const authOptions: NextAuthOptions = {
           },
           include: {
             role: true,
+            sheltersOwned: true,
           },
         })
 
@@ -45,6 +46,8 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role.name,
           roleId: user.roleId,
+          permissions: user.role.permissions as Record<string, boolean>,
+          shelterId: user.sheltersOwned[0]?.id || null,
         }
       },
     }),
@@ -62,6 +65,8 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.role = user.role
         token.roleId = user.roleId
+        token.permissions = user.permissions
+        token.shelterId = user.shelterId
       }
       return token
     },
@@ -70,6 +75,8 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.role = token.role as string
         session.user.roleId = token.roleId as number
+        session.user.permissions = token.permissions as Record<string, boolean>
+        session.user.shelterId = token.shelterId as string | null
       }
       return session
     },
