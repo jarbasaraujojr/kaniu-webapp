@@ -2,6 +2,42 @@
 
 Este guia fornece instruções passo a passo para fazer o deploy da aplicação Kaniu em um VPS (Virtual Private Server).
 
+## 🚀 Escolha seu Método de Deploy
+
+### Opção 1: Easypanel (⭐ Recomendado - Mais Fácil)
+
+Interface gráfica moderna que simplifica todo o processo de deploy.
+
+**Vantagens:**
+- ✅ Deploy em 5 minutos
+- ✅ Interface web intuitiva
+- ✅ SSL/HTTPS automático
+- ✅ Backup integrado
+- ✅ Monitoramento incluído
+- ✅ Zero configuração manual
+
+**👉 Guias:**
+- **[EASYPANEL-QUICKSTART.md](./EASYPANEL-QUICKSTART.md)** - Quick Start (5 minutos)
+- **[EASYPANEL.md](./EASYPANEL.md)** - Guia Completo
+
+**Quando usar:** Ideal para quem quer facilidade e rapidez, sem necessidade de conhecimento profundo de DevOps.
+
+### Opção 2: Docker Compose Manual (Você está aqui)
+
+Deploy manual usando Docker Compose diretamente via linha de comando.
+
+**Vantagens:**
+- ✅ Controle total
+- ✅ Flexibilidade máxima
+- ✅ Bom para aprendizado
+- ✅ Customização avançada
+
+**Quando usar:** Ideal para quem tem experiência com Docker e prefere controle total, ou quando o Easypanel não está disponível.
+
+---
+
+# Deploy Manual com Docker Compose
+
 ## Pré-requisitos
 
 ### No seu VPS
