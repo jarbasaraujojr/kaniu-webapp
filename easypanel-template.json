@@ -1,0 +1,156 @@
+{
+  "name": "Kaniu WebApp",
+  "description": "Sistema de gestão de abrigos de animais com Next.js e PostgreSQL",
+  "version": "1.0.0",
+  "services": [
+    {
+      "name": "postgres",
+      "type": "postgres",
+      "version": "16-alpine",
+      "config": {
+        "database": "kaniu",
+        "username": "kaniu",
+        "password": "CHANGE_THIS_PASSWORD",
+        "port": 5432
+      },
+      "volumes": [
+        {
+          "name": "postgres_data",
+          "mountPath": "/var/lib/postgresql/data"
+        }
+      ],
+      "resources": {
+        "memory": "512Mi",
+        "cpu": "0.5"
+      },
+      "backups": {
+        "enabled": true,
+        "schedule": "0 2 * * *",
+        "retention": 7
+      }
+    },
+    {
+      "name": "app",
+      "type": "app",
+      "source": {
+        "type": "git",
+        "repository": "https://github.com/jarbasaraujojr/kaniu-webapp",
+        "branch": "main",
+        "buildMethod": "dockerfile",
+        "dockerfilePath": "Dockerfile"
+      },
+      "config": {
+        "port": 3000,
+        "healthcheck": {
+          "path": "/api/health",
+          "interval": 30,
+          "timeout": 10,
+          "retries": 3
+        }
+      },
+      "env": [
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "name": "DATABASE_URL",
+          "value": "postgresql://kaniu:CHANGE_THIS_PASSWORD@postgres:5432/kaniu",
+          "description": "PostgreSQL connection string"
+        },
+        {
+          "name": "NEXTAUTH_URL",
+          "value": "https://your-domain.com",
+          "description": "Your application URL with HTTPS"
+        },
+        {
+          "name": "NEXTAUTH_SECRET",
+          "value": "CHANGE_THIS_SECRET",
+          "description": "Generate with: openssl rand -base64 32"
+        },
+        {
+          "name": "GOOGLE_CLIENT_ID",
+          "value": "",
+          "description": "Google OAuth Client ID (optional)"
+        },
+        {
+          "name": "GOOGLE_CLIENT_SECRET",
+          "value": "",
+          "description": "Google OAuth Client Secret (optional)"
+        },
+        {
+          "name": "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME",
+          "value": "",
+          "description": "Cloudinary cloud name (optional)"
+        },
+        {
+          "name": "CLOUDINARY_API_KEY",
+          "value": "",
+          "description": "Cloudinary API key (optional)"
+        },
+        {
+          "name": "CLOUDINARY_API_SECRET",
+          "value": "",
+          "description": "Cloudinary API secret (optional)"
+        },
+        {
+          "name": "RESEND_API_KEY",
+          "value": "",
+          "description": "Resend API key for emails (optional)"
+        },
+        {
+          "name": "EMAIL_FROM",
+          "value": "noreply@your-domain.com",
+          "description": "Email sender address"
+        }
+      ],
+      "domains": [
+        {
+          "domain": "your-domain.com",
+          "ssl": true,
+          "forceHttps": true
+        }
+      ],
+      "deploy": {
+        "autoDeploy": true,
+        "command": "sh -c \"npx prisma migrate deploy && node server.js\""
+      },
+      "resources": {
+        "memory": "1Gi",
+        "cpu": "1"
+      },
+      "scaling": {
+        "min": 1,
+        "max": 3
+      }
+    }
+  ],
+  "network": {
+    "type": "internal",
+    "name": "kaniu-network"
+  },
+  "instructions": {
+    "preInstall": [
+      "1. Gere um NEXTAUTH_SECRET forte usando: openssl rand -base64 32",
+      "2. Altere o POSTGRES_PASSWORD para uma senha forte",
+      "3. Configure seu domínio no campo 'domains'",
+      "4. Atualize o NEXTAUTH_URL com seu domínio",
+      "5. (Opcional) Configure as variáveis de terceiros (Google, Cloudinary, Resend)"
+    ],
+    "postInstall": [
+      "1. Aguarde o build da aplicação (pode levar alguns minutos)",
+      "2. Verifique os logs para garantir que não há erros",
+      "3. As migrations do Prisma serão executadas automaticamente",
+      "4. Acesse sua aplicação pelo domínio configurado",
+      "5. Configure backup automático no serviço PostgreSQL"
+    ]
+  },
+  "tags": [
+    "nextjs",
+    "postgresql",
+    "typescript",
+    "prisma",
+    "animal-shelter",
+    "adoption"
+  ]
+}

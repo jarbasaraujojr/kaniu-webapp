@@ -80,6 +80,54 @@ kaniu-webapp/
 └── public/               # Arquivos estáticos
 ```
 
+## Deploy em Produção
+
+### 🚀 Deploy Rápido com Easypanel (Recomendado)
+
+A forma mais rápida de colocar a aplicação online:
+
+1. Instale o Easypanel no seu VPS:
+```bash
+curl -sSL https://get.easypanel.io | sh
+```
+
+2. Siga o guia de 5 minutos: **[EASYPANEL-QUICKSTART.md](./EASYPANEL-QUICKSTART.md)**
+
+**Recursos inclusos:**
+- ✅ SSL/HTTPS automático
+- ✅ Deploy via Git
+- ✅ Backup automático
+- ✅ Monitoramento
+- ✅ Zero configuração de servidor
+
+### 🐳 Deploy com Docker
+
+Para deploy manual ou em outros ambientes:
+
+```bash
+# Build e start
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f
+```
+
+### 📚 Guias de Deploy
+
+- **[EASYPANEL-QUICKSTART.md](./EASYPANEL-QUICKSTART.md)** - Deploy em 5 minutos com Easypanel
+- **[EASYPANEL.md](./EASYPANEL.md)** - Guia completo do Easypanel
+- **[DEPLOY.md](./DEPLOY.md)** - Deploy manual em VPS com Docker
+- **[scripts/README.md](./scripts/README.md)** - Scripts de automação
+
+### 💰 Custos Estimados
+
+- **VPS**: €7-12/mês (Hetzner, DigitalOcean, etc)
+- **Easypanel**: Grátis (self-hosted)
+- **Domínio**: $10-15/ano
+- **SSL**: Grátis (Let's Encrypt)
+
+**Total**: ~€10/mês
+
 ## Plano de Desenvolvimento
 
 Veja o arquivo [PLANO.md](PLANO.md) para o roadmap completo do projeto.
