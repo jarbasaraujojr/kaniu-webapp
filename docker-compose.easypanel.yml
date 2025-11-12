@@ -1,53 +1,34 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-kaniu}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-kaniu}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kaniu}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - kaniu-network
-
   app:
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-kaniu}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-kaniu}
+      # Supabase Database (PostgreSQL)
+      DATABASE_URL: ${DATABASE_URL}
+
+      # NextAuth
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+
+      # Google OAuth (optional)
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+
+      # Cloudinary (optional)
       NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:-}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+
+      # Email (optional)
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-noreply@kaniu.com}
+
+      # Environment
       NODE_ENV: production
     ports:
       - "3000:3000"
-    networks:
-      - kaniu-network
     command: sh -c "npx prisma migrate deploy && node server.js"
-
-volumes:
-  postgres_data:
-    driver: local
-
-networks:
-  kaniu-network:
-    driver: bridge

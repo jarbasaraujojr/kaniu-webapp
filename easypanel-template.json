@@ -1,34 +1,8 @@
 {
   "name": "Kaniu WebApp",
-  "description": "Sistema de gestão de abrigos de animais com Next.js e PostgreSQL",
-  "version": "1.0.0",
+  "description": "Sistema de gestão de abrigos de animais com Next.js e Supabase",
+  "version": "2.0.0",
   "services": [
-    {
-      "name": "postgres",
-      "type": "postgres",
-      "version": "16-alpine",
-      "config": {
-        "database": "kaniu",
-        "username": "kaniu",
-        "password": "CHANGE_THIS_PASSWORD",
-        "port": 5432
-      },
-      "volumes": [
-        {
-          "name": "postgres_data",
-          "mountPath": "/var/lib/postgresql/data"
-        }
-      ],
-      "resources": {
-        "memory": "512Mi",
-        "cpu": "0.5"
-      },
-      "backups": {
-        "enabled": true,
-        "schedule": "0 2 * * *",
-        "retention": 7
-      }
-    },
     {
       "name": "app",
       "type": "app",
@@ -42,7 +16,7 @@
       "config": {
         "port": 3000,
         "healthcheck": {
-          "path": "/api/health",
+          "path": "/",
           "interval": 30,
           "timeout": 10,
           "retries": 3
@@ -51,12 +25,13 @@
       "env": [
         {
           "name": "NODE_ENV",
-          "value": "production"
+          "value": "production",
+          "description": "Node.js environment"
         },
         {
           "name": "DATABASE_URL",
-          "value": "postgresql://kaniu:CHANGE_THIS_PASSWORD@postgres:5432/kaniu",
-          "description": "PostgreSQL connection string"
+          "value": "postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres",
+          "description": "Supabase connection string - Get from: Supabase Dashboard > Project Settings > Database > Connection String (URI)"
         },
         {
           "name": "NEXTAUTH_URL",
@@ -125,32 +100,53 @@
       }
     }
   ],
-  "network": {
-    "type": "internal",
-    "name": "kaniu-network"
-  },
   "instructions": {
     "preInstall": [
-      "1. Gere um NEXTAUTH_SECRET forte usando: openssl rand -base64 32",
-      "2. Altere o POSTGRES_PASSWORD para uma senha forte",
-      "3. Configure seu domínio no campo 'domains'",
-      "4. Atualize o NEXTAUTH_URL com seu domínio",
-      "5. (Opcional) Configure as variáveis de terceiros (Google, Cloudinary, Resend)"
+      "1. Configure seu projeto Supabase em https://supabase.com",
+      "2. Copie a connection string do Supabase: Dashboard > Project Settings > Database > Connection String (URI)",
+      "3. Gere um NEXTAUTH_SECRET forte usando: openssl rand -base64 32",
+      "4. Configure seu domínio no campo 'domains'",
+      "5. Atualize o NEXTAUTH_URL com seu domínio",
+      "6. (Opcional) Configure as variáveis de terceiros (Google, Cloudinary, Resend)"
     ],
     "postInstall": [
-      "1. Aguarde o build da aplicação (pode levar alguns minutos)",
+      "1. Aguarde o build da aplicação (pode levar 2-3 minutos)",
       "2. Verifique os logs para garantir que não há erros",
-      "3. As migrations do Prisma serão executadas automaticamente",
+      "3. As migrations do Prisma serão executadas automaticamente no Supabase",
       "4. Acesse sua aplicação pelo domínio configurado",
-      "5. Configure backup automático no serviço PostgreSQL"
+      "5. O backup do banco de dados é gerenciado automaticamente pelo Supabase"
+    ],
+    "notes": [
+      "Este template usa Supabase como banco de dados PostgreSQL gerenciado",
+      "Não é necessário instalar PostgreSQL no VPS",
+      "Supabase oferece 500MB grátis de database storage",
+      "Backups são automáticos no Supabase"
     ]
   },
   "tags": [
     "nextjs",
+    "supabase",
     "postgresql",
     "typescript",
     "prisma",
     "animal-shelter",
-    "adoption"
-  ]
+    "adoption",
+    "easypanel"
+  ],
+  "requirements": {
+    "external": {
+      "supabase": {
+        "description": "Supabase project for PostgreSQL database",
+        "url": "https://supabase.com",
+        "plan": "Free tier available (500MB storage, 2GB bandwidth)",
+        "setup": "Create a project and copy the connection string"
+      }
+    },
+    "vps": {
+      "minMemory": "1GB",
+      "recommendedMemory": "2GB",
+      "minDisk": "10GB",
+      "recommendedDisk": "20GB"
+    }
+  }
 }
