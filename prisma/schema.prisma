@@ -70,6 +70,8 @@ model User {
   favorites                Favorite[]
   animalEventsTriggered    AnimalEvent[]
   auditLogs                AuditLog[]
+  prescriptionsPrescribed  Prescription[]         @relation("PrescriptionPrescriber")
+  prescriptionTasksAdministered PrescriptionTask[]
 
   @@index([email])
   @@index([phone])
@@ -92,8 +94,9 @@ model Shelter {
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  owner   User     @relation("ShelterOwner", fields: [ownerId], references: [id], onDelete: Restrict)
-  animals Animal[]
+  owner       User         @relation("ShelterOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  animals     Animal[]
+  medications Medication[]
 
   @@index([ownerId])
   @@index([isActive])
@@ -137,6 +140,7 @@ model Animal {
   reports              Report[]
   favorites            Favorite[]
   events               AnimalEvent[]
+  prescriptions        Prescription[]
 
   @@index([shelterId])
   @@index([speciesId])
@@ -325,4 +329,76 @@ model AuditLog {
   @@index([tableName])
   @@index([createdAt(sort: Desc)])
   @@map("audit_logs")
+}
+
+// =====================================================
+// MEDICATION MANAGEMENT MODELS
+// =====================================================
+
+model Medication {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(200)
+  shelterId   String?   @map("shelter_id") @db.Uuid
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  shelter       Shelter?       @relation(fields: [shelterId], references: [id], onDelete: SetNull)
+  prescriptions Prescription[]
+
+  @@index([shelterId])
+  @@index([name])
+  @@index([isActive])
+  @@map("medications")
+}
+
+model Prescription {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animalId        String    @map("animal_id") @db.Uuid
+  medicationId    Int       @map("medication_id")
+  dosage          String    @db.VarChar(100)
+  route           String    @db.VarChar(50)  // oral, IV, IM, SC, topical, etc.
+  intervalHours   Int       @map("interval_hours")
+  startDate       DateTime  @map("start_date") @db.Date
+  startTime       DateTime? @map("start_time") @db.Time
+  durationDays    Int?      @map("duration_days")
+  isContinuous    Boolean   @default(false) @map("is_continuous")
+  isCompleted     Boolean   @default(false) @map("is_completed")
+  description     String?
+  prescribedBy    String?   @map("prescribed_by") @db.Uuid
+  recipeId        String?   @map("recipe_id") @db.Uuid  // Link to old receita
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  animal            Animal             @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  medication        Medication         @relation(fields: [medicationId], references: [id], onDelete: Restrict)
+  prescriber        User?              @relation("PrescriptionPrescriber", fields: [prescribedBy], references: [id], onDelete: SetNull)
+  administrations   PrescriptionTask[]
+
+  @@index([animalId])
+  @@index([medicationId])
+  @@index([startDate])
+  @@index([isCompleted])
+  @@index([prescribedBy])
+  @@map("prescriptions")
+}
+
+model PrescriptionTask {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prescriptionId  String    @map("prescription_id") @db.Uuid
+  scheduledDate   DateTime  @map("scheduled_date") @db.Date
+  scheduledTime   DateTime  @map("scheduled_time") @db.Time
+  administeredAt  DateTime? @map("administered_at") @db.Timestamptz(6)
+  administeredBy  String?   @map("administered_by") @db.Uuid
+  isCompleted     Boolean   @default(false) @map("is_completed")
+  notes           String?
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  prescription    Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  administrator   User?        @relation(fields: [administeredBy], references: [id], onDelete: SetNull)
+
+  @@index([prescriptionId])
+  @@index([scheduledDate])
+  @@index([isCompleted])
+  @@index([administeredBy])
+  @@map("prescription_tasks")
 }

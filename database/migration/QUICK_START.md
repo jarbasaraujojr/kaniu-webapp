@@ -42,8 +42,9 @@ psql -d kaniu_new -f 02_create_mapping_tables.sql
 | Animais | 2-3h | 08-10 |
 | Documentos/Médicos | 2h | 11-12 |
 | Adoções/Eventos | 1-2h | 13-15 |
+| **Medicações** ✨ | **1-2h** | **18-20** |
 | Validação | 1-2h | 16-17 |
-| **TOTAL** | **7-12h** | |
+| **TOTAL** | **8-14h** | |
 
 ## 📋 Pré-requisitos
 
@@ -96,9 +97,11 @@ pg_restore -d kaniu_new -c backup.backup
 - ✅ Abrigos e usuários
 - ✅ Favoritos
 - ✅ Eventos
+- ✨ **Medicamentos** (tabelas estruturadas)
+- ✨ **Prescrições completas** (com histórico)
+- ✨ **Tarefas de administração** (com tracking)
 
 ### 🔄 Transformado
-- 🔄 Prescrições → JSONB em medical_records
 - 🔄 Questionários → JSON em adoption_events
 - 🔄 Dados veterinários → Consolidados
 - 🔄 Senhas → Reset obrigatório
@@ -106,8 +109,6 @@ pg_restore -d kaniu_new -c backup.backup
 ### ❌ Não Migrado
 - ❌ Tabelas n8n
 - ❌ Embeddings de documentos
-- ❌ Tarefas complexas
-- ❌ Fluxo detalhado de medicação
 
 ## 🔍 Validação Rápida
 

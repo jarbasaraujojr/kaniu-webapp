@@ -132,6 +132,21 @@ psql -h <host> -U <usuario> -d <db_nova> -f scripts/14_migrate_animal_events.sql
 psql -h <host> -U <usuario> -d <db_nova> -f scripts/15_migrate_favorites.sql
 ```
 
+### Fase 5.5: Medicações e Prescrições (1-2h) ✨ NOVO
+
+```bash
+# Script 18: Medicamentos
+psql -h <host> -U <usuario> -d <db_nova> -f scripts/18_migrate_medications.sql
+
+# Script 19: Prescrições
+psql -h <host> -U <usuario> -d <db_nova> -f scripts/19_migrate_prescriptions.sql
+
+# Script 20: Tarefas de Prescrição
+psql -h <host> -U <usuario> -d <db_nova> -f scripts/20_migrate_prescription_tasks.sql
+```
+
+**⚠️ IMPORTANTE**: Esta fase é **NOVA** e migra todo o sistema de medicação para tabelas estruturadas!
+
 ### Fase 6: Validação (1-2h)
 
 ```bash
@@ -196,6 +211,9 @@ pg_restore -h <host> -U <usuario> -d <db_nova> -c backup_antiga_*.backup
 | `vacinacoes` + `imunizacao` + `anamneses` | `animal_medical_records` | Consolidação com type |
 | `interessado_animal` + `questionario` | `adoption_events` | Questionário serializado em JSON |
 | `pessoa_likes.animais` | `favorites` | Array explodido em registros |
+| `medicamento` | `medications` | ✨ Medicamentos estruturados |
+| `prescricao` + `receita` | `prescriptions` | ✨ Prescrições completas |
+| `prescricao_tarefa` | `prescription_tasks` | ✨ Histórico de administração |
 
 ### Campos JSONB
 
