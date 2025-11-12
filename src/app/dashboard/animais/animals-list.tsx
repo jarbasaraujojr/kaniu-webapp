@@ -207,127 +207,87 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
             ))}
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-            {initialAnimals.map((animal) => (
-              <div
-                key={animal.id}
-                className="card"
-                onClick={() => router.push(`/dashboard/animais/${animal.id}`)}
-                style={{
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  padding: '0.75rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.5rem'
-                }}
-              >
-                {/* Linha 1: Foto + Nome + Abrigo */}
-                <div style={{
-                  display: 'flex',
-                  gap: '0.875rem',
-                  alignItems: 'flex-start'
-                }}>
-                  <div style={{
-                    width: '70px',
-                    height: '70px',
-                    borderRadius: 'var(--radius-md)',
-                    overflow: 'hidden',
-                    flexShrink: 0
-                  }}>
-                    <img
-                      src={getAnimalPhoto(animal)}
-                      alt={animal.name}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover'
-                      }}
-                    />
-                  </div>
-
-                  <div style={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.3rem',
-                    minWidth: 0
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      gap: '1rem'
-                    }}>
-                      <h3 style={{
-                        fontFamily: "'GoodDog', 'Inter', sans-serif",
-                        fontSize: '1.6rem',
-                        fontWeight: 'bold',
-                        letterSpacing: '0.01em',
-                        color: 'var(--text-dark)',
-                        margin: 0,
-                        lineHeight: 1.2
-                      }}>
-                        {animal.name}
-                      </h3>
-
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.3rem',
-                        color: 'var(--text-light)',
-                        fontSize: '0.7rem',
-                        flexShrink: 0,
-                        whiteSpace: 'nowrap'
-                      }}>
-                        <i className="fa-solid fa-building" style={{ fontSize: '0.65rem' }}></i>
-                        <span>{animal.shelter.name}</span>
-                      </div>
-                    </div>
-
-                    {/* Pills com dados */}
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      overflow: 'hidden'
-                    }}>
-                      {animal.species && (
-                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{animal.species.name}</span>
-                      )}
-                      {animal.gender && (
-                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{animal.gender}</span>
-                      )}
-                      {animal.size && (
-                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{animal.size}</span>
-                      )}
-                      {animal.breed && (
-                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{animal.breed.name}</span>
-                      )}
-                      {animal.birthDate && (
-                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{calculateAge(animal.birthDate)}</span>
-                      )}
-                      {animal.weights && animal.weights.length > 0 && (
-                        <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem', whiteSpace: 'nowrap' }}>{animal.weights[0].value} kg</span>
-                      )}
-                    </div>
-
-                    {/* Descrição */}
-                    <p style={{
-                      fontSize: '0.75rem',
-                      color: 'var(--text-light)',
-                      margin: 0,
-                      lineHeight: 1.2,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {animal.description || ''}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="card" style={{ padding: '0' }}>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border-color)', background: 'var(--background-soft)' }}>
+                    <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Animal</th>
+                    <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Espécie</th>
+                    <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Raça</th>
+                    <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sexo</th>
+                    <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Porte</th>
+                    <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Abrigo</th>
+                    <th style={{ padding: '0.75rem 1.5rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {initialAnimals.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-light)' }}>
+                        Nenhum animal encontrado
+                      </td>
+                    </tr>
+                  ) : (
+                    initialAnimals.map((animal) => (
+                      <tr
+                        key={animal.id}
+                        onClick={() => router.push(`/dashboard/animais/${animal.id}`)}
+                        style={{
+                          borderBottom: '1px solid var(--border-color)',
+                          cursor: 'pointer',
+                          transition: 'background 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--background-soft)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <td style={{ padding: '1rem 1.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <img
+                              src={getAnimalPhoto(animal)}
+                              alt={animal.name}
+                              style={{
+                                width: '50px',
+                                height: '50px',
+                                borderRadius: 'var(--radius-md)',
+                                objectFit: 'cover'
+                              }}
+                            />
+                            <span style={{
+                              fontFamily: "'GoodDog', 'Inter', sans-serif",
+                              fontSize: '1.5rem',
+                              fontWeight: 'bold',
+                              letterSpacing: '0.01em',
+                              color: 'var(--text-dark)'
+                            }}>
+                              {animal.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
+                          {animal.species?.name || '-'}
+                        </td>
+                        <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
+                          {animal.breed?.name || '-'}
+                        </td>
+                        <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
+                          {animal.gender || '-'}
+                        </td>
+                        <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
+                          {animal.size || '-'}
+                        </td>
+                        <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
+                          {animal.shelter.name}
+                        </td>
+                        <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
+                          <i className="fa-solid fa-chevron-right" style={{ color: 'var(--text-light)', fontSize: '0.9rem' }}></i>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
