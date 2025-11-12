@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface AnimalsListProps {
   initialStatus: string
@@ -11,11 +11,23 @@ interface AnimalsListProps {
 
 type ViewMode = 'grid' | 'list'
 
+const VIEW_MODE_KEY = 'animals-view-mode'
+
 export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }: AnimalsListProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [currentStatus, setCurrentStatus] = useState(initialStatus)
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(VIEW_MODE_KEY)
+      return (saved === 'grid' || saved === 'list') ? saved : 'grid'
+    }
+    return 'grid'
+  })
+
+  useEffect(() => {
+    localStorage.setItem(VIEW_MODE_KEY, viewMode)
+  }, [viewMode])
 
   const handleStatusChange = (status: string) => {
     setCurrentStatus(status)
@@ -217,14 +229,15 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                     <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Raça</th>
                     <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sexo</th>
                     <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Porte</th>
-                    <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Abrigo</th>
+                    <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Idade</th>
+                    <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Peso</th>
                     <th style={{ padding: '0.75rem 1.5rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}></th>
                   </tr>
                 </thead>
                 <tbody>
                   {initialAnimals.length === 0 ? (
                     <tr>
-                      <td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-light)' }}>
+                      <td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-light)' }}>
                         Nenhum animal encontrado
                       </td>
                     </tr>
@@ -254,10 +267,8 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                               }}
                             />
                             <span style={{
-                              fontFamily: "'GoodDog', 'Inter', sans-serif",
-                              fontSize: '1.5rem',
-                              fontWeight: 'bold',
-                              letterSpacing: '0.01em',
+                              fontSize: '1rem',
+                              fontWeight: 600,
                               color: 'var(--text-dark)'
                             }}>
                               {animal.name}
@@ -277,7 +288,10 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                           {animal.size || '-'}
                         </td>
                         <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
-                          {animal.shelter.name}
+                          {calculateAge(animal.birthDate) || '-'}
+                        </td>
+                        <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
+                          {animal.weights && animal.weights.length > 0 ? `${animal.weights[0].value} kg` : '-'}
                         </td>
                         <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
                           <i className="fa-solid fa-chevron-right" style={{ color: 'var(--text-light)', fontSize: '0.9rem' }}></i>

@@ -116,57 +116,95 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
               gap: '0.65rem',
               flex: 1,
             }}>
-              <h1 style={{
-                fontFamily: "'GoodDog', 'Inter', sans-serif",
-                fontSize: '2.5rem',
-                fontWeight: 'bold',
-                letterSpacing: '0.02em',
-                color: 'var(--primary-color)',
-                margin: 0,
-                lineHeight: 1.1,
-              }}>
-                {animal.name}
-              </h1>
-
               <div style={{
                 display: 'flex',
-                gap: '0.6rem',
-                flexWrap: 'wrap',
-                fontSize: '0.95rem',
+                alignItems: 'center',
+                gap: '1rem',
               }}>
-                {animal.species && <span className="chip">{animal.species}</span>}
-                {animal.gender && <span className="chip">{animal.gender}</span>}
-                {animal.size && <span className="chip">{animal.size}</span>}
-                {animal.breed && <span className="chip">{animal.breed}</span>}
-                {animal.coat && <span className="chip">{animal.coat}</span>}
-                {animal.color && <span className="chip">{animal.color}</span>}
-                {animal.birthDate && (
-                  <span className="chip">
-                    {new Date(animal.birthDate).toLocaleDateString('pt-BR')}
-                  </span>
-                )}
-                {animal.age && <span className="chip">{animal.age}</span>}
-                {animal.latestWeight && <span className="chip">{animal.latestWeight}</span>}
+                <h1 style={{
+                  fontSize: '2rem',
+                  fontWeight: 700,
+                  color: 'var(--primary-color)',
+                  margin: 0,
+                  lineHeight: 1.1,
+                }}>
+                  {animal.name}
+                </h1>
+
+                <div style={{ width: '1px', height: '32px', background: 'var(--border-color)' }}></div>
+
+                <div style={{
+                  display: 'flex',
+                  gap: '0.6rem',
+                  flexWrap: 'wrap',
+                  fontSize: '0.95rem',
+                }}>
+                  {animal.species && <span className="chip">{animal.species}</span>}
+                  {animal.gender && <span className="chip">{animal.gender}</span>}
+                  {animal.size && <span className="chip">{animal.size}</span>}
+                  {animal.breed && <span className="chip">{animal.breed}</span>}
+                  {animal.coat && <span className="chip">{animal.coat}</span>}
+                  {animal.color && <span className="chip">{animal.color}</span>}
+                  {animal.birthDate && (
+                    <span className="chip">
+                      {new Date(animal.birthDate).toLocaleDateString('pt-BR')}
+                    </span>
+                  )}
+                  {animal.age && <span className="chip">{animal.age}</span>}
+                  {animal.latestWeight && <span className="chip">{animal.latestWeight}</span>}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {/* Botões de Status */}
+                {[
+                  { icon: 'fa-heart', label: 'Disponível', status: 'Disponível' },
+                  { icon: 'fa-house', label: 'Adotado', status: 'Adotado' },
+                  { icon: 'fa-magnifying-glass', label: 'Desaparecido', status: 'Desaparecido' },
+                  { icon: 'fa-hospital', label: 'Internado', status: 'Internado' },
+                  { icon: 'fa-cross', label: 'Falecido', status: 'Falecido' },
+                ].map((action, idx) => {
+                  const isActive = animal.status === action.status
+                  return (
+                    <button
+                      key={idx}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '8px',
+                        border: isActive ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+                        background: isActive ? 'var(--primary-color)' : 'var(--card-background)',
+                        color: isActive ? 'white' : 'var(--text-light)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1rem',
+                        transition: 'all 0.2s ease',
+                        boxShadow: isActive ? '0 2px 8px rgba(90, 93, 127, 0.25)' : 'none',
+                      }}
+                      onMouseOver={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = 'var(--background-soft)'
+                          e.currentTarget.style.borderColor = 'var(--primary-color)'
+                          e.currentTarget.style.color = 'var(--primary-color)'
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = 'var(--card-background)'
+                          e.currentTarget.style.color = 'var(--text-light)'
+                          e.currentTarget.style.borderColor = 'var(--border-color)'
+                        }
+                      }}
+                      title={action.label}
+                    >
+                      <i className={`fa-solid ${action.icon}`}></i>
+                    </button>
+                  )
+                })}
               </div>
             </div>
-
-            <button
-              style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '10px',
-                border: '1px solid var(--border-color)',
-                background: 'var(--card-background)',
-                color: 'var(--text-dark)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.3rem',
-              }}
-            >
-              <i className="fa-solid fa-ellipsis-vertical"></i>
-            </button>
           </div>
         </div>
       </header>
@@ -175,8 +213,8 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
       <div style={{
         display: 'flex',
         gap: '0.5rem',
-        marginTop: '1.5rem',
-        marginBottom: '1.5rem',
+        marginTop: '0.5rem',
+        marginBottom: '0.5rem',
         overflowX: 'auto',
       }}>
         {tabs.map(tab => (
@@ -206,7 +244,7 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
       </div>
 
       {/* Tab Content */}
-      <div style={{ marginTop: '1.5rem' }}>
+      <div style={{ marginTop: '0.5rem' }}>
         {activeTab === 'painel' && <PainelTab animal={animal} latestAssessment={latestAssessment} latestVaccination={latestVaccination} />}
         {activeTab === 'historico' && <HistoricoTab events={animal.events} />}
         {activeTab === 'avaliacao' && <AvaliacaoTab assessments={assessments} />}
@@ -222,56 +260,6 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
 function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: AnimalData, latestAssessment: any, latestVaccination: any }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      {/* Ações Rápidas - Status do Animal */}
-      <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
-        {[
-          { icon: 'fa-heart', label: 'Disponível', status: 'Disponível' },
-          { icon: 'fa-house', label: 'Adotado', status: 'Adotado' },
-          { icon: 'fa-magnifying-glass', label: 'Desaparecido', status: 'Desaparecido' },
-          { icon: 'fa-hospital', label: 'Internado', status: 'Internado' },
-          { icon: 'fa-cross', label: 'Falecido', status: 'Falecido' },
-        ].map((action, idx) => {
-          const isActive = animal.status === action.status
-          return (
-            <button
-              key={idx}
-              style={{
-                width: '50px',
-                height: '50px',
-                borderRadius: '10px',
-                border: isActive ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
-                background: isActive ? 'var(--primary-color)' : 'var(--card-background)',
-                color: isActive ? 'white' : 'var(--text-dark)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.25rem',
-                transition: 'all 0.2s ease',
-                boxShadow: isActive ? '0 4px 12px rgba(90, 93, 127, 0.3)' : 'none',
-              }}
-              onMouseOver={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = 'var(--primary-color)'
-                  e.currentTarget.style.color = 'white'
-                  e.currentTarget.style.borderColor = 'var(--primary-color)'
-                }
-              }}
-              onMouseOut={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.background = 'var(--card-background)'
-                  e.currentTarget.style.color = 'var(--text-dark)'
-                  e.currentTarget.style.borderColor = 'var(--border-color)'
-                }
-              }}
-              title={action.label}
-            >
-              <i className={`fa-solid ${action.icon}`}></i>
-            </button>
-          )
-        })}
-      </div>
-
       {/* Grid de Cards - 2 colunas */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.25rem' }}>
 
