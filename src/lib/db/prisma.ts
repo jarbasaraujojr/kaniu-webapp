@@ -7,6 +7,11 @@ const globalForPrisma = globalThis as unknown as {
 const createPrismaClient = () => {
   const client = new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
   })
 
   // Soft delete middleware

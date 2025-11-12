@@ -119,6 +119,9 @@ const getStatusVariant = (status: string) => {
   return ''
 }
 
+// Revalidate cache every 60 seconds
+export const revalidate = 60
+
 export default async function PainelPage() {
   const session = await getServerSession(authOptions)
 

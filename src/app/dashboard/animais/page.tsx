@@ -9,6 +9,9 @@ interface AnimaisPageProps {
   searchParams: { status?: string }
 }
 
+// Revalidate cache every 60 seconds
+export const revalidate = 60
+
 export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
   const session = await getServerSession(authOptions)
 
