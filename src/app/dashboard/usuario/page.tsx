@@ -21,30 +21,30 @@ export default async function UserDashboardPage() {
     favorites,
     reports
   ] = await Promise.all([
-    prisma.favorite.count({ where: { userId } }),
-    prisma.report.count({ where: { reporterId: userId } }),
-    prisma.adoptionEvent.count({ where: { adopterId: userId } }),
-    prisma.favorite.findMany({
-      where: { userId },
+    prisma.favorites.count({ where: { user_id: userId } }),
+    prisma.reports.count({ where: { reporter_id: userId } }),
+    prisma.adoption_events.count({ where: { adopter_id: userId } }),
+    prisma.favorites.findMany({
+      where: { user_id: userId },
       include: {
-        animal: {
+        animals: {
           include: {
-            species: true,
-            breed: true,
-            shelter: true
+            catalogs_animals_species_idTocatalogs: true,
+            catalogs_animals_breed_idTocatalogs: true,
+            shelters: true
           }
         }
       },
       take: 6,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { created_at: 'desc' }
     }),
-    prisma.report.findMany({
-      where: { reporterId: userId },
+    prisma.reports.findMany({
+      where: { reporter_id: userId },
       include: {
-        animal: true
+        animals: true
       },
       take: 5,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { created_at: 'desc' }
     })
   ])
 
@@ -198,8 +198,8 @@ export default async function UserDashboardPage() {
                 {reports.map((report) => (
                   <tr key={report.id}>
                     <td>
-                      <span className={`status-pill ${report.reportType === 'lost' ? 'danger' : 'warning'}`}>
-                        {report.reportType === 'lost' ? 'Perdido' : 'Encontrado'}
+                      <span className={`status-pill ${report.report_type === 'lost' ? 'danger' : 'warning'}`}>
+                        {report.report_type === 'lost' ? 'Perdido' : 'Encontrado'}
                       </span>
                     </td>
                     <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -211,7 +211,7 @@ export default async function UserDashboardPage() {
                       </span>
                     </td>
                     <td className="muted-text">
-                      {new Date(report.createdAt).toLocaleDateString('pt-BR')}
+                      {new Date(report.created_at).toLocaleDateString('pt-BR')}
                     </td>
                   </tr>
                 ))}

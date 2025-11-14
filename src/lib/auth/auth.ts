@@ -19,13 +19,13 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Buscar usuário no banco
-        const user = await prisma.user.findUnique({
+        const user = await prisma.users.findUnique({
           where: {
             email: credentials.email,
           },
           include: {
-            role: true,
-            sheltersOwned: true,
+            roles: true,
+            shelters: true,
           },
         })
 
@@ -44,10 +44,10 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role.name,
-          roleId: user.roleId,
-          permissions: user.role.permissions as Record<string, boolean>,
-          shelterId: user.sheltersOwned[0]?.id || null,
+          role: user.roles.name,
+          roleId: user.role_id,
+          permissions: user.roles.permissions as Record<string, boolean>,
+          shelterId: user.shelters[0]?.id || null,
         }
       },
     }),

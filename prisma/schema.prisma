@@ -1,404 +1,368 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["relationJoins"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-model Catalog {
-  id          Int       @id @default(autoincrement())
-  category    String    @db.VarChar(50)
-  name        String    @db.VarChar(100)
-  description String?
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+model adoption_events {
+  id                                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id                                 String   @db.Uuid
+  adopter_id                                String   @db.Uuid
+  status                                    String   @db.VarChar(30)
+  information                               String?
+  triggered_by                              String   @db.Uuid
+  created_at                                DateTime @default(now()) @db.Timestamptz(6)
+  users_adoption_events_adopter_idTousers   users    @relation("adoption_events_adopter_idTousers", fields: [adopter_id], references: [id])
+  animals                                   animals  @relation(fields: [animal_id], references: [id])
+  users_adoption_events_triggered_byTousers users    @relation("adoption_events_triggered_byTousers", fields: [triggered_by], references: [id])
 
-  animalsSpecies Animal[] @relation("AnimalSpecies")
-  animalsBreed   Animal[] @relation("AnimalBreed")
-  animalsStatus  Animal[] @relation("AnimalStatus")
+  @@index([adopter_id])
+  @@index([animal_id])
+  @@index([created_at(sort: Desc)])
+  @@index([status])
+}
+
+model animal_events {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id    String   @db.Uuid
+  event_type   String   @db.VarChar(50)
+  description  String
+  details      Json?
+  triggered_by String   @db.Uuid
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  animals      animals  @relation(fields: [animal_id], references: [id], onDelete: Cascade)
+  users        users    @relation(fields: [triggered_by], references: [id])
+
+  @@index([animal_id])
+  @@index([created_at(sort: Desc)])
+  @@index([event_type])
+}
+
+model animal_medical_records {
+  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id     String     @db.Uuid
+  record_type   String     @db.VarChar(50)
+  description   String
+  veterinarian  String?    @db.VarChar
+  record_date   DateTime   @db.Date
+  next_due_date DateTime?  @db.Date
+  details       Json?
+  document_id   String?    @db.Uuid
+  created_by    String?    @db.Uuid
+  created_at    DateTime   @default(now()) @db.Timestamptz(6)
+  animals       animals    @relation(fields: [animal_id], references: [id], onDelete: Cascade)
+  users         users?     @relation(fields: [created_by], references: [id])
+  documents     documents? @relation(fields: [document_id], references: [id])
+
+  @@index([animal_id])
+  @@index([record_date(sort: Desc)])
+  @@index([record_type])
+}
+
+model animal_photos {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id      String   @db.Uuid
+  image_url      String
+  is_profile_pic Boolean  @default(false)
+  photo_order    Int      @default(0)
+  uploaded_by    String?  @db.Uuid
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  animals        animals  @relation(fields: [animal_id], references: [id], onDelete: Cascade)
+  users          users?   @relation(fields: [uploaded_by], references: [id])
+
+  @@index([animal_id])
+  @@index([animal_id, is_profile_pic])
+}
+
+model animal_weights {
+  id          BigInt   @id @default(autoincrement())
+  animal_id   String   @db.Uuid
+  value       Decimal  @db.Decimal(6, 2)
+  unit        String   @default("kg") @db.VarChar(10)
+  recorded_by String   @db.Uuid
+  date_time   DateTime @default(now()) @db.Timestamptz(6)
+  notes       String?
+  animals     animals  @relation(fields: [animal_id], references: [id], onDelete: Cascade)
+  users       users    @relation(fields: [recorded_by], references: [id], onDelete: SetNull)
+
+  @@index([animal_id, date_time(sort: Desc)])
+}
+
+model animals {
+  id                                    String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                                  String                   @db.VarChar
+  description                           String?
+  shelter_id                            String                   @db.Uuid
+  species_id                            Int?
+  breed_id                              Int?
+  gender                                String?                  @db.VarChar(15)
+  size                                  String?                  @db.VarChar(20)
+  birth_date                            DateTime?                @db.Date
+  microchip_id                          String?                  @unique @db.VarChar
+  castrated                             Boolean?
+  health_status                         Json?
+  behavior                              Json?
+  appearance                            Json
+  created_at                            DateTime                 @default(now()) @db.Timestamptz(6)
+  updated_at                            DateTime                 @default(now()) @db.Timestamptz(6)
+  created_by                            String?                  @db.Uuid
+  updated_by                            String?                  @db.Uuid
+  status_id                             Int?
+  deleted_at                            DateTime?                @db.Timestamptz(6)
+  adoption_events                       adoption_events[]
+  animal_events                         animal_events[]
+  animal_medical_records                animal_medical_records[]
+  animal_photos                         animal_photos[]
+  animal_weights                        animal_weights[]
+  catalogs_animals_breed_idTocatalogs   catalogs?                @relation("animals_breed_idTocatalogs", fields: [breed_id], references: [id])
+  users_animals_created_byTousers       users?                   @relation("animals_created_byTousers", fields: [created_by], references: [id])
+  shelters                              shelters                 @relation(fields: [shelter_id], references: [id])
+  catalogs_animals_species_idTocatalogs catalogs?                @relation("animals_species_idTocatalogs", fields: [species_id], references: [id])
+  catalogs_animals_status_idTocatalogs  catalogs?                @relation("animals_status_idTocatalogs", fields: [status_id], references: [id])
+  users_animals_updated_byTousers       users?                   @relation("animals_updated_byTousers", fields: [updated_by], references: [id])
+  documents                             documents[]
+  favorites                             favorites[]
+  prescriptions                         prescriptions[]
+  reports                               reports[]
+
+  @@index([breed_id])
+  @@index([deleted_at])
+  @@index([microchip_id])
+  @@index([name])
+  @@index([shelter_id])
+  @@index([species_id])
+  @@index([status_id])
+}
+
+model audit_logs {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String?  @db.Uuid
+  action     String   @db.VarChar(50)
+  table_name String   @db.VarChar(100)
+  record_id  String   @db.Uuid
+  old_values Json?
+  new_values Json?
+  details    Json?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  users      users?   @relation(fields: [user_id], references: [id])
+
+  @@index([created_at(sort: Desc)])
+  @@index([table_name])
+  @@index([user_id])
+}
+
+model catalogs {
+  id                                   Int         @id @default(autoincrement())
+  category                             String      @db.VarChar(50)
+  name                                 String      @db.VarChar(100)
+  description                          String?
+  parent_id                            Int?        @map("parent_id")
+  is_active                            Boolean     @default(true)
+  created_at                           DateTime    @default(now()) @db.Timestamptz(6)
+
+  parent                               catalogs?   @relation("catalog_hierarchy", fields: [parent_id], references: [id], onDelete: Cascade)
+  children                             catalogs[]  @relation("catalog_hierarchy")
+
+  animals_animals_breed_idTocatalogs   animals[]   @relation("animals_breed_idTocatalogs")
+  animals_animals_species_idTocatalogs animals[]   @relation("animals_species_idTocatalogs")
+  animals_animals_status_idTocatalogs  animals[]   @relation("animals_status_idTocatalogs")
 
   @@unique([category, name])
   @@index([category])
   @@index([name])
-  @@map("catalogs")
+  @@index([parent_id])
 }
 
-model Role {
+model documents {
+  id                     String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id              String                   @db.Uuid
+  document_type          String                   @db.VarChar(50)
+  file_url               String
+  file_name              String?                  @db.VarChar(255)
+  mime_type              String?                  @db.VarChar(50)
+  description            String?
+  issued_date            DateTime?                @db.Date
+  data                   Json?
+  uploaded_by            String                   @db.Uuid
+  created_at             DateTime                 @default(now()) @db.Timestamptz(6)
+  animal_medical_records animal_medical_records[]
+  animals                animals                  @relation(fields: [animal_id], references: [id], onDelete: Cascade)
+  users                  users                    @relation(fields: [uploaded_by], references: [id])
+
+  @@index([animal_id])
+  @@index([created_at(sort: Desc)])
+  @@index([document_type])
+}
+
+model favorites {
+  user_id    String   @db.Uuid
+  animal_id  String   @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  animals    animals  @relation(fields: [animal_id], references: [id], onDelete: Cascade)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, animal_id])
+  @@index([animal_id])
+  @@index([user_id])
+}
+
+model medications {
+  id            Int             @id @default(autoincrement())
+  name          String          @db.VarChar(200)
+  shelter_id    String?         @db.Uuid
+  is_active     Boolean         @default(true)
+  created_at    DateTime        @default(now()) @db.Timestamptz(6)
+  shelters      shelters?       @relation(fields: [shelter_id], references: [id])
+  prescriptions prescriptions[]
+
+  @@index([is_active])
+  @@index([name])
+  @@index([shelter_id])
+}
+
+model prescription_tasks {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prescription_id String        @db.Uuid
+  scheduled_date  DateTime      @db.Date
+  scheduled_time  DateTime      @db.Time(6)
+  administered_at DateTime?     @db.Timestamptz(6)
+  administered_by String?       @db.Uuid
+  is_completed    Boolean       @default(false)
+  notes           String?
+  created_at      DateTime      @default(now()) @db.Timestamptz(6)
+  users           users?        @relation(fields: [administered_by], references: [id])
+  prescriptions   prescriptions @relation(fields: [prescription_id], references: [id], onDelete: Cascade)
+
+  @@index([administered_by])
+  @@index([is_completed])
+  @@index([prescription_id])
+  @@index([scheduled_date])
+}
+
+model prescriptions {
+  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id          String               @db.Uuid
+  medication_id      Int
+  dosage             String               @db.VarChar(100)
+  route              String               @db.VarChar(50)
+  interval_hours     Int
+  start_date         DateTime             @db.Date
+  start_time         DateTime?            @db.Time(6)
+  duration_days      Int?
+  is_continuous      Boolean              @default(false)
+  is_completed       Boolean              @default(false)
+  description        String?
+  prescribed_by      String?              @db.Uuid
+  recipe_id          String?              @db.Uuid
+  created_at         DateTime             @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime             @default(now()) @db.Timestamptz(6)
+  prescription_tasks prescription_tasks[]
+  animals            animals              @relation(fields: [animal_id], references: [id], onDelete: Cascade)
+  medications        medications          @relation(fields: [medication_id], references: [id])
+  users              users?               @relation(fields: [prescribed_by], references: [id])
+
+  @@index([animal_id])
+  @@index([is_completed])
+  @@index([medication_id])
+  @@index([prescribed_by])
+  @@index([start_date])
+}
+
+model reports {
+  id                               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id                        String?   @db.Uuid
+  reporter_id                      String    @db.Uuid
+  report_type                      String    @db.VarChar(20)
+  location                         Json
+  description                      String
+  matched_report_id                String?   @db.Uuid
+  matched_by                       String?   @db.Uuid
+  matched_at                       DateTime? @db.Timestamptz(6)
+  resolved                         Boolean   @default(false)
+  resolved_date                    DateTime? @db.Timestamptz(6)
+  resolution_notes                 String?
+  created_at                       DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                       DateTime  @default(now()) @db.Timestamptz(6)
+  animals                          animals?  @relation(fields: [animal_id], references: [id])
+  users_reports_matched_byTousers  users?    @relation("reports_matched_byTousers", fields: [matched_by], references: [id])
+  reports                          reports?  @relation("reportsToreports", fields: [matched_report_id], references: [id])
+  other_reports                    reports[] @relation("reportsToreports")
+  users_reports_reporter_idTousers users     @relation("reports_reporter_idTousers", fields: [reporter_id], references: [id], onDelete: SetNull)
+
+  @@index([animal_id])
+  @@index([created_at(sort: Desc)])
+  @@index([report_type])
+  @@index([resolved])
+}
+
+model roles {
   id          Int      @id @default(autoincrement())
   name        String   @unique @db.VarChar(50)
   description String?
   permissions Json     @default("{}")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  users User[]
-
-  @@map("roles")
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  users       users[]
 }
 
-model User {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name       String   @db.VarChar
-  email      String   @unique @db.VarChar
-  password   String   @db.VarChar
-  phone      String?  @db.VarChar
-  address    Json?
-  documentId String?  @unique @map("document_id") @db.VarChar
-  roleId     Int      @map("role_id")
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
+model shelters {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String        @db.VarChar
+  description String?
+  owner_id    String        @db.Uuid
+  location    Json?
+  phone       String?       @db.VarChar
+  email       String?       @db.VarChar
+  website     String?       @db.VarChar
+  is_active   Boolean       @default(true)
+  created_at  DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime      @default(now()) @db.Timestamptz(6)
+  deleted_at  DateTime?     @db.Timestamptz(6)
+  animals     animals[]
+  medications medications[]
+  users       users         @relation(fields: [owner_id], references: [id])
 
-  role                     Role                   @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  sheltersOwned            Shelter[]              @relation("ShelterOwner")
-  animalsCreated           Animal[]               @relation("AnimalCreatedBy")
-  animalsUpdated           Animal[]               @relation("AnimalUpdatedBy")
-  animalPhotosUploaded     AnimalPhoto[]
-  documentsUploaded        Document[]
-  adoptionEventsTriggered  AdoptionEvent[]        @relation("AdoptionEventTriggeredBy")
-  adoptionEventsAsAdopter  AdoptionEvent[]        @relation("AdoptionEventAdopter")
-  animalWeightsRecorded    AnimalWeight[]
-  medicalRecordsCreated    AnimalMedicalRecord[]
-  reportsSubmitted         Report[]               @relation("ReportReporter")
-  reportsMatched           Report[]               @relation("ReportMatchedBy")
-  favorites                Favorite[]
-  animalEventsTriggered    AnimalEvent[]
-  auditLogs                AuditLog[]
-  prescriptionsPrescribed  Prescription[]         @relation("PrescriptionPrescriber")
-  prescriptionTasksAdministered PrescriptionTask[]
+  @@index([deleted_at])
+  @@index([is_active])
+  @@index([owner_id])
+}
 
+model users {
+  id                                                  String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                                                String                   @db.VarChar
+  email                                               String                   @unique @db.VarChar
+  password                                            String                   @db.VarChar
+  phone                                               String?                  @db.VarChar
+  address                                             Json?
+  document_id                                         String?                  @unique @db.VarChar
+  role_id                                             Int
+  created_at                                          DateTime                 @default(now()) @db.Timestamptz(6)
+  updated_at                                          DateTime                 @default(now()) @db.Timestamptz(6)
+  deleted_at                                          DateTime?                @db.Timestamptz(6)
+  adoption_events_adoption_events_adopter_idTousers   adoption_events[]        @relation("adoption_events_adopter_idTousers")
+  adoption_events_adoption_events_triggered_byTousers adoption_events[]        @relation("adoption_events_triggered_byTousers")
+  animal_events                                       animal_events[]
+  animal_medical_records                              animal_medical_records[]
+  animal_photos                                       animal_photos[]
+  animal_weights                                      animal_weights[]
+  animals_animals_created_byTousers                   animals[]                @relation("animals_created_byTousers")
+  animals_animals_updated_byTousers                   animals[]                @relation("animals_updated_byTousers")
+  audit_logs                                          audit_logs[]
+  documents                                           documents[]
+  favorites                                           favorites[]
+  prescription_tasks                                  prescription_tasks[]
+  prescriptions                                       prescriptions[]
+  reports_reports_matched_byTousers                   reports[]                @relation("reports_matched_byTousers")
+  reports_reports_reporter_idTousers                  reports[]                @relation("reports_reporter_idTousers")
+  shelters                                            shelters[]
+  roles                                               roles                    @relation(fields: [role_id], references: [id])
+
+  @@index([deleted_at])
   @@index([email])
   @@index([phone])
-  @@index([roleId])
-  @@index([deletedAt])
-  @@map("users")
-}
-
-model Shelter {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String   @db.VarChar
-  description String?
-  ownerId     String   @map("owner_id") @db.Uuid
-  location    Json?
-  phone       String?  @db.VarChar
-  email       String?  @db.VarChar
-  website     String?  @db.VarChar
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
-
-  owner       User         @relation("ShelterOwner", fields: [ownerId], references: [id], onDelete: Restrict)
-  animals     Animal[]
-  medications Medication[]
-
-  @@index([ownerId])
-  @@index([isActive])
-  @@index([deletedAt])
-  @@map("shelters")
-}
-
-model Animal {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String   @db.VarChar
-  description   String?
-  shelterId     String   @map("shelter_id") @db.Uuid
-  speciesId     Int?     @map("species_id")
-  breedId       Int?     @map("breed_id")
-  gender        String?  @db.VarChar(15)
-  size          String?  @db.VarChar(20)
-  birthDate     DateTime? @map("birth_date") @db.Date
-  microchipId   String?  @unique @map("microchip_id") @db.VarChar
-  statusId      Int?     @map("status_id")
-  castrated     Boolean?
-  healthStatus  Json?    @map("health_status")
-  behavior      Json?
-  appearance    Json
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  createdBy     String?  @map("created_by") @db.Uuid
-  updatedBy     String?  @map("updated_by") @db.Uuid
-  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
-
-  shelter              Shelter               @relation(fields: [shelterId], references: [id], onDelete: Restrict)
-  species              Catalog?              @relation("AnimalSpecies", fields: [speciesId], references: [id])
-  breed                Catalog?              @relation("AnimalBreed", fields: [breedId], references: [id])
-  status               Catalog?              @relation("AnimalStatus", fields: [statusId], references: [id])
-  createdByUser        User?                 @relation("AnimalCreatedBy", fields: [createdBy], references: [id])
-  updatedByUser        User?                 @relation("AnimalUpdatedBy", fields: [updatedBy], references: [id])
-  photos               AnimalPhoto[]
-  documents            Document[]
-  adoptionEvents       AdoptionEvent[]
-  weights              AnimalWeight[]
-  medicalRecords       AnimalMedicalRecord[]
-  reports              Report[]
-  favorites            Favorite[]
-  events               AnimalEvent[]
-  prescriptions        Prescription[]
-
-  @@index([shelterId])
-  @@index([speciesId])
-  @@index([breedId])
-  @@index([statusId])
-  @@index([name])
-  @@index([microchipId])
-  @@index([deletedAt])
-  @@map("animals")
-}
-
-model AnimalPhoto {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  animalId      String   @map("animal_id") @db.Uuid
-  imageUrl      String   @map("image_url")
-  isProfilePic  Boolean  @default(false) @map("is_profile_pic")
-  photoOrder    Int      @default(0) @map("photo_order")
-  uploadedBy    String?  @map("uploaded_by") @db.Uuid
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  animal        Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
-  uploadedByUser User?   @relation(fields: [uploadedBy], references: [id])
-
-  @@index([animalId])
-  @@index([animalId, isProfilePic])
-  @@map("animal_photos")
-}
-
-model Document {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  animalId      String   @map("animal_id") @db.Uuid
-  documentType  String   @map("document_type") @db.VarChar(50)
-  fileUrl       String   @map("file_url")
-  fileName      String?  @map("file_name") @db.VarChar(255)
-  mimeType      String?  @map("mime_type") @db.VarChar(50)
-  description   String?
-  issuedDate    DateTime? @map("issued_date") @db.Date
-  data          Json?
-  uploadedBy    String   @map("uploaded_by") @db.Uuid
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  animal           Animal                @relation(fields: [animalId], references: [id], onDelete: Cascade)
-  uploadedByUser   User                  @relation(fields: [uploadedBy], references: [id])
-  medicalRecords   AnimalMedicalRecord[]
-
-  @@index([animalId])
-  @@index([documentType])
-  @@index([createdAt(sort: Desc)])
-  @@map("documents")
-}
-
-model AdoptionEvent {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  animalId    String   @map("animal_id") @db.Uuid
-  adopterId   String   @map("adopter_id") @db.Uuid
-  status      String   @db.VarChar(30)
-  information String?
-  triggeredBy String   @map("triggered_by") @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  animal           Animal @relation(fields: [animalId], references: [id], onDelete: Restrict)
-  adopter          User   @relation("AdoptionEventAdopter", fields: [adopterId], references: [id], onDelete: Restrict)
-  triggeredByUser  User   @relation("AdoptionEventTriggeredBy", fields: [triggeredBy], references: [id])
-
-  @@index([animalId])
-  @@index([adopterId])
-  @@index([status])
-  @@index([createdAt(sort: Desc)])
-  @@map("adoption_events")
-}
-
-model AnimalWeight {
-  id         BigInt   @id @default(autoincrement())
-  animalId   String   @map("animal_id") @db.Uuid
-  value      Decimal  @db.Decimal(6, 2)
-  unit       String   @default("kg") @db.VarChar(10)
-  recordedBy String   @map("recorded_by") @db.Uuid
-  dateTime   DateTime @default(now()) @map("date_time") @db.Timestamptz(6)
-  notes      String?
-
-  animal         Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
-  recordedByUser User   @relation(fields: [recordedBy], references: [id], onDelete: SetNull)
-
-  @@index([animalId, dateTime(sort: Desc)])
-  @@map("animal_weights")
-}
-
-model AnimalMedicalRecord {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  animalId    String    @map("animal_id") @db.Uuid
-  recordType  String    @map("record_type") @db.VarChar(50)
-  description String
-  veterinarian String?  @db.VarChar
-  recordDate  DateTime  @map("record_date") @db.Date
-  nextDueDate DateTime? @map("next_due_date") @db.Date
-  details     Json?
-  documentId  String?   @map("document_id") @db.Uuid
-  createdBy   String?   @map("created_by") @db.Uuid
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  animal         Animal    @relation(fields: [animalId], references: [id], onDelete: Cascade)
-  document       Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
-  createdByUser  User?     @relation(fields: [createdBy], references: [id])
-
-  @@index([animalId])
-  @@index([recordType])
-  @@index([recordDate(sort: Desc)])
-  @@map("animal_medical_records")
-}
-
-model Report {
-  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  animalId         String?   @map("animal_id") @db.Uuid
-  reporterId       String    @map("reporter_id") @db.Uuid
-  reportType       String    @map("report_type") @db.VarChar(20)
-  location         Json
-  description      String
-  matchedReportId  String?   @map("matched_report_id") @db.Uuid
-  matchedBy        String?   @map("matched_by") @db.Uuid
-  matchedAt        DateTime? @map("matched_at") @db.Timestamptz(6)
-  resolved         Boolean   @default(false)
-  resolvedDate     DateTime? @map("resolved_date") @db.Timestamptz(6)
-  resolutionNotes  String?   @map("resolution_notes")
-  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  animal          Animal?  @relation(fields: [animalId], references: [id], onDelete: SetNull)
-  reporter        User     @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: SetNull)
-  matchedReport   Report?  @relation("ReportMatch", fields: [matchedReportId], references: [id], onDelete: SetNull)
-  matchedReports  Report[] @relation("ReportMatch")
-  matchedByUser   User?    @relation("ReportMatchedBy", fields: [matchedBy], references: [id], onDelete: SetNull)
-
-  @@index([reportType])
-  @@index([resolved])
-  @@index([animalId])
-  @@index([createdAt(sort: Desc)])
-  @@map("reports")
-}
-
-model Favorite {
-  userId    String   @map("user_id") @db.Uuid
-  animalId  String   @map("animal_id") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  animal Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
-
-  @@id([userId, animalId])
-  @@index([userId])
-  @@index([animalId])
-  @@map("favorites")
-}
-
-model AnimalEvent {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  animalId    String   @map("animal_id") @db.Uuid
-  eventType   String   @map("event_type") @db.VarChar(50)
-  description String
-  details     Json?
-  triggeredBy String   @map("triggered_by") @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  animal          Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
-  triggeredByUser User   @relation(fields: [triggeredBy], references: [id])
-
-  @@index([animalId])
-  @@index([eventType])
-  @@index([createdAt(sort: Desc)])
-  @@map("animal_events")
-}
-
-model AuditLog {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId     String?  @map("user_id") @db.Uuid
-  action     String   @db.VarChar(50)
-  tableName  String   @map("table_name") @db.VarChar(100)
-  recordId   String   @map("record_id") @db.Uuid
-  oldValues  Json?    @map("old_values")
-  newValues  Json?    @map("new_values")
-  details    Json?
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([tableName])
-  @@index([createdAt(sort: Desc)])
-  @@map("audit_logs")
-}
-
-// =====================================================
-// MEDICATION MANAGEMENT MODELS
-// =====================================================
-
-model Medication {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(200)
-  shelterId   String?   @map("shelter_id") @db.Uuid
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  shelter       Shelter?       @relation(fields: [shelterId], references: [id], onDelete: SetNull)
-  prescriptions Prescription[]
-
-  @@index([shelterId])
-  @@index([name])
-  @@index([isActive])
-  @@map("medications")
-}
-
-model Prescription {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  animalId        String    @map("animal_id") @db.Uuid
-  medicationId    Int       @map("medication_id")
-  dosage          String    @db.VarChar(100)
-  route           String    @db.VarChar(50)  // oral, IV, IM, SC, topical, etc.
-  intervalHours   Int       @map("interval_hours")
-  startDate       DateTime  @map("start_date") @db.Date
-  startTime       DateTime? @map("start_time") @db.Time
-  durationDays    Int?      @map("duration_days")
-  isContinuous    Boolean   @default(false) @map("is_continuous")
-  isCompleted     Boolean   @default(false) @map("is_completed")
-  description     String?
-  prescribedBy    String?   @map("prescribed_by") @db.Uuid
-  recipeId        String?   @map("recipe_id") @db.Uuid  // Link to old receita
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  animal            Animal             @relation(fields: [animalId], references: [id], onDelete: Cascade)
-  medication        Medication         @relation(fields: [medicationId], references: [id], onDelete: Restrict)
-  prescriber        User?              @relation("PrescriptionPrescriber", fields: [prescribedBy], references: [id], onDelete: SetNull)
-  administrations   PrescriptionTask[]
-
-  @@index([animalId])
-  @@index([medicationId])
-  @@index([startDate])
-  @@index([isCompleted])
-  @@index([prescribedBy])
-  @@map("prescriptions")
-}
-
-model PrescriptionTask {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  prescriptionId  String    @map("prescription_id") @db.Uuid
-  scheduledDate   DateTime  @map("scheduled_date") @db.Date
-  scheduledTime   DateTime  @map("scheduled_time") @db.Time
-  administeredAt  DateTime? @map("administered_at") @db.Timestamptz(6)
-  administeredBy  String?   @map("administered_by") @db.Uuid
-  isCompleted     Boolean   @default(false) @map("is_completed")
-  notes           String?
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  prescription    Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
-  administrator   User?        @relation(fields: [administeredBy], references: [id], onDelete: SetNull)
-
-  @@index([prescriptionId])
-  @@index([scheduledDate])
-  @@index([isCompleted])
-  @@index([administeredBy])
-  @@map("prescription_tasks")
+  @@index([role_id])
 }

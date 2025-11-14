@@ -139,38 +139,38 @@ export default async function PainelPage() {
 
   // Buscar IDs dos status no catálogo
   const [statusAbrigado, statusAdotado, statusInternado] = await Promise.all([
-    prisma.catalog.findFirst({ where: { category: 'animal_status', name: 'Abrigado' } }),
-    prisma.catalog.findFirst({ where: { category: 'animal_status', name: 'Adotado' } }),
-    prisma.catalog.findFirst({ where: { category: 'animal_status', name: 'Internado' } }),
+    prisma.catalogs.findFirst({ where: { category: 'animal_status', name: 'Abrigado' } }),
+    prisma.catalogs.findFirst({ where: { category: 'animal_status', name: 'Adotado' } }),
+    prisma.catalogs.findFirst({ where: { category: 'animal_status', name: 'Internado' } }),
   ])
 
   // Construir filtro baseado no role
-  const animalFilter: any = { deletedAt: null }
+  const animalFilter: any = { deleted_at: null }
   if (userRole === 'shelter_manager' && userShelterId) {
-    animalFilter.shelterId = userShelterId
+    animalFilter.shelter_id = userShelterId
   }
 
   const statsPromise = Promise.all([
-    prisma.animal.count({ where: animalFilter }),
-    prisma.animal.count({ where: { ...animalFilter, statusId: statusAbrigado?.id } }),
-    prisma.animal.count({ where: { ...animalFilter, statusId: statusAdotado?.id } }),
-    prisma.animal.count({ where: { ...animalFilter, statusId: statusInternado?.id } }),
+    prisma.animals.count({ where: animalFilter }),
+    prisma.animals.count({ where: { ...animalFilter, status_id: statusAbrigado?.id } }),
+    prisma.animals.count({ where: { ...animalFilter, status_id: statusAdotado?.id } }),
+    prisma.animals.count({ where: { ...animalFilter, status_id: statusInternado?.id } }),
     userRole === 'shelter_manager' && userShelterId
       ? Promise.resolve(1) // Shelter manager vê apenas seu abrigo
-      : prisma.shelter.count(),
+      : prisma.shelters.count(),
   ])
 
   const adoptionFilter: any = {}
   if (userRole === 'shelter_manager' && userShelterId) {
-    adoptionFilter.animal = { shelterId: userShelterId }
+    adoptionFilter.animals = { shelter_id: userShelterId }
   }
 
   const adoptionCountsPromise = Promise.all([
-    prisma.adoptionEvent.count({ where: { ...adoptionFilter, createdAt: { gte: last30Days } } }),
-    prisma.adoptionEvent.count({
+    prisma.adoption_events.count({ where: { ...adoptionFilter, created_at: { gte: last30Days } } }),
+    prisma.adoption_events.count({
       where: {
         ...adoptionFilter,
-        createdAt: {
+        created_at: {
           gte: previous30Days,
           lt: last30Days,
         },
@@ -179,23 +179,23 @@ export default async function PainelPage() {
   ])
 
   const medicalRecordFilter: any = {
-    nextDueDate: {
+    next_due_date: {
       not: null,
       lte: twoWeeksAhead,
     },
   }
   if (userRole === 'shelter_manager' && userShelterId) {
-    medicalRecordFilter.animal = { shelterId: userShelterId }
+    medicalRecordFilter.animals = { shelter_id: userShelterId }
   }
 
-  const medicalFollowUpsPromise = prisma.animalMedicalRecord.findMany({
+  const medicalFollowUpsPromise = prisma.animal_medical_records.findMany({
     where: medicalRecordFilter,
     include: {
-      animal: {
+      animals: {
         select: {
           id: true,
           name: true,
-          shelter: {
+          shelters: {
             select: {
               name: true,
             },
@@ -203,37 +203,37 @@ export default async function PainelPage() {
         },
       },
     },
-    orderBy: { nextDueDate: 'asc' },
+    orderBy: { next_due_date: 'asc' },
     take: 6,
   })
 
-  const internacoesPromise = prisma.animal.findMany({
-    where: { ...animalFilter, statusId: statusInternado?.id },
+  const internacoesPromise = prisma.animals.findMany({
+    where: { ...animalFilter, status_id: statusInternado?.id },
     select: {
       id: true,
       name: true,
-      breed: { select: { name: true } },
-      shelter: { select: { name: true } },
-      updatedAt: true,
-      status: { select: { name: true } },
+      catalogs_animals_breed_idTocatalogs: { select: { name: true } },
+      shelters: { select: { name: true } },
+      updated_at: true,
+      catalogs_animals_status_idTocatalogs: { select: { name: true } },
     },
-    orderBy: { updatedAt: 'desc' },
+    orderBy: { updated_at: 'desc' },
     take: 6,
   })
 
-  const adoptionPipelinePromise = prisma.adoptionEvent.findMany({
+  const adoptionPipelinePromise = prisma.adoption_events.findMany({
     where: adoptionFilter,
-    orderBy: { createdAt: 'desc' },
+    orderBy: { created_at: 'desc' },
     take: 6,
     include: {
-      animal: {
+      animals: {
         select: {
           id: true,
           name: true,
-          shelter: { select: { name: true } },
+          shelters: { select: { name: true } },
         },
       },
-      adopter: {
+      users_adoption_events_adopter_idTousers: {
         select: {
           name: true,
         },
@@ -243,19 +243,19 @@ export default async function PainelPage() {
 
   const weightFilter: any = {}
   if (userRole === 'shelter_manager' && userShelterId) {
-    weightFilter.animal = { shelterId: userShelterId }
+    weightFilter.animals = { shelter_id: userShelterId }
   }
 
-  const weightRecordsPromise = prisma.animalWeight.findMany({
+  const weightRecordsPromise = prisma.animal_weights.findMany({
     where: weightFilter,
-    orderBy: { dateTime: 'desc' },
+    orderBy: { date_time: 'desc' },
     take: 6,
     include: {
-      animal: {
+      animals: {
         select: {
           id: true,
           name: true,
-          shelter: { select: { name: true } },
+          shelters: { select: { name: true } },
         },
       },
     },
@@ -263,16 +263,16 @@ export default async function PainelPage() {
 
   const eventFilter: any = {}
   if (userRole === 'shelter_manager' && userShelterId) {
-    eventFilter.animal = { shelterId: userShelterId }
+    eventFilter.animals = { shelter_id: userShelterId }
   }
 
-  const eventsPromise = prisma.animalEvent.findMany({
+  const eventsPromise = prisma.animal_events.findMany({
     where: eventFilter,
-    orderBy: { createdAt: 'desc' },
+    orderBy: { created_at: 'desc' },
     take: 8,
     include: {
-      animal: { select: { name: true } },
-      triggeredByUser: { select: { name: true } },
+      animals: { select: { name: true } },
+      users: { select: { name: true } },
     },
   })
 
@@ -308,11 +308,11 @@ export default async function PainelPage() {
 
   const weightRecords = weightRecordsRaw.map((record) => ({
     id: record.id.toString(),
-    animalName: record.animal.name,
-    shelterName: record.animal.shelter?.name ?? 'Sem abrigo',
+    animalName: record.animals.name,
+    shelterName: record.animals.shelters?.name ?? 'Sem abrigo',
     value: toPlainNumber(record.value),
     unit: record.unit,
-    dateTime: record.dateTime,
+    dateTime: record.date_time,
     notes: record.notes,
   }))
 
@@ -416,20 +416,20 @@ export default async function PainelPage() {
                   </thead>
                   <tbody>
                     {medicalFollowUps.map((record) => {
-                      if (!record.nextDueDate) return null
-                      const dueInfo = describeDueDate(record.nextDueDate, now)
+                      if (!record.next_due_date) return null
+                      const dueInfo = describeDueDate(record.next_due_date, now)
 
                       return (
                         <tr key={record.id}>
                           <td>
-                            <div style={{ fontWeight: 600 }}>{record.animal.name}</div>
+                            <div style={{ fontWeight: 600 }}>{record.animals.name}</div>
                             <span className="muted-text">
-                              {record.animal.shelter?.name ?? 'Sem abrigo'}
+                              {record.animals.shelters?.name ?? 'Sem abrigo'}
                             </span>
                           </td>
-                          <td>{record.recordType}</td>
+                          <td>{record.record_type}</td>
                           <td>
-                            <div>{formatDate(record.nextDueDate)}</div>
+                            <div>{formatDate(record.next_due_date)}</div>
                             <span
                               className={`status-pill ${dueInfo.variant ? dueInfo.variant : ''}`}
                             >
@@ -466,14 +466,14 @@ export default async function PainelPage() {
                       <tr key={animal.id}>
                         <td>
                           <div style={{ fontWeight: 600 }}>{animal.name}</div>
-                          <span className="muted-text">{animal.breed?.name ?? 'SRD'}</span>
+                          <span className="muted-text">{animal.catalogs_animals_breed_idTocatalogs?.name ?? 'SRD'}</span>
                         </td>
-                        <td>{animal.shelter?.name ?? 'Sem abrigo'}</td>
+                        <td>{animal.shelters?.name ?? 'Sem abrigo'}</td>
                         <td>
-                          <span className={`status-pill ${getStatusVariant(animal.status?.name ?? '')}`}>
-                            {animal.status?.name ?? 'Sem status'}
+                          <span className={`status-pill ${getStatusVariant(animal.catalogs_animals_status_idTocatalogs?.name ?? '')}`}>
+                            {animal.catalogs_animals_status_idTocatalogs?.name ?? 'Sem status'}
                           </span>
-                          <div className="muted-text">{formatRelativeDay(animal.updatedAt, now)}</div>
+                          <div className="muted-text">{formatRelativeDay(animal.updated_at, now)}</div>
                         </td>
                       </tr>
                     ))}
@@ -504,18 +504,18 @@ export default async function PainelPage() {
                       <tr key={event.id}>
                         <td>
                           <div style={{ fontWeight: 600 }}>
-                            {event.animal?.name ?? 'Animal removido'}
+                            {event.animals?.name ?? 'Animal removido'}
                           </div>
                           <span className="muted-text">
-                            {event.animal?.shelter?.name ?? 'Sem abrigo vinculado'}
+                            {event.animals?.shelters?.name ?? 'Sem abrigo vinculado'}
                           </span>
                         </td>
-                        <td>{event.adopter?.name ?? 'Adotante não informado'}</td>
+                        <td>{event.users_adoption_events_adopter_idTousers?.name ?? 'Adotante não informado'}</td>
                         <td>
                           <span className={`status-pill ${getStatusVariant(event.status)}`}>
                             {event.status}
                           </span>
-                          <div className="muted-text">{formatDate(event.createdAt)}</div>
+                          <div className="muted-text">{formatDate(event.created_at)}</div>
                         </td>
                       </tr>
                     ))}
@@ -571,21 +571,21 @@ export default async function PainelPage() {
                 {recentEvents.map((event) => (
                   <div key={event.id} className="timeline-item">
                     <div className="timeline-marker">
-                      <i className={`fa-solid ${iconForEvent(event.eventType)}`}></i>
+                      <i className={`fa-solid ${iconForEvent(event.event_type)}`}></i>
                     </div>
                     <div className="timeline-content">
                       <div className="timeline-title">
-                        {event.eventType} · {event.animal?.name ?? 'Animal removido'}
+                        {event.event_type} · {event.animals?.name ?? 'Animal removido'}
                       </div>
                       <p className="timeline-description">{event.description}</p>
                       <div className="timeline-meta">
                         <span>
                           <i className="fa-solid fa-user"></i>{' '}
-                          {event.triggeredByUser?.name ?? 'Sistema'}
+                          {event.users?.name ?? 'Sistema'}
                         </span>
                         <span>
                           <i className="fa-solid fa-calendar-day"></i>{' '}
-                          {formatDateTime(event.createdAt)} ({formatRelativeDay(event.createdAt, now)})
+                          {formatDateTime(event.created_at)} ({formatRelativeDay(event.created_at, now)})
                         </span>
                       </div>
                     </div>

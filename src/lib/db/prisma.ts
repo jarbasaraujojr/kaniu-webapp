@@ -23,19 +23,19 @@ const createPrismaClient = () => {
       params.args = {}
     }
 
-    // Convert delete to soft delete (update with deletedAt)
+    // Convert delete to soft delete (update with deleted_at)
     if (params.action === 'delete') {
       params.action = 'update'
-      params.args.data = { deletedAt: new Date() }
+      params.args.data = { deleted_at: new Date() }
     }
 
-    // Convert deleteMany to soft delete (updateMany with deletedAt)
+    // Convert deleteMany to soft delete (updateMany with deleted_at)
     if (params.action === 'deleteMany') {
       params.action = 'updateMany'
       if (params.args.data !== undefined) {
-        params.args.data.deletedAt = new Date()
+        params.args.data.deleted_at = new Date()
       } else {
-        params.args.data = { deletedAt: new Date() }
+        params.args.data = { deleted_at: new Date() }
       }
     }
 
@@ -44,28 +44,28 @@ const createPrismaClient = () => {
       params.action = 'findFirst'
       params.args.where = {
         ...params.args.where,
-        deletedAt: null,
+        deleted_at: null,
       }
     }
 
     if (params.action === 'findMany') {
       if (params.args.where) {
-        if (params.args.where.deletedAt === undefined) {
-          params.args.where.deletedAt = null
+        if (params.args.where.deleted_at === undefined) {
+          params.args.where.deleted_at = null
         }
       } else {
-        params.args.where = { deletedAt: null }
+        params.args.where = { deleted_at: null }
       }
     }
 
     // Exclude soft deleted records from count
     if (params.action === 'count') {
       if (params.args.where) {
-        if (params.args.where.deletedAt === undefined) {
-          params.args.where.deletedAt = null
+        if (params.args.where.deleted_at === undefined) {
+          params.args.where.deleted_at = null
         }
       } else {
-        params.args.where = { deletedAt: null }
+        params.args.where = { deleted_at: null }
       }
     }
 
@@ -73,15 +73,15 @@ const createPrismaClient = () => {
     if (params.action === 'update') {
       params.args.where = {
         ...params.args.where,
-        deletedAt: null,
+        deleted_at: null,
       }
     }
 
     if (params.action === 'updateMany') {
       if (params.args.where !== undefined) {
-        params.args.where.deletedAt = null
+        params.args.where.deleted_at = null
       } else {
-        params.args.where = { deletedAt: null }
+        params.args.where = { deleted_at: null }
       }
     }
 

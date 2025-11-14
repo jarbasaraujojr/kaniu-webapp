@@ -2,6 +2,48 @@
 
 import { useState } from 'react'
 
+interface TooltipProps {
+  text: string
+  visible: boolean
+}
+
+const Tooltip = ({ text, visible }: TooltipProps) => {
+  if (!visible) return null
+
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: '100%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      marginBottom: '8px',
+      padding: '6px 12px',
+      background: '#1e293b',
+      color: 'white',
+      fontSize: '0.75rem',
+      fontWeight: 500,
+      borderRadius: '6px',
+      whiteSpace: 'nowrap',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+      zIndex: 1000,
+      pointerEvents: 'none',
+    }}>
+      {text}
+      <div style={{
+        position: 'absolute',
+        top: '100%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 0,
+        height: 0,
+        borderLeft: '6px solid transparent',
+        borderRight: '6px solid transparent',
+        borderTop: '6px solid #1e293b',
+      }} />
+    </div>
+  )
+}
+
 interface AnimalData {
   id: string
   name: string
@@ -58,6 +100,7 @@ interface AnimalDetailsClientProps {
 
 export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps) {
   const [activeTab, setActiveTab] = useState('painel')
+  const [hoveredButton, setHoveredButton] = useState<number | null>(null)
 
   const tabs = [
     { id: 'painel', label: 'Resumo', icon: 'fa-chart-line' },
@@ -91,7 +134,7 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
         <div className="header-content">
           <div style={{
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             gap: '1.25rem',
             width: '100%',
           }}>
@@ -100,8 +143,8 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
                 src={animal.photo}
                 alt={animal.name}
                 style={{
-                  width: '110px',
-                  height: '110px',
+                  width: '140px',
+                  height: '140px',
                   borderRadius: '16px',
                   objectFit: 'cover',
                   border: '4px solid var(--background-soft)',
@@ -130,29 +173,27 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
                 }}>
                   {animal.name}
                 </h1>
+              </div>
 
-                <div style={{ width: '1px', height: '32px', background: 'var(--border-color)' }}></div>
-
-                <div style={{
-                  display: 'flex',
-                  gap: '0.6rem',
-                  flexWrap: 'wrap',
-                  fontSize: '0.95rem',
-                }}>
-                  {animal.species && <span className="chip">{animal.species}</span>}
-                  {animal.gender && <span className="chip">{animal.gender}</span>}
-                  {animal.size && <span className="chip">{animal.size}</span>}
-                  {animal.breed && <span className="chip">{animal.breed}</span>}
-                  {animal.coat && <span className="chip">{animal.coat}</span>}
-                  {animal.color && <span className="chip">{animal.color}</span>}
-                  {animal.birthDate && (
-                    <span className="chip">
-                      {new Date(animal.birthDate).toLocaleDateString('pt-BR')}
-                    </span>
-                  )}
-                  {animal.age && <span className="chip">{animal.age}</span>}
-                  {animal.latestWeight && <span className="chip">{animal.latestWeight}</span>}
-                </div>
+              <div style={{
+                display: 'flex',
+                gap: '0.6rem',
+                flexWrap: 'wrap',
+                fontSize: '0.95rem',
+              }}>
+                {animal.species && <span className="chip">{animal.species}</span>}
+                {animal.gender && <span className="chip">{animal.gender}</span>}
+                {animal.size && <span className="chip">{animal.size}</span>}
+                {animal.breed && <span className="chip">{animal.breed}</span>}
+                {animal.coat && <span className="chip">{animal.coat}</span>}
+                {animal.color && <span className="chip">{animal.color}</span>}
+                {animal.birthDate && (
+                  <span className="chip">
+                    {new Date(animal.birthDate).toLocaleDateString('pt-BR')}
+                  </span>
+                )}
+                {animal.age && <span className="chip">{animal.age}</span>}
+                {animal.latestWeight && <span className="chip">{animal.latestWeight}</span>}
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -166,41 +207,47 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
                 ].map((action, idx) => {
                   const isActive = animal.status === action.status
                   return (
-                    <button
+                    <div
                       key={idx}
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '8px',
-                        border: isActive ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
-                        background: isActive ? 'var(--primary-color)' : 'var(--card-background)',
-                        color: isActive ? 'white' : 'var(--text-light)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '1rem',
-                        transition: 'all 0.2s ease',
-                        boxShadow: isActive ? '0 2px 8px rgba(90, 93, 127, 0.25)' : 'none',
-                      }}
-                      onMouseOver={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.background = 'var(--background-soft)'
-                          e.currentTarget.style.borderColor = 'var(--primary-color)'
-                          e.currentTarget.style.color = 'var(--primary-color)'
-                        }
-                      }}
-                      onMouseOut={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.background = 'var(--card-background)'
-                          e.currentTarget.style.color = 'var(--text-light)'
-                          e.currentTarget.style.borderColor = 'var(--border-color)'
-                        }
-                      }}
-                      title={action.label}
+                      style={{ position: 'relative' }}
+                      onMouseEnter={() => setHoveredButton(idx)}
+                      onMouseLeave={() => setHoveredButton(null)}
                     >
-                      <i className={`fa-solid ${action.icon}`}></i>
-                    </button>
+                      <button
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '8px',
+                          border: isActive ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
+                          background: isActive ? 'var(--primary-color)' : 'var(--card-background)',
+                          color: isActive ? 'white' : 'var(--text-light)',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1rem',
+                          transition: 'all 0.2s ease',
+                          boxShadow: isActive ? '0 2px 8px rgba(90, 93, 127, 0.25)' : 'none',
+                        }}
+                        onMouseOver={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.background = 'var(--background-soft)'
+                            e.currentTarget.style.borderColor = 'var(--primary-color)'
+                            e.currentTarget.style.color = 'var(--primary-color)'
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.background = 'var(--card-background)'
+                            e.currentTarget.style.color = 'var(--text-light)'
+                            e.currentTarget.style.borderColor = 'var(--border-color)'
+                          }
+                        }}
+                      >
+                        <i className={`fa-solid ${action.icon}`}></i>
+                      </button>
+                      <Tooltip text={action.label} visible={hoveredButton === idx} />
+                    </div>
                   )
                 })}
               </div>

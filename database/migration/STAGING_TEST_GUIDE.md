@@ -11,6 +11,24 @@ Testar a migração do sistema de medicação em ambiente isolado antes de execu
 - [ ] Acesso ao código do projeto
 - [ ] Pelo menos 2GB de espaço em disco
 
+## 🔍 Diagnóstico Rápido
+
+**ANTES DE COMEÇAR**, execute o script de diagnóstico para verificar se tudo está OK:
+
+```cmd
+cd c:\Users\Caramelo\Documents\GitHub\kaniu-webapp\database\migration
+check_environment.bat
+```
+
+Isso irá verificar:
+- ✅ Se o PostgreSQL está instalado e rodando
+- ✅ Se a conexão funciona
+- ✅ Quais databases existem
+- ✅ Se as tabelas necessárias estão presentes
+
+**Se o diagnóstico passar → prossiga com o teste**
+**Se houver erros → consulte [SETUP_STAGING.md](SETUP_STAGING.md)**
+
 ## 🚀 Passo a Passo
 
 ### Passo 1: Preparar Base de Staging

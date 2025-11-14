@@ -1,12 +1,43 @@
 # Migração de Base de Dados - Kaniu
 
-Este diretório contém todos os scripts e documentação necessários para migrar a base de dados antiga (56 tabelas) para a nova arquitetura simplificada (16 tabelas).
+Este diretório contém todos os scripts e documentação necessários para migrar a base de dados antiga (56 tabelas) para a nova arquitetura simplificada (19 tabelas).
+
+## 🚀 Início Rápido
+
+### 1. Diagnóstico do Ambiente
+```cmd
+check_environment.bat
+```
+
+### 2. Teste em Staging
+```cmd
+test_staging.bat
+```
+
+### 3. Migração Completa
+```cmd
+run_migration.bat
+```
+
+## 📚 Documentação
+
+### Início Rápido
+- **[DECISION_TREE.md](DECISION_TREE.md)** - 🎯 Árvore de decisão visual (COMECE AQUI!)
+- **[QUICK_START.md](QUICK_START.md)** - Guia rápido de migração
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - 🔧 Soluções para problemas comuns
+
+### Setup e Testes
+- **[SETUP_STAGING.md](SETUP_STAGING.md)** - Como preparar ambiente de staging
+- **[STAGING_TEST_GUIDE.md](STAGING_TEST_GUIDE.md)** - Guia completo de testes em staging
+
+### Documentação Técnica
+- **[MEDICATION_SYSTEM.md](MEDICATION_SYSTEM.md)** - Sistema de medicação (modelos e queries)
 
 ## 📋 Visão Geral
 
 - **Base Antiga**: 56 tabelas (sistema complexo de gestão veterinária)
-- **Base Nova**: 16 tabelas (sistema simplificado e moderno)
-- **Tempo Estimado**: 7-12 horas
+- **Base Nova**: 19 tabelas (16 base + 3 medicação)
+- **Tempo Estimado**: 8-14 horas
 - **Perda de Dados**: Mínima (dados complexos armazenados em JSONB)
 
 ## 🗂️ Estrutura de Arquivos
@@ -14,6 +45,13 @@ Este diretório contém todos os scripts e documentação necessários para migr
 ```
 database/migration/
 ├── README.md                    # Este arquivo
+├── SETUP_STAGING.md             # Guia de setup de staging
+├── STAGING_TEST_GUIDE.md        # Guia completo de testes
+├── MEDICATION_SYSTEM.md         # Documentação do sistema de medicação
+├── QUICK_START.md               # Guia rápido
+├── check_environment.bat        # Script de diagnóstico
+├── test_staging.bat             # Script de teste em staging
+├── run_migration.bat            # Script de migração completa
 ├── old schema.sql               # Schema da base de dados antiga
 ├── current schema.sql           # Schema da base de dados nova
 └── scripts/
@@ -34,6 +72,9 @@ database/migration/
     ├── 15_migrate_favorites.sql
     ├── 16_validate_migration.sql
     ├── 17_cleanup.sql
+    ├── 18_migrate_medications.sql      # ✨ Medicamentos
+    ├── 19_migrate_prescriptions.sql    # ✨ Prescrições
+    ├── 20_migrate_prescription_tasks.sql # ✨ Tarefas de administração
     └── rollback/
         └── rollback_all.sql     # Script de rollback completo
 ```

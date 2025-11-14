@@ -19,34 +19,34 @@ export default async function AdminDashboardPage() {
     adoptedAnimals,
     totalUsers,
   ] = await Promise.all([
-    prisma.shelter.count(),
-    prisma.shelter.count({ where: { isActive: true } }),
-    prisma.animal.count({ where: { deletedAt: null } }),
-    prisma.animal.count({
+    prisma.shelters.count(),
+    prisma.shelters.count({ where: { is_active: true } }),
+    prisma.animals.count({ where: { deleted_at: null } }),
+    prisma.animals.count({
       where: {
-        deletedAt: null,
-        status: { name: 'Disponível' }
+        deleted_at: null,
+        catalogs_animals_status_idTocatalogs: { name: 'Disponível' }
       }
     }),
-    prisma.animal.count({
+    prisma.animals.count({
       where: {
-        deletedAt: null,
-        status: { name: 'Adotado' }
+        deleted_at: null,
+        catalogs_animals_status_idTocatalogs: { name: 'Adotado' }
       }
     }),
-    prisma.user.count({ where: { deletedAt: null } }),
+    prisma.users.count({ where: { deleted_at: null } }),
   ])
 
   // Buscar abrigos com contagem de animais
-  const sheltersWithAnimals = await prisma.shelter.findMany({
-    where: { deletedAt: null },
+  const sheltersWithAnimals = await prisma.shelters.findMany({
+    where: { deleted_at: null },
     include: {
       _count: {
         select: { animals: true }
       }
     },
     take: 10,
-    orderBy: { createdAt: 'desc' }
+    orderBy: { created_at: 'desc' }
   })
 
   const adoptionRate = totalAnimals > 0 ? ((adoptedAnimals / totalAnimals) * 100).toFixed(1) : '0'
@@ -151,12 +151,12 @@ export default async function AdminDashboardPage() {
                   <td style={{ fontWeight: 600 }}>{shelter.name}</td>
                   <td>{shelter._count.animals}</td>
                   <td>
-                    <span className={`status-pill ${shelter.isActive ? 'success' : 'danger'}`}>
-                      {shelter.isActive ? 'Ativo' : 'Inativo'}
+                    <span className={`status-pill ${shelter.is_active ? 'success' : 'danger'}`}>
+                      {shelter.is_active ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
                   <td className="muted-text">
-                    {new Date(shelter.createdAt).toLocaleDateString('pt-BR')}
+                    {new Date(shelter.created_at).toLocaleDateString('pt-BR')}
                   </td>
                 </tr>
               ))}

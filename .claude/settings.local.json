@@ -21,7 +21,14 @@
       "Bash(dir:*)",
       "Bash(prisma/migrations/20251109210636_add_soft_delete_fields/migration.sql)",
       "Bash(tasklist:*)",
-      "Bash(timeout /t 5 /nobreak)"
+      "Bash(timeout /t 5 /nobreak)",
+      "Bash(node backup_node.js:*)",
+      "Bash(node check_database.js:*)",
+      "Bash(node check_old_project.js:*)",
+      "Bash(node migrate_between_projects.js:*)",
+      "Bash(node auto_migrate.js:*)",
+      "Bash(node:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

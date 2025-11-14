@@ -29,8 +29,8 @@ const getAnimalPhoto = (animal: any) => {
     return appearance.photo
   }
 
-  const speciesName = animal.species?.name
-  if (speciesName === 'Cachorro') {
+  const speciesName = animal.catalogs_animals_species_idTocatalogs?.name
+  if (speciesName === 'Cachorro' || speciesName === 'Cão') {
     return 'https://i.ibb.co/Z6dPncCH/pic-dog.png'
   } else if (speciesName === 'Gato') {
     return 'https://i.ibb.co/9dWLkZs/pic-cat.png'
@@ -45,37 +45,37 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
     redirect('/login')
   }
 
-  const animal = await prisma.animal.findUnique({
+  const animal = await prisma.animals.findUnique({
     where: { id: params.id },
     include: {
-      species: true,
-      breed: true,
-      status: true,
-      shelter: true,
-      weights: {
-        orderBy: { dateTime: 'desc' },
+      catalogs_animals_species_idTocatalogs: true,
+      catalogs_animals_breed_idTocatalogs: true,
+      catalogs_animals_status_idTocatalogs: true,
+      shelters: true,
+      animal_weights: {
+        orderBy: { date_time: 'desc' },
         include: {
-          recordedByUser: {
+          users: {
             select: {
               name: true,
             },
           },
         },
       },
-      medicalRecords: {
-        orderBy: { recordDate: 'desc' },
+      animal_medical_records: {
+        orderBy: { record_date: 'desc' },
         include: {
-          createdByUser: {
+          users: {
             select: {
               name: true,
             },
           },
         },
       },
-      events: {
-        orderBy: { createdAt: 'desc' },
+      animal_events: {
+        orderBy: { created_at: 'desc' },
         include: {
-          triggeredByUser: {
+          users: {
             select: {
               name: true,
             },
@@ -93,7 +93,7 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
   const userRole = session.user.role
   const userShelterId = session.user.shelterId
 
-  if (userRole === 'shelter_manager' && userShelterId && animal.shelterId !== userShelterId) {
+  if (userRole === 'shelter_manager' && userShelterId && animal.shelter_id !== userShelterId) {
     notFound() // Retorna 404 se tentar acessar animal de outro abrigo
   }
 
@@ -103,17 +103,17 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
   const color = appearance && typeof appearance === 'object' ? appearance.color : null
 
   // Extract health status data
-  const healthStatus = animal.healthStatus as any
+  const healthStatus = animal.health_status as any
   const vaccinated = healthStatus && typeof healthStatus === 'object' ? healthStatus.vaccinated : false
   const dewormed = healthStatus && typeof healthStatus === 'object' ? healthStatus.dewormed : false
   const deparasitized = healthStatus && typeof healthStatus === 'object' ? healthStatus.deparasitized : false
 
   // Calculate age
-  const age = calculateAge(animal.birthDate)
+  const age = calculateAge(animal.birth_date)
 
   // Get latest weight
-  const latestWeight = animal.weights[0]
-  const previousWeight = animal.weights[1]
+  const latestWeight = animal.animal_weights[0]
+  const previousWeight = animal.animal_weights[1]
 
   // Get photo
   const photo = getAnimalPhoto(animal)
@@ -124,50 +124,50 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
     name: animal.name,
     description: animal.description,
     photo,
-    species: animal.species?.name || '',
-    breed: animal.breed?.name || '',
+    species: animal.catalogs_animals_species_idTocatalogs?.name || '',
+    breed: animal.catalogs_animals_breed_idTocatalogs?.name || '',
     gender: animal.gender || '',
     size: animal.size || '',
-    status: animal.status?.name || '',
+    status: animal.catalogs_animals_status_idTocatalogs?.name || '',
     coat,
     color,
-    birthDate: animal.birthDate,
+    birthDate: animal.birth_date,
     age,
     castrated: animal.castrated,
     vaccinated,
     dewormed,
     deparasitized,
-    shelter: animal.shelter.name,
+    shelter: animal.shelters.name,
     latestWeight: latestWeight ? `${latestWeight.value} kg` : null,
     previousWeight: previousWeight ? `${previousWeight.value} kg` : null,
     weightVariation: latestWeight && previousWeight
       ? ((Number(latestWeight.value) - Number(previousWeight.value)) / Number(previousWeight.value) * 100).toFixed(1)
       : null,
-    weights: animal.weights.map(w => ({
+    weights: animal.animal_weights.map(w => ({
       id: w.id.toString(),
-      date: w.dateTime,
+      date: w.date_time,
       value: Number(w.value),
       unit: w.unit,
       notes: w.notes,
-      recordedBy: w.recordedByUser?.name || '',
+      recordedBy: w.users?.name || '',
     })),
-    medicalRecords: animal.medicalRecords.map(mr => ({
+    medicalRecords: animal.animal_medical_records.map(mr => ({
       id: mr.id.toString(),
-      type: mr.recordType,
+      type: mr.record_type,
       description: mr.description,
       veterinarian: mr.veterinarian,
-      date: mr.recordDate,
-      nextDueDate: mr.nextDueDate,
+      date: mr.record_date,
+      nextDueDate: mr.next_due_date,
       details: mr.details,
-      createdBy: mr.createdByUser?.name || '',
+      createdBy: mr.users?.name || '',
     })),
-    events: animal.events.map(e => ({
+    events: animal.animal_events.map(e => ({
       id: e.id.toString(),
-      type: e.eventType,
+      type: e.event_type,
       description: e.description,
       details: e.details,
-      date: e.createdAt,
-      triggeredBy: e.triggeredByUser?.name || '',
+      date: e.created_at,
+      triggeredBy: e.users?.name || '',
     })),
   }
 

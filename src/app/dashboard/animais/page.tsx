@@ -24,7 +24,7 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
   const userShelterId = session.user.shelterId
 
   // Buscar o status no catálogo
-  const statusCatalog = await prisma.catalog.findFirst({
+  const statusCatalog = await prisma.catalogs.findFirst({
     where: {
       category: 'animal_status',
       name: status,
@@ -32,10 +32,10 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
   })
 
   // Buscar todos os status disponíveis
-  const allStatuses = await prisma.catalog.findMany({
+  const allStatuses = await prisma.catalogs.findMany({
     where: {
       category: 'animal_status',
-      isActive: true,
+      is_active: true,
     },
     orderBy: {
       name: 'asc',
@@ -44,47 +44,47 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
 
   // Construir filtro baseado no role
   const whereClause: any = {
-    statusId: statusCatalog?.id,
-    deletedAt: null,
+    status_id: statusCatalog?.id,
+    deleted_at: null,
   }
 
   // Se for shelter_manager, filtrar apenas animais do seu abrigo
   if (userRole === 'shelter_manager' && userShelterId) {
-    whereClause.shelterId = userShelterId
+    whereClause.shelter_id = userShelterId
   }
 
   // Buscar animais do banco com filtro de status e abrigo (se aplicável)
-  const animals = await prisma.animal.findMany({
+  const animals = await prisma.animals.findMany({
     where: whereClause,
     include: {
-      shelter: {
+      shelters: {
         select: {
           id: true,
           name: true,
         },
       },
-      species: {
+      catalogs_animals_species_idTocatalogs: {
         select: {
           name: true,
         },
       },
-      breed: {
+      catalogs_animals_breed_idTocatalogs: {
         select: {
           name: true,
         },
       },
-      status: {
+      catalogs_animals_status_idTocatalogs: {
         select: {
           name: true,
         },
       },
-      weights: {
+      animal_weights: {
         select: {
           value: true,
-          dateTime: true,
+          date_time: true,
         },
         orderBy: {
-          dateTime: 'desc',
+          date_time: 'desc',
         },
         take: 1,
       },
@@ -92,11 +92,21 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
     orderBy: { name: 'asc' },
   })
 
+  // Transformar dados para o formato esperado pelo cliente
+  const transformedAnimals = animals.map(animal => ({
+    ...animal,
+    species: animal.catalogs_animals_species_idTocatalogs,
+    breed: animal.catalogs_animals_breed_idTocatalogs,
+    status: animal.catalogs_animals_status_idTocatalogs,
+    shelter: animal.shelters,
+    weights: animal.animal_weights,
+  }))
+
   return (
     <DashboardLayout>
       <AnimalsList
         initialStatus={status}
-        initialAnimals={animals}
+        initialAnimals={transformedAnimals}
         availableStatuses={allStatuses.map(s => s.name)}
       />
     </DashboardLayout>

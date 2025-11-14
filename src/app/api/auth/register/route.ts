@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const { name, email, password, phone } = registerSchema.parse(body)
 
     // Verificar se usuário já existe
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { email },
     })
 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar role de adopter (role padrão)
-    const adopterRole = await prisma.role.findFirst({
+    const adopterRole = await prisma.roles.findFirst({
       where: { name: 'adopter' },
     })
 
@@ -40,19 +40,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Criar usuário com senha hash
-    const user = await prisma.user.create({
+    const user = await prisma.users.create({
       data: {
         name,
         email,
         password: await bcrypt.hash(password, 10),
         phone: phone || null,
-        roleId: adopterRole.id,
+        role_id: adopterRole.id,
       },
       select: {
         id: true,
         name: true,
         email: true,
-        role: {
+        roles: {
           select: {
             name: true,
           },
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role.name,
+          role: user.roles.name,
         },
       },
       { status: 201 }

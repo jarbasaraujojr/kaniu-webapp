@@ -38,7 +38,7 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
     if (animal.appearance?.photo) return animal.appearance.photo
 
     const speciesName = animal.species?.name
-    if (speciesName === 'Cachorro') {
+    if (speciesName === 'Cachorro' || speciesName === 'Cão') {
       return 'https://i.ibb.co/Z6dPncCH/pic-dog.png'
     } else if (speciesName === 'Gato') {
       return 'https://i.ibb.co/9dWLkZs/pic-cat.png'

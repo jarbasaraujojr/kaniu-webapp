@@ -8,13 +8,13 @@ import { prisma } from './prisma'
  * Restore a soft-deleted user
  */
 export async function restoreUser(id: string) {
-  return prisma.user.updateMany({
+  return prisma.users.updateMany({
     where: {
       id,
-      deletedAt: { not: null },
+      deleted_at: { not: null },
     },
     data: {
-      deletedAt: null,
+      deleted_at: null,
     },
   })
 }
@@ -23,13 +23,13 @@ export async function restoreUser(id: string) {
  * Restore a soft-deleted shelter
  */
 export async function restoreShelter(id: string) {
-  return prisma.shelter.updateMany({
+  return prisma.shelters.updateMany({
     where: {
       id,
-      deletedAt: { not: null },
+      deleted_at: { not: null },
     },
     data: {
-      deletedAt: null,
+      deleted_at: null,
     },
   })
 }
@@ -38,13 +38,13 @@ export async function restoreShelter(id: string) {
  * Restore a soft-deleted animal
  */
 export async function restoreAnimal(id: string) {
-  return prisma.animal.updateMany({
+  return prisma.animals.updateMany({
     where: {
       id,
-      deletedAt: { not: null },
+      deleted_at: { not: null },
     },
     data: {
-      deletedAt: null,
+      deleted_at: null,
     },
   })
 }
@@ -53,9 +53,9 @@ export async function restoreAnimal(id: string) {
  * Find all soft-deleted users
  */
 export async function findDeletedUsers() {
-  return prisma.user.findMany({
+  return prisma.users.findMany({
     where: {
-      deletedAt: { not: null },
+      deleted_at: { not: null },
     },
   })
 }
@@ -64,9 +64,9 @@ export async function findDeletedUsers() {
  * Find all soft-deleted shelters
  */
 export async function findDeletedShelters() {
-  return prisma.shelter.findMany({
+  return prisma.shelters.findMany({
     where: {
-      deletedAt: { not: null },
+      deleted_at: { not: null },
     },
   })
 }
@@ -75,9 +75,9 @@ export async function findDeletedShelters() {
  * Find all soft-deleted animals
  */
 export async function findDeletedAnimals() {
-  return prisma.animal.findMany({
+  return prisma.animals.findMany({
     where: {
-      deletedAt: { not: null },
+      deleted_at: { not: null },
     },
   })
 }

@@ -4,7 +4,7 @@ import { prisma } from './db/prisma'
  * Busca um status de animal no catálogo pelo nome
  */
 export async function getAnimalStatusByName(name: string) {
-  return await prisma.catalog.findFirst({
+  return await prisma.catalogs.findFirst({
     where: {
       category: 'animal_status',
       name: name,
@@ -16,10 +16,10 @@ export async function getAnimalStatusByName(name: string) {
  * Busca todos os status de animais disponíveis
  */
 export async function getAllAnimalStatuses() {
-  return await prisma.catalog.findMany({
+  return await prisma.catalogs.findMany({
     where: {
       category: 'animal_status',
-      isActive: true,
+      is_active: true,
     },
     orderBy: {
       name: 'asc',
@@ -31,11 +31,11 @@ export async function getAllAnimalStatuses() {
  * Busca um item do catálogo por categoria e nome
  */
 export async function getCatalogItem(category: string, name: string) {
-  return await prisma.catalog.findFirst({
+  return await prisma.catalogs.findFirst({
     where: {
       category,
       name,
-      isActive: true,
+      is_active: true,
     },
   })
 }
@@ -44,10 +44,10 @@ export async function getCatalogItem(category: string, name: string) {
  * Busca todos os itens de uma categoria do catálogo
  */
 export async function getCatalogByCategory(category: string) {
-  return await prisma.catalog.findMany({
+  return await prisma.catalogs.findMany({
     where: {
       category,
-      isActive: true,
+      is_active: true,
     },
     orderBy: {
       name: 'asc',
