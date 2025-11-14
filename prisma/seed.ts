@@ -8,23 +8,23 @@ async function main() {
 
   // Limpar dados existentes (apenas em desenvolvimento)
   console.log('🗑️  Limpando dados existentes...')
-  await prisma.favorite.deleteMany()
-  await prisma.animalEvent.deleteMany()
-  await prisma.animalMedicalRecord.deleteMany()
-  await prisma.animalWeight.deleteMany()
-  await prisma.document.deleteMany()
-  await prisma.animalPhoto.deleteMany()
-  await prisma.adoptionEvent.deleteMany()
-  await prisma.report.deleteMany()
-  await prisma.animal.deleteMany()
-  await prisma.shelter.deleteMany()
-  await prisma.user.deleteMany()
-  await prisma.role.deleteMany()
-  await prisma.catalog.deleteMany()
+  await prisma.favorites.deleteMany()
+  await prisma.animal_events.deleteMany()
+  await prisma.animal_medical_records.deleteMany()
+  await prisma.animal_weights.deleteMany()
+  await prisma.documents.deleteMany()
+  await prisma.animal_photos.deleteMany()
+  await prisma.adoption_events.deleteMany()
+  await prisma.reports.deleteMany()
+  await prisma.animals.deleteMany()
+  await prisma.shelters.deleteMany()
+  await prisma.users.deleteMany()
+  await prisma.roles.deleteMany()
+  await prisma.catalogs.deleteMany()
 
   // 1. Criar Roles (Papéis de usuários)
   console.log('👥 Criando roles...')
-  const adminRole = await prisma.role.create({
+  const adminRole = await prisma.roles.create({
     data: {
       name: 'admin',
       description: 'Administrador do sistema',
@@ -38,7 +38,7 @@ async function main() {
     },
   })
 
-  const shelterManagerRole = await prisma.role.create({
+  const shelterManagerRole = await prisma.roles.create({
     data: {
       name: 'shelter_manager',
       description: 'Gerente de abrigo',
@@ -51,7 +51,7 @@ async function main() {
     },
   })
 
-  const veterinarianRole = await prisma.role.create({
+  const veterinarianRole = await prisma.roles.create({
     data: {
       name: 'veterinarian',
       description: 'Veterinário',
@@ -63,7 +63,7 @@ async function main() {
     },
   })
 
-  const adopterRole = await prisma.role.create({
+  const adopterRole = await prisma.roles.create({
     data: {
       name: 'adopter',
       description: 'Adotante',
@@ -75,7 +75,7 @@ async function main() {
     },
   })
 
-  const volunteerRole = await prisma.role.create({
+  const volunteerRole = await prisma.roles.create({
     data: {
       name: 'volunteer',
       description: 'Voluntário',
@@ -92,7 +92,7 @@ async function main() {
   console.log('📚 Criando catálogos...')
 
   // Espécies
-  const dogSpecies = await prisma.catalog.create({
+  const dogSpecies = await prisma.catalogs.create({
     data: {
       category: 'species',
       name: 'Cão',
@@ -100,7 +100,7 @@ async function main() {
     },
   })
 
-  const catSpecies = await prisma.catalog.create({
+  const catSpecies = await prisma.catalogs.create({
     data: {
       category: 'species',
       name: 'Gato',
@@ -128,7 +128,7 @@ async function main() {
   ]
 
   for (const breed of dogBreeds) {
-    await prisma.catalog.create({
+    await prisma.catalogs.create({
       data: {
         category: 'breed_dog',
         name: breed,
@@ -151,7 +151,7 @@ async function main() {
   ]
 
   for (const breed of catBreeds) {
-    await prisma.catalog.create({
+    await prisma.catalogs.create({
       data: {
         category: 'breed_cat',
         name: breed,
@@ -162,7 +162,7 @@ async function main() {
   // Tamanhos
   const sizes = ['Pequeno', 'Médio', 'Grande', 'Gigante']
   for (const size of sizes) {
-    await prisma.catalog.create({
+    await prisma.catalogs.create({
       data: {
         category: 'size',
         name: size,
@@ -181,7 +181,7 @@ async function main() {
   ]
 
   for (const status of animalStatuses) {
-    await prisma.catalog.create({
+    await prisma.catalogs.create({
       data: {
         category: 'animal_status',
         name: status.name,
@@ -198,13 +198,13 @@ async function main() {
   // Senha padrão para todos: "senha123"
   const defaultPassword = await bcrypt.hash('senha123', 10)
 
-  const adminUser = await prisma.user.create({
+  const adminUser = await prisma.users.create({
     data: {
       name: 'Admin Kaniu',
       email: 'admin@kaniu.com',
       password: defaultPassword,
       phone: '(11) 99999-0001',
-      roleId: adminRole.id,
+      role_id: adminRole.id,
       address: {
         street: 'Rua Principal',
         number: '100',
@@ -215,13 +215,13 @@ async function main() {
     },
   })
 
-  const shelterManager = await prisma.user.create({
+  const shelterManager = await prisma.users.create({
     data: {
       name: 'João Silva',
       email: 'joao@abrigo.com',
       password: defaultPassword,
       phone: '(11) 99999-0002',
-      roleId: shelterManagerRole.id,
+      role_id: shelterManagerRole.id,
       address: {
         street: 'Av. dos Animais',
         number: '500',
@@ -232,13 +232,13 @@ async function main() {
     },
   })
 
-  const adopter = await prisma.user.create({
+  const adopter = await prisma.users.create({
     data: {
       name: 'Maria Santos',
       email: 'maria@email.com',
       password: defaultPassword,
       phone: '(11) 99999-0003',
-      roleId: adopterRole.id,
+      role_id: adopterRole.id,
       address: {
         street: 'Rua das Flores',
         number: '250',
@@ -254,11 +254,11 @@ async function main() {
   // 4. Criar abrigos de exemplo
   console.log('🏠 Criando abrigos...')
 
-  const shelter1 = await prisma.shelter.create({
+  const shelter1 = await prisma.shelters.create({
     data: {
       name: 'Abrigo Amigos dos Animais',
       description: 'Abrigo dedicado ao resgate e cuidado de animais abandonados',
-      ownerId: shelterManager.id,
+      owner_id: shelterManager.id,
       phone: '(11) 3333-4444',
       email: 'contato@amigosanimais.org',
       website: 'https://amigosanimais.org',
@@ -273,11 +273,11 @@ async function main() {
     },
   })
 
-  const shelter2 = await prisma.shelter.create({
+  const shelter2 = await prisma.shelters.create({
     data: {
       name: 'Refúgio Pet Feliz',
       description: 'Espaço acolhedor para pets que precisam de um lar',
-      ownerId: shelterManager.id,
+      owner_id: shelterManager.id,
       phone: '(11) 5555-6666',
       email: 'contato@petfeliz.org',
       location: {
@@ -297,23 +297,23 @@ async function main() {
   console.log('🐕 Criando animais...')
 
   // Buscar status do catálogo
-  const statusAbrigado = await prisma.catalog.findFirst({
+  const statusAbrigado = await prisma.catalogs.findFirst({
     where: { category: 'animal_status', name: 'Abrigado' },
   })
 
-  const animal1 = await prisma.animal.create({
+  const animal1 = await prisma.animals.create({
     data: {
       name: 'Rex',
       description: 'Cachorro dócil e brincalhão, ótimo com crianças',
-      shelterId: shelter1.id,
-      speciesId: dogSpecies.id,
-      breedId: (await prisma.catalog.findFirst({ where: { name: 'Labrador' } }))?.id,
+      shelter_id: shelter1.id,
+      species_id: dogSpecies.id,
+      breed_id: (await prisma.catalogs.findFirst({ where: { name: 'Labrador' } }))?.id,
       gender: 'male',
       size: 'Grande',
-      birthDate: new Date('2020-05-15'),
-      statusId: statusAbrigado?.id,
+      birth_date: new Date('2020-05-15'),
+      status_id: statusAbrigado?.id,
       castrated: true,
-      healthStatus: {
+      health_status: {
         vaccinated: true,
         dewormed: true,
         healthConditions: [],
@@ -328,24 +328,24 @@ async function main() {
         color: ['Amarelo', 'Dourado'],
         furLength: 'short',
       },
-      createdBy: shelterManager.id,
-      updatedBy: shelterManager.id,
+      created_by: shelterManager.id,
+      updated_by: shelterManager.id,
     },
   })
 
-  const animal2 = await prisma.animal.create({
+  const animal2 = await prisma.animals.create({
     data: {
       name: 'Luna',
       description: 'Gatinha carinhosa e tranquila, perfeita para apartamento',
-      shelterId: shelter1.id,
-      speciesId: catSpecies.id,
-      breedId: (await prisma.catalog.findFirst({ where: { name: 'Siamês' } }))?.id,
+      shelter_id: shelter1.id,
+      species_id: catSpecies.id,
+      breed_id: (await prisma.catalogs.findFirst({ where: { name: 'Siamês' } }))?.id,
       gender: 'female',
       size: 'Pequeno',
-      birthDate: new Date('2021-08-20'),
-      statusId: statusAbrigado?.id,
+      birth_date: new Date('2021-08-20'),
+      status_id: statusAbrigado?.id,
       castrated: true,
-      healthStatus: {
+      health_status: {
         vaccinated: true,
         dewormed: true,
         healthConditions: [],
@@ -360,24 +360,24 @@ async function main() {
         color: ['Branco', 'Creme'],
         furLength: 'short',
       },
-      createdBy: shelterManager.id,
-      updatedBy: shelterManager.id,
+      created_by: shelterManager.id,
+      updated_by: shelterManager.id,
     },
   })
 
-  const animal3 = await prisma.animal.create({
+  const animal3 = await prisma.animals.create({
     data: {
       name: 'Toby',
       description: 'Cachorro pequeno e alegre, cheio de energia',
-      shelterId: shelter2.id,
-      speciesId: dogSpecies.id,
-      breedId: (await prisma.catalog.findFirst({ where: { name: 'Beagle' } }))?.id,
+      shelter_id: shelter2.id,
+      species_id: dogSpecies.id,
+      breed_id: (await prisma.catalogs.findFirst({ where: { name: 'Beagle' } }))?.id,
       gender: 'male',
       size: 'Médio',
-      birthDate: new Date('2022-03-10'),
-      statusId: statusAbrigado?.id,
+      birth_date: new Date('2022-03-10'),
+      status_id: statusAbrigado?.id,
       castrated: false,
-      healthStatus: {
+      health_status: {
         vaccinated: true,
         dewormed: true,
         healthConditions: [],
@@ -392,8 +392,8 @@ async function main() {
         color: ['Tricolor'],
         furLength: 'short',
       },
-      createdBy: shelterManager.id,
-      updatedBy: shelterManager.id,
+      created_by: shelterManager.id,
+      updated_by: shelterManager.id,
     },
   })
 

@@ -125,8 +125,8 @@ export default async function UserDashboardPage() {
           }}>
             {favorites.map((fav) => (
               <Link
-                key={fav.animal.id}
-                href={`/dashboard/animais/${fav.animal.id}`}
+                key={fav.animals.id}
+                href={`/dashboard/animais/${fav.animals.id}`}
                 style={{
                   border: '1px solid var(--border-color)',
                   borderRadius: 'var(--radius-md)',
@@ -142,10 +142,10 @@ export default async function UserDashboardPage() {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  {(fav.animal.appearance as any)?.photo ? (
+                  {(fav.animals.appearance as any)?.photo ? (
                     <img
-                      src={(fav.animal.appearance as any).photo}
-                      alt={fav.animal.name}
+                      src={(fav.animals.appearance as any).photo}
+                      alt={fav.animals.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                   ) : (
@@ -159,10 +159,10 @@ export default async function UserDashboardPage() {
                     color: 'var(--text-dark)',
                     marginBottom: '0.25rem'
                   }}>
-                    {fav.animal.name}
+                    {fav.animals.name}
                   </h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-light)', margin: 0 }}>
-                    {fav.animal.species?.name} • {fav.animal.shelter.name}
+                    {fav.animals.catalogs_animals_species_idTocatalogs?.name} • {fav.animals.shelters.name}
                   </p>
                 </div>
               </Link>
