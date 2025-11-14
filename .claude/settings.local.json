@@ -28,7 +28,8 @@
       "Bash(node migrate_between_projects.js:*)",
       "Bash(node auto_migrate.js:*)",
       "Bash(node:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
