@@ -60,9 +60,15 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
 
   return (
     <main className="main-container">
-      <header className="header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div className="tab-nav">
+      <div className="card" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '1rem 1.5rem',
+          background: 'var(--background-soft)'
+        }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
             {availableStatuses.map((status) => (
               <button
                 key={status}
@@ -117,11 +123,9 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
             </button>
           </div>
         </div>
-      </header>
 
-      <div style={{ padding: '1.25rem' }}>
         {initialAnimals.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center', padding: '1.5rem' }}>
+          <div style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
             <i className="fa-solid fa-inbox" style={{
               fontSize: '2rem',
               color: 'var(--text-faded)',
@@ -132,6 +136,7 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
             </p>
           </div>
         ) : viewMode === 'grid' ? (
+          <div style={{ padding: '1.25rem', borderTop: '1px solid var(--border-color)' }}>
           <div style={{
             display: 'grid',
             gap: '1rem',
@@ -218,12 +223,12 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
               </div>
             ))}
           </div>
+          </div>
         ) : (
-          <div className="card" style={{ padding: '0' }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '2px solid var(--border-color)', background: 'var(--background-soft)' }}>
+            <div style={{ overflowX: 'auto', marginTop: 0 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 0 }}>
+                <thead style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <tr style={{ background: 'var(--background-soft)' }}>
                     <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Animal</th>
                     <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Espécie</th>
                     <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Raça</th>
@@ -302,7 +307,6 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                 </tbody>
               </table>
             </div>
-          </div>
         )}
       </div>
     </main>

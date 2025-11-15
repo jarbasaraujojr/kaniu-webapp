@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts'
 
 interface TooltipProps {
   text: string
@@ -444,28 +445,134 @@ function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: An
             </div>
             <h2 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-dark)', margin: 0 }}>Peso e Medidas</h2>
           </header>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <div className="info-field">
-              <div className="info-field__label">Peso Atual</div>
-              <div className="info-field__value">
-                {animal.latestWeight || 'Não registrado'}
-              </div>
-            </div>
-            {animal.previousWeight && (
-              <>
-                <div className="info-field">
-                  <div className="info-field__label">Peso Anterior</div>
-                  <div className="info-field__value">{animal.previousWeight}</div>
+
+          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'stretch' }}>
+            {/* Valores à esquerda */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', flex: '0 0 auto', minWidth: '140px' }}>
+              <div className="info-field">
+                <div className="info-field__label">Peso Atual</div>
+                <div className="info-field__value">
+                  {animal.latestWeight || 'Não registrado'}
                 </div>
-                {animal.weightVariation && (
+              </div>
+              {animal.previousWeight && (
+                <>
                   <div className="info-field">
-                    <div className="info-field__label">Variação</div>
-                    <div className="info-field__value">
-                      {Number(animal.weightVariation) > 0 ? '+' : ''}{animal.weightVariation}%
-                    </div>
+                    <div className="info-field__label">Peso Anterior</div>
+                    <div className="info-field__value">{animal.previousWeight}</div>
                   </div>
-                )}
-              </>
+                  {animal.weightVariation && (
+                    <div className="info-field">
+                      <div className="info-field__label">Variação</div>
+                      <div className="info-field__value">
+                        {Number(animal.weightVariation) > 0 ? '+' : ''}{animal.weightVariation}%
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Gráfico à direita */}
+            {animal.weights.length > 0 && (
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                <div style={{
+                  fontSize: '0.7rem',
+                  color: 'var(--text-light)',
+                  marginBottom: '0.5rem',
+                  fontWeight: 500
+                }}>
+                  Evolução Recente
+                </div>
+                <div style={{ flex: 1, minHeight: '180px', width: '100%' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={(() => {
+                        const recentWeights = [...animal.weights].reverse().slice(-10)
+                        const chartData = recentWeights.map(w => ({
+                          date: new Date(w.date).getTime(),
+                          dateLabel: new Date(w.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+                          peso: Number(w.value),
+                          isActual: true
+                        }))
+
+                        // Adicionar ponto na data atual sem valor (para criar espaço no eixo X)
+                        if (chartData.length > 0) {
+                          const now = new Date().getTime()
+                          chartData.push({
+                            date: now,
+                            dateLabel: 'Hoje',
+                            peso: null,
+                            isActual: false
+                          })
+                        }
+
+                        return chartData
+                      })()}
+                      margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.3} />
+                      <XAxis
+                        dataKey="date"
+                        type="number"
+                        domain={['dataMin', 'dataMax']}
+                        stroke="var(--text-light)"
+                        style={{ fontSize: '0.65rem' }}
+                        tick={{ fill: 'var(--text-light)' }}
+                        tickFormatter={(timestamp) => {
+                          const date = new Date(timestamp)
+                          const month = date.getMonth()
+                          if (month === 0) { // Janeiro
+                            return date.getFullYear().toString()
+                          }
+                          return ''
+                        }}
+                      />
+                      <YAxis
+                        stroke="var(--text-light)"
+                        style={{ fontSize: '0.65rem' }}
+                        tick={{ fill: 'var(--text-light)' }}
+                        width={35}
+                      />
+                      <RechartsTooltip
+                        contentStyle={{
+                          backgroundColor: 'var(--card-background)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '6px',
+                          fontSize: '0.75rem',
+                          padding: '0.5rem'
+                        }}
+                        labelFormatter={(timestamp: any) => {
+                          const date = new Date(timestamp)
+                          return date.toLocaleDateString('pt-BR')
+                        }}
+                        formatter={(value: any) => value ? [`${value} kg`, 'Peso'] : []}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="peso"
+                        stroke="var(--primary-color)"
+                        strokeWidth={2}
+                        connectNulls={false}
+                        dot={(props: any) => {
+                          const { cx, cy, payload } = props
+                          if (!payload.isActual || !payload.peso) return null
+                          return (
+                            <circle
+                              cx={cx}
+                              cy={cy}
+                              r={3}
+                              fill="var(--primary-color)"
+                              stroke="none"
+                            />
+                          )
+                        }}
+                        activeDot={{ r: 5 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -693,20 +800,115 @@ function PesagemTab({ weights }: { weights: any[] }) {
         </div>
       </div>
 
-      {/* Weight Chart Placeholder */}
+      {/* Weight Chart */}
       <div className="card">
         <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-dark)', marginBottom: '1rem' }}>Evolução do Peso</h2>
-        <div style={{
-          height: '300px',
-          background: 'var(--background-soft)',
-          borderRadius: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-light)',
-        }}>
-          <i className="fa-solid fa-chart-line" style={{ fontSize: '3rem', opacity: 0.3 }}></i>
-        </div>
+        {weights.length === 0 ? (
+          <div style={{
+            height: '300px',
+            background: 'var(--background-soft)',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-light)',
+          }}>
+            <i className="fa-solid fa-chart-line" style={{ fontSize: '3rem', opacity: 0.3 }}></i>
+          </div>
+        ) : (
+          <div style={{ height: '300px', width: '100%' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={(() => {
+                  const allWeights = [...weights].reverse()
+                  const chartData = allWeights.map(w => ({
+                    date: new Date(w.date).getTime(),
+                    dateLabel: new Date(w.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+                    peso: Number(w.value),
+                    fullDate: new Date(w.date).toLocaleDateString('pt-BR'),
+                    isActual: true
+                  }))
+
+                  // Adicionar ponto na data atual sem valor (para criar espaço no eixo X)
+                  if (chartData.length > 0) {
+                    const now = new Date().getTime()
+                    chartData.push({
+                      date: now,
+                      dateLabel: 'Hoje',
+                      peso: null,
+                      fullDate: new Date().toLocaleDateString('pt-BR'),
+                      isActual: false
+                    })
+                  }
+
+                  return chartData
+                })()}
+                margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+                <XAxis
+                  dataKey="date"
+                  type="number"
+                  domain={['dataMin', 'dataMax']}
+                  stroke="var(--text-light)"
+                  style={{ fontSize: '0.75rem' }}
+                  tickFormatter={(timestamp) => {
+                    const date = new Date(timestamp)
+                    const month = date.getMonth()
+                    if (month === 0) { // Janeiro
+                      return date.getFullYear().toString()
+                    }
+                    return ''
+                  }}
+                />
+                <YAxis
+                  stroke="var(--text-light)"
+                  style={{ fontSize: '0.75rem' }}
+                  label={{ value: 'Peso (kg)', angle: -90, position: 'insideLeft', style: { fill: 'var(--text-light)' } }}
+                />
+                <RechartsTooltip
+                  contentStyle={{
+                    backgroundColor: 'var(--card-background)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem'
+                  }}
+                  labelStyle={{ color: 'var(--text-dark)', fontWeight: 600 }}
+                  formatter={(value: any) => value ? [`${value} kg`, 'Peso'] : []}
+                  labelFormatter={(timestamp: any) => {
+                    const date = new Date(timestamp)
+                    return date.toLocaleDateString('pt-BR')
+                  }}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: '0.875rem' }}
+                  formatter={() => 'Peso (kg)'}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="peso"
+                  stroke="var(--primary-color)"
+                  strokeWidth={2}
+                  connectNulls={false}
+                  dot={(props: any) => {
+                    const { cx, cy, payload } = props
+                    if (!payload.isActual || !payload.peso) return null
+                    return (
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={4}
+                        fill="var(--primary-color)"
+                        stroke="none"
+                      />
+                    )
+                  }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -44,24 +44,27 @@ model animal_events {
 }
 
 model animal_medical_records {
-  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  animal_id     String     @db.Uuid
-  record_type   String     @db.VarChar(50)
-  description   String
-  veterinarian  String?    @db.VarChar
-  record_date   DateTime   @db.Date
-  next_due_date DateTime?  @db.Date
-  details       Json?
-  document_id   String?    @db.Uuid
-  created_by    String?    @db.Uuid
-  created_at    DateTime   @default(now()) @db.Timestamptz(6)
-  animals       animals    @relation(fields: [animal_id], references: [id], onDelete: Cascade)
-  users         users?     @relation(fields: [created_by], references: [id])
-  documents     documents? @relation(fields: [document_id], references: [id])
+  id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id          String              @db.Uuid
+  record_type        String              @db.VarChar(50)
+  description        String
+  veterinarian       String?             @db.VarChar
+  record_date        DateTime            @db.Date
+  next_due_date      DateTime?           @db.Date
+  details            Json?
+  document_id        String?             @db.Uuid
+  created_by         String?             @db.Uuid
+  clinic_id          String?             @db.Uuid
+  created_at         DateTime            @default(now()) @db.Timestamptz(6)
+  animals            animals             @relation(fields: [animal_id], references: [id], onDelete: Cascade)
+  users              users?              @relation(fields: [created_by], references: [id])
+  documents          documents?          @relation(fields: [document_id], references: [id])
+  veterinary_clinic  veterinary_clinics? @relation(fields: [clinic_id], references: [id], onDelete: SetNull)
 
   @@index([animal_id])
   @@index([record_date(sort: Desc)])
   @@index([record_type])
+  @@index([clinic_id])
 }
 
 model animal_photos {
@@ -331,6 +334,26 @@ model shelters {
   @@index([owner_id])
 }
 
+model veterinary_clinics {
+  id                     String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                   String                   @db.VarChar
+  address                Json?
+  phone                  String?                  @db.VarChar
+  email                  String?                  @db.VarChar
+  crmv                   String?                  @db.VarChar
+  description            String?
+  is_active              Boolean                  @default(true)
+  created_at             DateTime                 @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime                 @default(now()) @db.Timestamptz(6)
+  deleted_at             DateTime?                @db.Timestamptz(6)
+  veterinarians          users[]
+  animal_medical_records animal_medical_records[]
+
+  @@index([name])
+  @@index([is_active])
+  @@index([deleted_at])
+}
+
 model users {
   id                                                  String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                                                String                   @db.VarChar
@@ -340,6 +363,8 @@ model users {
   address                                             Json?
   document_id                                         String?                  @unique @db.VarChar
   role_id                                             Int
+  clinic_id                                           String?                  @db.Uuid
+  details                                             Json?
   created_at                                          DateTime                 @default(now()) @db.Timestamptz(6)
   updated_at                                          DateTime                 @default(now()) @db.Timestamptz(6)
   deleted_at                                          DateTime?                @db.Timestamptz(6)
@@ -360,9 +385,11 @@ model users {
   reports_reports_reporter_idTousers                  reports[]                @relation("reports_reporter_idTousers")
   shelters                                            shelters[]
   roles                                               roles                    @relation(fields: [role_id], references: [id])
+  veterinary_clinic                                   veterinary_clinics?      @relation(fields: [clinic_id], references: [id], onDelete: SetNull)
 
   @@index([deleted_at])
   @@index([email])
   @@index([phone])
   @@index([role_id])
+  @@index([clinic_id])
 }

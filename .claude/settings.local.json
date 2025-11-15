@@ -29,7 +29,9 @@
       "Bash(node auto_migrate.js:*)",
       "Bash(node:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(psql:*)",
+      "Bash(del \"c:\\Users\\Caramelo\\Documents\\GitHub\\kaniu-webapp\\TODO_CLINICAS_VETERINARIAS.md\")"
     ],
     "deny": [],
     "ask": []
