@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend, DotProps } from 'recharts'
+import { Prisma } from '@prisma/client'
 
 interface TooltipProps {
   text: string
@@ -83,14 +84,14 @@ interface AnimalData {
     veterinarian: string | null
     date: Date
     nextDueDate: Date | null
-    details: any
+    details: Prisma.JsonValue
     createdBy: string
   }>
   events: Array<{
     id: string
     type: string
     description: string
-    details: any
+    details: Prisma.JsonValue
     date: Date
     triggeredBy: string
   }>
@@ -337,7 +338,7 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
   )
 }
 
-function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: AnimalData, latestAssessment: any, latestVaccination: any }) {
+function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: AnimalData, latestAssessment: { date: Date } | null, latestVaccination: { date: Date; name: string } | null }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       {/* Grid de Cards - 2 colunas */}
@@ -574,11 +575,11 @@ function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: An
                           fontSize: '0.75rem',
                           padding: '0.5rem'
                         }}
-                        labelFormatter={(timestamp: any) => {
+                        labelFormatter={(timestamp: number | string) => {
                           const date = new Date(timestamp)
                           return date.toLocaleDateString('pt-BR')
                         }}
-                        formatter={(value: any) => value ? [`${value} kg`, 'Peso'] : []}
+                        formatter={(value: number | null) => value ? [`${value} kg`, 'Peso'] : []}
                       />
                       <Line
                         type="monotone"
@@ -586,7 +587,7 @@ function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: An
                         stroke="var(--primary-color)"
                         strokeWidth={2}
                         connectNulls={false}
-                        dot={(props: any) => {
+                        dot={(props: DotProps) => {
                           const { cx, cy, payload } = props
                           if (!payload.isActual || !payload.peso) return null
                           return (
@@ -624,7 +625,7 @@ function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: An
   )
 }
 
-function HistoricoTab({ events }: { events: any[] }) {
+function HistoricoTab({ events }: { events: AnimalData['events'] }) {
   return (
     <div className="card" style={{ padding: '0' }}>
       <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -687,7 +688,7 @@ function HistoricoTab({ events }: { events: any[] }) {
   )
 }
 
-function AvaliacaoTab({ assessments }: { assessments: any[] }) {
+function AvaliacaoTab({ assessments }: { assessments: Array<{ id: string; date: Date; type: string }> }) {
   return (
     <div className="card" style={{ padding: '0' }}>
       <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -752,7 +753,7 @@ function AvaliacaoTab({ assessments }: { assessments: any[] }) {
   )
 }
 
-function PesagemTab({ weights }: { weights: any[] }) {
+function PesagemTab({ weights }: { weights: AnimalData['weights'] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div className="card" style={{ padding: '0' }}>
@@ -906,8 +907,8 @@ function PesagemTab({ weights }: { weights: any[] }) {
                     fontSize: '0.875rem'
                   }}
                   labelStyle={{ color: 'var(--text-dark)', fontWeight: 600 }}
-                  formatter={(value: any) => value ? [`${value} kg`, 'Peso'] : []}
-                  labelFormatter={(timestamp: any) => {
+                  formatter={(value: number | null) => value ? [`${value} kg`, 'Peso'] : []}
+                  labelFormatter={(timestamp: number | string) => {
                     const date = new Date(timestamp)
                     return date.toLocaleDateString('pt-BR')
                   }}
@@ -922,7 +923,7 @@ function PesagemTab({ weights }: { weights: any[] }) {
                   stroke="var(--primary-color)"
                   strokeWidth={2}
                   connectNulls={false}
-                  dot={(props: any) => {
+                  dot={(props: DotProps) => {
                     const { cx, cy, payload } = props
                     if (!payload.isActual || !payload.peso) return null
                     return (
@@ -946,7 +947,7 @@ function PesagemTab({ weights }: { weights: any[] }) {
   )
 }
 
-function ImunizacaoTab({ vaccinations }: { vaccinations: any[] }) {
+function ImunizacaoTab({ vaccinations }: { vaccinations: Array<{ id: string; date: Date; name: string; nextDueDate: Date | null }> }) {
   return (
     <div className="card" style={{ padding: '0' }}>
       <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1013,7 +1014,7 @@ function ImunizacaoTab({ vaccinations }: { vaccinations: any[] }) {
   )
 }
 
-function TratamentoTab({ treatments }: { treatments: any[] }) {
+function TratamentoTab({ treatments }: { treatments: Array<{ id: string; medicationName: string; startDate: Date; endDate: Date | null; dosage: string; frequency: string }> }) {
   return (
     <div className="card" style={{ padding: '0' }}>
       <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

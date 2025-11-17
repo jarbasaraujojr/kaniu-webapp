@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth'
 import { prisma } from '@/lib/db/prisma'
+import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 
 // Schema de validação para criação de prescrição
@@ -120,7 +121,7 @@ export async function GET(request: NextRequest) {
     const isContinuous = searchParams.get('is_continuous')
     const limit = searchParams.get('limit')
 
-    const whereClause: any = {}
+    const whereClause: Prisma.prescriptionsWhereInput = {}
 
     if (animalId) {
       whereClause.animal_id = animalId

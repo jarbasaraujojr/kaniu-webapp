@@ -1,6 +1,7 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { SheltersList } from './shelters-list'
 import { prisma } from '@/lib/db/prisma'
+import { Prisma } from '@prisma/client'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth'
 import { redirect } from 'next/navigation'
@@ -23,7 +24,7 @@ export default async function AbrigosPage({ searchParams }: AbrigosPageProps) {
   const userRole = session.user.role
 
   // Construir filtro baseado no role
-  const whereClause: any = {
+  const whereClause: Prisma.sheltersWhereInput = {
     deleted_at: null,
   }
 

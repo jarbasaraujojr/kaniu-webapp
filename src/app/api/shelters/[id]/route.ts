@@ -59,7 +59,7 @@ export async function GET(
     }
 
     return NextResponse.json(shelter)
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching shelter:', error)
     return NextResponse.json(
       { error: 'Erro ao buscar abrigo' },
@@ -138,7 +138,7 @@ export async function PUT(
     })
 
     return NextResponse.json(shelter)
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error updating shelter:', error)
 
     if (error instanceof z.ZodError) {
@@ -197,7 +197,7 @@ export async function DELETE(
     })
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting shelter:', error)
     return NextResponse.json(
       { error: 'Erro ao excluir abrigo' },

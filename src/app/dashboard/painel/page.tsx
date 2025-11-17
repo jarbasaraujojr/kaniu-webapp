@@ -1,5 +1,6 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { prisma } from '@/lib/db/prisma'
+import { Prisma } from '@prisma/client'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth'
 import { redirect } from 'next/navigation'
@@ -145,7 +146,7 @@ export default async function PainelPage() {
   ])
 
   // Construir filtro baseado no role
-  const animalFilter: any = { deleted_at: null }
+  const animalFilter: Prisma.animalsWhereInput = { deleted_at: null }
   if (userRole === 'shelter_manager' && userShelterId) {
     animalFilter.shelter_id = userShelterId
   }
@@ -160,7 +161,7 @@ export default async function PainelPage() {
       : prisma.shelters.count(),
   ])
 
-  const adoptionFilter: any = {}
+  const adoptionFilter: Prisma.adoption_eventsWhereInput = {}
   if (userRole === 'shelter_manager' && userShelterId) {
     adoptionFilter.animals = { shelter_id: userShelterId }
   }
@@ -178,7 +179,7 @@ export default async function PainelPage() {
     }),
   ])
 
-  const medicalRecordFilter: any = {
+  const medicalRecordFilter: Prisma.animal_medical_recordsWhereInput = {
     next_due_date: {
       not: null,
       lte: twoWeeksAhead,
@@ -241,7 +242,7 @@ export default async function PainelPage() {
     },
   })
 
-  const weightFilter: any = {}
+  const weightFilter: Prisma.animal_weightsWhereInput = {}
   if (userRole === 'shelter_manager' && userShelterId) {
     weightFilter.animals = { shelter_id: userShelterId }
   }
@@ -261,7 +262,7 @@ export default async function PainelPage() {
     },
   })
 
-  const eventFilter: any = {}
+  const eventFilter: Prisma.animal_eventsWhereInput = {}
   if (userRole === 'shelter_manager' && userShelterId) {
     eventFilter.animals = { shelter_id: userShelterId }
   }
@@ -278,7 +279,7 @@ export default async function PainelPage() {
 
   // Buscar adoções dos últimos 12 meses para o gráfico
   const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1)
-  const adoptionsFilter: any = {
+  const adoptionsFilter: Prisma.adoption_eventsWhereInput = {
     created_at: { gte: twelveMonthsAgo },
     status: 'Aprovada'
   }

@@ -3,12 +3,13 @@
 import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Prisma } from '@prisma/client'
 
 interface Shelter {
   id: string
   name: string
   description: string | null
-  location: any
+  location: Prisma.JsonValue
   phone: string | null
   email: string | null
   website: string | null
@@ -49,14 +50,17 @@ export function SheltersList({ initialShelters, showActive, userRole }: Shelters
     router.push(`${pathname}?active=${active}`)
   }
 
-  const getLocationString = (location: any) => {
+  const getLocationString = (location: Prisma.JsonValue) => {
     if (!location) return 'Localização não definida'
     if (typeof location === 'string') return location
-    if (location.city && location.state) {
-      return `${location.city}, ${location.state}`
+    if (typeof location === 'object' && location !== null && !Array.isArray(location)) {
+      const loc = location as { city?: string; state?: string }
+      if (loc.city && loc.state) {
+        return `${loc.city}, ${loc.state}`
+      }
+      if (loc.city) return loc.city
+      if (loc.state) return loc.state
     }
-    if (location.city) return location.city
-    if (location.state) return location.state
     return 'Localização não definida'
   }
 

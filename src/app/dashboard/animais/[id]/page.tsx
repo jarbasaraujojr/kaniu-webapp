@@ -1,5 +1,6 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { prisma } from '@/lib/db/prisma'
+import { Prisma } from '@prisma/client'
 import { notFound, redirect } from 'next/navigation'
 import AnimalDetailsClient from './AnimalDetailsClient'
 import { getServerSession } from 'next-auth'
@@ -43,10 +44,12 @@ const calculateAge = (birthDate: Date | null) => {
   return `${years} ${years === 1 ? 'ano' : 'anos'}`
 }
 
-const getAnimalPhoto = (animal: any) => {
-  const appearance = animal.appearance as any
-  if (appearance && typeof appearance === 'object' && appearance.photo) {
-    return appearance.photo
+const getAnimalPhoto = (animal: { appearance: Prisma.JsonValue; catalogs_animals_species_idTocatalogs: { name: string } | null }) => {
+  if (typeof animal.appearance === 'object' && animal.appearance !== null && !Array.isArray(animal.appearance)) {
+    const appearance = animal.appearance as Record<string, unknown>
+    if (typeof appearance.photo === 'string') {
+      return appearance.photo
+    }
   }
 
   const speciesName = animal.catalogs_animals_species_idTocatalogs?.name

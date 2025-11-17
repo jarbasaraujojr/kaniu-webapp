@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 
 const shelterSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(255, 'Nome muito longo'),
@@ -38,7 +39,17 @@ interface Admin {
 
 interface ShelterFormProps {
   admins: Admin[]
-  shelter?: any
+  shelter?: {
+    id: string
+    name: string
+    description: string | null
+    owner_id: string
+    location: Prisma.JsonValue
+    phone: string | null
+    email: string | null
+    website: string | null
+    is_active: boolean
+  }
 }
 
 export function ShelterForm({ admins, shelter }: ShelterFormProps) {
@@ -126,8 +137,8 @@ export function ShelterForm({ admins, shelter }: ShelterFormProps) {
       // Redirecionar para a página de detalhes
       router.push(`/dashboard/abrigos/${result.id}`)
       router.refresh()
-    } catch (err: any) {
-      setError(err.message || 'Erro ao salvar abrigo')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao salvar abrigo')
     } finally {
       setIsSubmitting(false)
     }

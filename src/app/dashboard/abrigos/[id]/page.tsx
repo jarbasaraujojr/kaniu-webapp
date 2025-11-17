@@ -71,7 +71,7 @@ export default async function ShelterPage({ params, searchParams }: ShelterPageP
   }
 
   // Buscar usuários que podem ser donos de abrigo (apenas se estiver em modo de edição)
-  let admins: any[] = []
+  let admins: Array<{ id: string; name: string; email: string }> = []
   if (mode === 'edit' && session.user.role === 'admin') {
     admins = await prisma.users.findMany({
       where: {

@@ -1,6 +1,7 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { PrescriptionsList } from './prescriptions-list'
 import { prisma } from '@/lib/db/prisma'
+import { Prisma } from '@prisma/client'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth'
 import { redirect } from 'next/navigation'
@@ -21,7 +22,7 @@ export default async function TratamentosPage({ searchParams }: TratamentosPageP
     redirect('/login')
   }
 
-  const whereClause: any = {}
+  const whereClause: Prisma.prescriptionsWhereInput = {}
 
   if (searchParams.animal_id) {
     whereClause.animal_id = searchParams.animal_id
@@ -86,7 +87,7 @@ export default async function TratamentosPage({ searchParams }: TratamentosPageP
   })
 
   // Buscar todos os animais para o filtro
-  const animalsFilter: any = {
+  const animalsFilter: Prisma.animalsWhereInput = {
     deleted_at: null,
   }
 

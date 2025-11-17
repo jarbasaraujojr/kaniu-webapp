@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth'
 import { prisma } from '@/lib/db/prisma'
+import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 
 // Schema de validação
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const active = searchParams.get('active')
 
-    const whereClause: any = {
+    const whereClause: Prisma.sheltersWhereInput = {
       deleted_at: null,
     }
 
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(shelters)
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching shelters:', error)
     return NextResponse.json(
       { error: 'Erro ao buscar abrigos' },
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(shelter, { status: 201 })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating shelter:', error)
 
     if (error instanceof z.ZodError) {

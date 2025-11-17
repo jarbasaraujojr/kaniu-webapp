@@ -58,7 +58,7 @@ export default async function EditAnimalPage({ params }: EditAnimalPageProps) {
   ])
 
   // Buscar raças da espécie do animal
-  let breeds: any[] = []
+  let breeds: Array<{ id: number; name: string; category: string }> = []
   if (animal.species_id) {
     breeds = await prisma.catalogs.findMany({
       where: {

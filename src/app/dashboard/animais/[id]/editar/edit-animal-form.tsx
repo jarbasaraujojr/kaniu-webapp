@@ -18,6 +18,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
+import { Prisma } from '@prisma/client'
 
 interface Catalog {
   id: number
@@ -36,9 +37,9 @@ interface Animal {
   description: string | null
   microchip_id: string | null
   castrated: boolean | null
-  health_status: any
-  behavior: any
-  appearance: any
+  health_status: Prisma.JsonValue
+  behavior: Prisma.JsonValue
+  appearance: Prisma.JsonValue
   status_id: number | null
 }
 

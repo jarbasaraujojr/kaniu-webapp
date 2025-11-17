@@ -3,12 +3,39 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { ShelterForm } from '../shelter-form'
+import { Prisma } from '@prisma/client'
+
+interface Shelter {
+  id: string
+  name: string
+  description: string | null
+  location: Prisma.JsonValue
+  phone: string | null
+  email: string | null
+  website: string | null
+  is_active: boolean
+  owner: {
+    id: string
+    name: string
+    email: string
+  }
+  animalsCount: number
+  recentAnimals: Array<{
+    id: string
+    name: string
+    catalogs_animals_species_idTocatalogs: { name: string } | null
+  }>
+}
 
 interface ShelterDetailsProps {
-  shelter: any
+  shelter: Shelter
   mode: 'view' | 'edit'
   userRole: string
-  admins: any[]
+  admins: Array<{
+    id: string
+    name: string
+    email: string
+  }>
 }
 
 export function ShelterDetails({ shelter, mode, userRole, admins }: ShelterDetailsProps) {
@@ -34,34 +61,36 @@ export function ShelterDetails({ shelter, mode, userRole, admins }: ShelterDetai
 
       router.push('/dashboard/abrigos')
       router.refresh()
-    } catch (err: any) {
-      alert(err.message || 'Erro ao excluir abrigo')
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Erro ao excluir abrigo')
     } finally {
       setIsDeleting(false)
       setShowDeleteConfirm(false)
     }
   }
 
-  const getLocationString = (location: any) => {
+  const getLocationString = (location: Prisma.JsonValue) => {
     if (!location) return null
     if (typeof location === 'string') return location
+    if (typeof location !== 'object' || Array.isArray(location)) return null
 
+    const loc = location as Record<string, unknown>
     const parts = []
-    if (location.street) {
-      let streetPart = location.street
-      if (location.number) streetPart += `, ${location.number}`
-      if (location.complement) streetPart += ` - ${location.complement}`
+    if (typeof loc.street === 'string') {
+      let streetPart = loc.street
+      if (typeof loc.number === 'string') streetPart += `, ${loc.number}`
+      if (typeof loc.complement === 'string') streetPart += ` - ${loc.complement}`
       parts.push(streetPart)
     }
-    if (location.neighborhood) parts.push(location.neighborhood)
-    if (location.city && location.state) {
-      parts.push(`${location.city} - ${location.state}`)
-    } else if (location.city) {
-      parts.push(location.city)
-    } else if (location.state) {
-      parts.push(location.state)
+    if (typeof loc.neighborhood === 'string') parts.push(loc.neighborhood)
+    if (typeof loc.city === 'string' && typeof loc.state === 'string') {
+      parts.push(`${loc.city} - ${loc.state}`)
+    } else if (typeof loc.city === 'string') {
+      parts.push(loc.city)
+    } else if (typeof loc.state === 'string') {
+      parts.push(loc.state)
     }
-    if (location.zip) parts.push(`CEP: ${location.zip}`)
+    if (typeof loc.zip === 'string') parts.push(`CEP: ${loc.zip}`)
 
     return parts.length > 0 ? parts.join(', ') : null
   }
@@ -354,7 +383,7 @@ export function ShelterDetails({ shelter, mode, userRole, admins }: ShelterDetai
             gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
             gap: '0.875rem'
           }}>
-            {shelter.recentAnimals.map((animal: any) => (
+            {shelter.recentAnimals.map((animal) => (
               <div
                 key={animal.id}
                 onClick={() => router.push(`/dashboard/animais/${animal.id}`)}

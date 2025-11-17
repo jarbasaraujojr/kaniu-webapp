@@ -2,10 +2,29 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { Prisma } from '@prisma/client'
+
+interface Animal {
+  id: string
+  name: string
+  birth_date: Date | null
+  birthDate?: Date | null
+  gender: string | null
+  size: string | null
+  appearance: Prisma.JsonValue
+  catalogs_animals_species_idTocatalogs: { name: string } | null
+  species?: { name: string } | null
+  catalogs_animals_breed_idTocatalogs: { name: string } | null
+  breed?: { name: string } | null
+  catalogs_animals_status_idTocatalogs: { name: string } | null
+  shelters: { name: string }
+  shelter?: { name: string }
+  weights?: Array<{ value: number }>
+}
 
 interface AnimalsListProps {
   initialStatus: string
-  initialAnimals: any[]
+  initialAnimals: Animal[]
   availableStatuses: string[]
 }
 
@@ -39,10 +58,13 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
     router.push(`${pathname}?status=${encodedStatus}`)
   }
 
-  const getAnimalPhoto = (animal: any) => {
-    if (animal.appearance?.photo) return animal.appearance.photo
+  const getAnimalPhoto = (animal: Animal) => {
+    if (typeof animal.appearance === 'object' && animal.appearance !== null && !Array.isArray(animal.appearance)) {
+      const app = animal.appearance as Record<string, unknown>
+      if (typeof app.photo === 'string') return app.photo
+    }
 
-    const speciesName = animal.species?.name
+    const speciesName = animal.species?.name || animal.catalogs_animals_species_idTocatalogs?.name
     if (speciesName === 'Cachorro' || speciesName === 'Cão') {
       return 'https://i.ibb.co/Z6dPncCH/pic-dog.png'
     } else if (speciesName === 'Gato') {

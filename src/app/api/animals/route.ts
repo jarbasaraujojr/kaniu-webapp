@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth'
 import { prisma } from '@/lib/db/prisma'
+import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 
 // Schema de validação para criação de animal
@@ -149,7 +150,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const shelterId = searchParams.get('shelterId')
 
-    const whereClause: any = {
+    const whereClause: Prisma.animalsWhereInput = {
       deleted_at: null,
     }
 

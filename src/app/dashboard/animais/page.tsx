@@ -1,6 +1,7 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { AnimalsList } from './animals-list'
 import { prisma } from '@/lib/db/prisma'
+import { Prisma } from '@prisma/client'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth'
 import { redirect } from 'next/navigation'
@@ -68,7 +69,7 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
   const shouldFilterByStatus = Boolean(statusCatalog?.id)
 
   // Construir filtro baseado no role
-  const whereClause: any = {
+  const whereClause: Prisma.animalsWhereInput = {
     deleted_at: null,
   }
 

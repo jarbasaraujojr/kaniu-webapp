@@ -1,6 +1,7 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { MedicalRecordsList } from './medical-records-list'
 import { prisma } from '@/lib/db/prisma'
+import { Prisma } from '@prisma/client'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/auth'
 import { redirect } from 'next/navigation'
@@ -21,7 +22,7 @@ export default async function HistoricoPage({ searchParams }: HistoricoPageProps
     redirect('/login')
   }
 
-  const whereClause: any = {}
+  const whereClause: Prisma.animal_medical_recordsWhereInput = {}
 
   if (searchParams.animal_id) {
     whereClause.animal_id = searchParams.animal_id
@@ -72,7 +73,7 @@ export default async function HistoricoPage({ searchParams }: HistoricoPageProps
   })
 
   // Buscar todos os animais para o filtro
-  const animalsFilter: any = {
+  const animalsFilter: Prisma.animalsWhereInput = {
     deleted_at: null,
   }
 
