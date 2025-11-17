@@ -77,7 +77,7 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
           marginLeft: '0.5rem',
           fontSize: '1.5rem',
           fontWeight: 600,
-          color: 'var(--text-primary)',
+          color: 'var(--primary-color)',
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem'

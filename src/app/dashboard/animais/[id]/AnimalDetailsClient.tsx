@@ -627,7 +627,7 @@ function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: An
 function HistoricoTab({ events }: { events: any[] }) {
   return (
     <div className="card" style={{ padding: '0' }}>
-      <div style={{ padding: '1.5rem 1.5rem 1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-dark)', margin: 0 }}>Histórico de Eventos</h2>
         <button style={{
           padding: '0.6rem 1rem',
@@ -690,7 +690,7 @@ function HistoricoTab({ events }: { events: any[] }) {
 function AvaliacaoTab({ assessments }: { assessments: any[] }) {
   return (
     <div className="card" style={{ padding: '0' }}>
-      <div style={{ padding: '1.5rem 1.5rem 1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-dark)', margin: 0 }}>Avaliações de Saúde</h2>
         <button style={{
           padding: '0.6rem 1rem',
@@ -756,7 +756,7 @@ function PesagemTab({ weights }: { weights: any[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div className="card" style={{ padding: '0' }}>
-        <div style={{ padding: '1.5rem 1.5rem 1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-dark)', margin: 0 }}>Histórico de Peso</h2>
           <button style={{
             padding: '0.6rem 1rem',
@@ -949,7 +949,7 @@ function PesagemTab({ weights }: { weights: any[] }) {
 function ImunizacaoTab({ vaccinations }: { vaccinations: any[] }) {
   return (
     <div className="card" style={{ padding: '0' }}>
-      <div style={{ padding: '1.5rem 1.5rem 1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-dark)', margin: 0 }}>Registro de Imunizações</h2>
         <button style={{
           padding: '0.6rem 1rem',
@@ -1016,7 +1016,7 @@ function ImunizacaoTab({ vaccinations }: { vaccinations: any[] }) {
 function TratamentoTab({ treatments }: { treatments: any[] }) {
   return (
     <div className="card" style={{ padding: '0' }}>
-      <div style={{ padding: '1.5rem 1.5rem 1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-dark)', margin: 0 }}>Tratamentos Médicos</h2>
         <button style={{
           padding: '0.6rem 1rem',

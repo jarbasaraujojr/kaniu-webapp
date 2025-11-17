@@ -116,7 +116,7 @@ export function MedicalRecordsList({
               margin: '0 0 0 0.5rem',
               fontSize: '1.5rem',
               fontWeight: 600,
-              color: 'var(--text-dark)',
+              color: 'var(--primary-color)',
             }}>
               Histórico Médico
             </h2>
