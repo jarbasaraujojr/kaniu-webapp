@@ -11,6 +11,26 @@ interface AnimalDetailsPageProps {
   }
 }
 
+const parseCatalogId = (value?: string | null) => {
+  if (!value) return null
+  const trimmed = `${value}`.trim()
+  if (!trimmed || !/^\d+$/.test(trimmed)) return null
+  return Number(trimmed)
+}
+
+const getCatalogDisplayName = async (value?: string | null) => {
+  if (!value) return ''
+  const catalogId = parseCatalogId(value)
+  if (catalogId === null) return value
+
+  const catalog = await prisma.catalogs.findUnique({
+    where: { id: catalogId },
+    select: { name: true },
+  })
+
+  return catalog?.name || value
+}
+
 const calculateAge = (birthDate: Date | null) => {
   if (!birthDate) return null
   const today = new Date()
@@ -118,6 +138,11 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
   // Get photo
   const photo = getAnimalPhoto(animal)
 
+  const [genderName, sizeName] = await Promise.all([
+    getCatalogDisplayName(animal.gender),
+    getCatalogDisplayName(animal.size),
+  ])
+
   // Prepare animal data
   const animalData = {
     id: animal.id,
@@ -126,8 +151,8 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
     photo,
     species: animal.catalogs_animals_species_idTocatalogs?.name || '',
     breed: animal.catalogs_animals_breed_idTocatalogs?.name || '',
-    gender: animal.gender || '',
-    size: animal.size || '',
+    gender: genderName,
+    size: sizeName,
     status: animal.catalogs_animals_status_idTocatalogs?.name || '',
     coat,
     color,

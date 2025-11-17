@@ -77,7 +77,7 @@ export default function LoginPage() {
             color: 'var(--primary-color)',
             marginBottom: '0.4rem'
           }}>
-            Bem-vindo ao Kaniu
+            Gestão de animais
           </h1>
           <p style={{
             fontSize: '0.875rem',

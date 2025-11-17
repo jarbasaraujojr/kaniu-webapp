@@ -1,35 +1,129 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
+import { MedicalRecordsList } from './medical-records-list'
+import { prisma } from '@/lib/db/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth/auth'
+import { redirect } from 'next/navigation'
 
-export default function HistoricoPage() {
+interface HistoricoPageProps {
+  searchParams: {
+    animal_id?: string
+    record_type?: string
+  }
+}
+
+export const revalidate = 30
+
+export default async function HistoricoPage({ searchParams }: HistoricoPageProps) {
+  const session = await getServerSession(authOptions)
+
+  if (!session) {
+    redirect('/login')
+  }
+
+  const whereClause: any = {}
+
+  if (searchParams.animal_id) {
+    whereClause.animal_id = searchParams.animal_id
+  }
+
+  if (searchParams.record_type) {
+    whereClause.record_type = searchParams.record_type
+  }
+
+  // Se for shelter_manager, filtrar apenas registros de animais do seu abrigo
+  if (session.user.role === 'shelter_manager' && session.user.shelterId) {
+    whereClause.animals = {
+      shelter_id: session.user.shelterId,
+      deleted_at: null,
+    }
+  } else {
+    whereClause.animals = {
+      deleted_at: null,
+    }
+  }
+
+  // Buscar registros médicos
+  const medicalRecords = await prisma.animal_medical_records.findMany({
+    where: whereClause,
+    include: {
+      animals: {
+        select: {
+          id: true,
+          name: true,
+          shelter_id: true,
+        },
+      },
+      users: {
+        select: {
+          name: true,
+        },
+      },
+      veterinary_clinic: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: {
+      record_date: 'desc',
+    },
+    take: 100,
+  })
+
+  // Buscar todos os animais para o filtro
+  const animalsFilter: any = {
+    deleted_at: null,
+  }
+
+  if (session.user.role === 'shelter_manager' && session.user.shelterId) {
+    animalsFilter.shelter_id = session.user.shelterId
+  }
+
+  const animals = await prisma.animals.findMany({
+    where: animalsFilter,
+    select: {
+      id: true,
+      name: true,
+    },
+    orderBy: {
+      name: 'asc',
+    },
+  })
+
+  // Buscar todas as clínicas para o modal
+  const clinics = await prisma.veterinary_clinics.findMany({
+    where: {
+      deleted_at: null,
+    },
+    orderBy: {
+      name: 'asc',
+    },
+  })
+
+  // Tipos de registros disponíveis
+  const recordTypes = [
+    'Consulta',
+    'Vacinação',
+    'Exame',
+    'Cirurgia',
+    'Tratamento',
+    'Avaliação',
+    'Emergência',
+    'Retorno',
+    'Outro',
+  ]
+
   return (
     <DashboardLayout>
-      <main className="main-container">
-        <header className="header" style={{ padding: '1.75rem' }}>
-          <h1 style={{
-            fontSize: '1.75rem',
-            fontWeight: 700,
-            color: 'var(--text-dark)',
-            margin: 0
-          }}>
-            Histórico
-          </h1>
-          <p style={{
-            color: 'var(--text-light)',
-            fontSize: '0.95rem',
-            marginTop: '0.5rem'
-          }}>
-            Registro de eventos e atividades
-          </p>
-        </header>
-
-        <div style={{ padding: '1.75rem' }}>
-          <div className="card">
-            <p style={{ color: 'var(--text-light)', fontSize: '0.9rem' }}>
-              Funcionalidade em desenvolvimento...
-            </p>
-          </div>
-        </div>
-      </main>
+      <MedicalRecordsList
+        initialRecords={medicalRecords}
+        animals={animals}
+        clinics={clinics}
+        recordTypes={recordTypes}
+        selectedAnimalId={searchParams.animal_id}
+        selectedRecordType={searchParams.record_type}
+      />
     </DashboardLayout>
   )
 }

@@ -183,7 +183,7 @@ async function main() {
   for (const status of animalStatuses) {
     await prisma.catalogs.create({
       data: {
-        category: 'animal_status',
+        category: 'status',
         name: status.name,
         description: status.description,
       },

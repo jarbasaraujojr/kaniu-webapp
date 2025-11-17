@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts'
 
 interface TooltipProps {
@@ -100,6 +101,7 @@ interface AnimalDetailsClientProps {
 }
 
 export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps) {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('painel')
   const [hoveredButton, setHoveredButton] = useState<number | null>(null)
 
@@ -163,6 +165,7 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'space-between',
                 gap: '1rem',
               }}>
                 <h1 style={{
@@ -174,6 +177,35 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
                 }}>
                   {animal.name}
                 </h1>
+                <button
+                  onClick={() => router.push(`/dashboard/animais/${animal.id}/editar`)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: 'var(--primary-color)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 'var(--radius-md)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--primary-dark)'
+                    e.currentTarget.style.transform = 'translateY(-1px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--primary-color)'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}
+                  title="Editar animal"
+                >
+                  <i className="fa-solid fa-pen-to-square"></i>
+                  Editar
+                </button>
               </div>
 
               <div style={{

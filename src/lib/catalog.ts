@@ -6,7 +6,7 @@ import { prisma } from './db/prisma'
 export async function getAnimalStatusByName(name: string) {
   return await prisma.catalogs.findFirst({
     where: {
-      category: 'animal_status',
+      category: 'status',
       name: name,
     },
   })
@@ -18,7 +18,7 @@ export async function getAnimalStatusByName(name: string) {
 export async function getAllAnimalStatuses() {
   return await prisma.catalogs.findMany({
     where: {
-      category: 'animal_status',
+      category: 'status',
       is_active: true,
     },
     orderBy: {

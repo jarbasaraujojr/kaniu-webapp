@@ -22,11 +22,12 @@ export function Sidebar() {
   const getMenuItems = (): NavItem[] => {
     if (isAdmin) {
       return [
-        { id: 'dashboard', label: 'Dashboard', icon: 'fa-chart-line', path: '/dashboard/admin' },
-        { id: 'shelters', label: 'Abrigos', icon: 'fa-building', path: '/dashboard/admin/abrigos' },
-        { id: 'users', label: 'Usuários', icon: 'fa-users', path: '/dashboard/admin/usuarios' },
-        { id: 'animals', label: 'Todos Animais', icon: 'fa-paw', path: '/dashboard/admin/animais' },
-        { id: 'statistics', label: 'Estatísticas', icon: 'fa-chart-bar', path: '/dashboard/admin/estatisticas' },
+        { id: 'dashboard', label: 'Dashboard', icon: 'fa-chart-line', path: '/dashboard/painel' },
+        { id: 'shelters', label: 'Abrigos', icon: 'fa-building', path: '/dashboard/abrigos' },
+        { id: 'animais', label: 'Animais', icon: 'fa-paw', path: '/dashboard/animais' },
+        { id: 'historico', label: 'Histórico', icon: 'fa-clock-rotate-left', path: '/dashboard/historico' },
+        { id: 'avaliacoes', label: 'Avaliações', icon: 'fa-file-medical', path: '/dashboard/avaliacoes' },
+        { id: 'tratamentos', label: 'Tratamentos', icon: 'fa-syringe', path: '/dashboard/tratamentos' },
       ]
     }
 
@@ -97,37 +98,91 @@ export function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        {user && !collapsed && (
+        {user && (
           <div style={{
-            padding: '0.75rem 1rem',
+            padding: collapsed ? '0.5rem 0.25rem' : '0.75rem 1rem',
             borderBottom: '1px solid var(--border-color)',
-            marginBottom: '0.5rem'
+            marginBottom: '0.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem'
           }}>
+            {/* Usuário Logado */}
             <div style={{
-              fontSize: '0.75rem',
-              color: 'var(--text-light)',
-              marginBottom: '0.25rem'
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem'
             }}>
-              Conectado como
+              <i className="fa-solid fa-user" style={{
+                fontSize: '1rem',
+                color: 'var(--primary-color)',
+                minWidth: '20px',
+                textAlign: 'center'
+              }}></i>
+              {!collapsed && (
+                <div style={{
+                  flex: 1,
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    color: 'var(--text-dark)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {user.name}
+                  </div>
+                  <div style={{
+                    fontSize: '0.7rem',
+                    color: 'var(--text-light)',
+                    marginTop: '0.1rem'
+                  }}>
+                    {isAdmin && 'Administrador'}
+                    {isShelterManager && 'Gerente de Abrigo'}
+                    {isAdopter && 'Usuário'}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Abrigo/Sistema */}
             <div style={{
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              color: 'var(--text-dark)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem'
             }}>
-              {user.name}
-            </div>
-            <div style={{
-              fontSize: '0.7rem',
-              color: 'var(--text-light)',
-              marginTop: '0.1rem'
-            }}>
-              {isAdmin && 'Administrador'}
-              {isShelterManager && 'Gerente de Abrigo'}
-              {isAdopter && 'Usuário'}
+              <i className="fa-solid fa-building" style={{
+                fontSize: '1rem',
+                color: 'var(--primary-color)',
+                minWidth: '20px',
+                textAlign: 'center'
+              }}></i>
+              {!collapsed && (
+                <div style={{
+                  flex: 1,
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    color: 'var(--text-dark)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {user.shelterName || 'Sistema Kaniu'}
+                  </div>
+                  <div style={{
+                    fontSize: '0.7rem',
+                    color: 'var(--text-light)',
+                    marginTop: '0.1rem'
+                  }}>
+                    {user.shelterName ? 'Abrigo' : 'Administração'}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -136,7 +191,6 @@ export function Sidebar() {
           className="sidebar-item"
           onClick={handleLogout}
           title="Sair"
-          style={{ color: 'var(--warning-color)' }}
         >
           <i className="fa-solid fa-right-from-bracket"></i>
           <span>Sair</span>

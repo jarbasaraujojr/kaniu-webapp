@@ -36,7 +36,7 @@ export default function Home() {
             color: 'var(--primary-color)',
             lineHeight: 1.3
           }}>
-            Sistema de Gestão de Abrigos de Animais
+            Sistema de Gestão de Animais
           </h2>
           <p style={{
             fontSize: '0.95rem',

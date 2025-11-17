@@ -144,20 +144,20 @@ async function main() {
     log('Buscando catálogos existentes...', 'blue');
 
     const catalogs = await newClient.query(`
-      SELECT id, category, value FROM catalogs
-      WHERE category IN ('species', 'gender', 'size', 'status')
-      ORDER BY category, value
+      SELECT id, category, name FROM catalogs
+      WHERE category IN ('species', 'gender', 'size', 'animal_status')
+      ORDER BY category, name
     `);
 
     const catalogMap = {
       species: {},
       gender: {},
       size: {},
-      status: {}
+      animal_status: {}
     };
 
     catalogs.rows.forEach(cat => {
-      catalogMap[cat.category][cat.value.toLowerCase()] = cat.id;
+      catalogMap[cat.category][cat.name.toLowerCase()] = cat.id;
     });
 
     log('✓ Catálogos carregados:', 'green');

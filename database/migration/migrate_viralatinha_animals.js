@@ -195,7 +195,6 @@ async function main() {
         };
 
         const healthStatus = {
-          castrated: animal.castrado || false,
           vaccinated: animal.vacinado || false,
           dewormed: animal.vermifugado || false,
           deparasitized: animal.desparasitado || false,
@@ -204,15 +203,18 @@ async function main() {
 
         const behavior = {};
 
+        // Castrado agora é campo direto
+        const castrated = animal.castrado || false;
+
         // Inserir animal
         const result = await client.query(
           `INSERT INTO animals (
             name, description, shelter_id, species_id, breed_id, gender,
-            size, birth_date, microchip_id, status_id,
+            size, birth_date, microchip_id, status_id, castrated,
             appearance, health_status, behavior,
             created_at, updated_at, created_by, updated_by
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), $15, $15)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), $16, $16)
           ON CONFLICT DO NOTHING
           RETURNING id, name`,
           [
@@ -226,6 +228,7 @@ async function main() {
             animal.nascimento || null,
             animal.chip || null,
             statusId,
+            castrated,
             JSON.stringify(appearance),
             JSON.stringify(healthStatus),
             JSON.stringify(behavior),

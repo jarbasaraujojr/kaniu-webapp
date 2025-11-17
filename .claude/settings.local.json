@@ -31,7 +31,12 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(psql:*)",
-      "Bash(del \"c:\\Users\\Caramelo\\Documents\\GitHub\\kaniu-webapp\\TODO_CLINICAS_VETERINARIAS.md\")"
+      "Bash(del \"c:\\Users\\Caramelo\\Documents\\GitHub\\kaniu-webapp\\TODO_CLINICAS_VETERINARIAS.md\")",
+      "Bash(chmod:*)",
+      "Bash(.kill-all-services.bat)",
+      "Bash(del:*)",
+      "Bash(npx tsx:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

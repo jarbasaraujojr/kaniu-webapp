@@ -139,9 +139,9 @@ export default async function PainelPage() {
 
   // Buscar IDs dos status no catálogo
   const [statusAbrigado, statusAdotado, statusInternado] = await Promise.all([
-    prisma.catalogs.findFirst({ where: { category: 'animal_status', name: 'Abrigado' } }),
-    prisma.catalogs.findFirst({ where: { category: 'animal_status', name: 'Adotado' } }),
-    prisma.catalogs.findFirst({ where: { category: 'animal_status', name: 'Internado' } }),
+    prisma.catalogs.findFirst({ where: { category: 'status', name: 'Abrigado' } }),
+    prisma.catalogs.findFirst({ where: { category: 'status', name: 'Adotado' } }),
+    prisma.catalogs.findFirst({ where: { category: 'status', name: 'Internado' } }),
   ])
 
   // Construir filtro baseado no role
@@ -276,6 +276,23 @@ export default async function PainelPage() {
     },
   })
 
+  // Buscar adoções dos últimos 12 meses para o gráfico
+  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1)
+  const adoptionsFilter: any = {
+    created_at: { gte: twelveMonthsAgo },
+    status: 'Aprovada'
+  }
+  if (userRole === 'shelter_manager' && userShelterId) {
+    adoptionsFilter.animals = { shelter_id: userShelterId }
+  }
+
+  const adoptionsByMonthPromise = prisma.adoption_events.findMany({
+    where: adoptionsFilter,
+    select: {
+      created_at: true,
+    },
+  })
+
   const [
     stats,
     adoptionCounts,
@@ -284,6 +301,7 @@ export default async function PainelPage() {
     adoptionPipeline,
     weightRecordsRaw,
     recentEvents,
+    adoptionsByMonthRaw,
   ] = await Promise.all([
     statsPromise,
     adoptionCountsPromise,
@@ -292,6 +310,7 @@ export default async function PainelPage() {
     adoptionPipelinePromise,
     weightRecordsPromise,
     eventsPromise,
+    adoptionsByMonthPromise,
   ])
 
   const [totalAnimals, totalSheltered, totalAdopted, totalInternados, totalShelters] = stats
@@ -315,6 +334,25 @@ export default async function PainelPage() {
     dateTime: record.date_time,
     notes: record.notes,
   }))
+
+  // Processar adoções por mês para o gráfico
+  const adoptionsByMonth = Array.from({ length: 12 }, (_, i) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1)
+    return {
+      month: date.toLocaleDateString('pt-BR', { month: 'short' }),
+      year: date.getFullYear(),
+      count: 0
+    }
+  })
+
+  adoptionsByMonthRaw.forEach(adoption => {
+    const adoptionDate = new Date(adoption.created_at)
+    const monthIndex = (adoptionDate.getFullYear() - adoptionsByMonth[0].year) * 12 +
+                       (adoptionDate.getMonth() - (now.getMonth() - 11))
+    if (monthIndex >= 0 && monthIndex < 12) {
+      adoptionsByMonth[monthIndex].count++
+    }
+  })
 
   const statCards: Array<{
     id: string
@@ -556,6 +594,71 @@ export default async function PainelPage() {
                     ))}
                   </tbody>
                 </table>
+              )}
+            </div>
+          </article>
+
+          <article className="dashboard-card">
+            <header>
+              <i className="fa-solid fa-chart-bar"></i>Adoções por mês
+            </header>
+            <div style={{ padding: '1.5rem', minHeight: '300px' }}>
+              {adoptionsByMonth.every(m => m.count === 0) ? (
+                <div className="empty-state">Nenhuma adoção registrada nos últimos 12 meses</div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'flex-end', height: '280px', gap: '0.5rem' }}>
+                  {adoptionsByMonth.map((data, index) => {
+                    const maxCount = Math.max(...adoptionsByMonth.map(m => m.count), 1)
+                    const heightPercent = (data.count / maxCount) * 100
+
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                        }}
+                      >
+                        <div style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          color: 'var(--text-dark)',
+                          minHeight: '20px',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}>
+                          {data.count > 0 ? data.count : ''}
+                        </div>
+                        <div
+                          style={{
+                            width: '100%',
+                            height: `${heightPercent}%`,
+                            background: data.count > 0
+                              ? 'linear-gradient(180deg, var(--primary-color) 0%, var(--primary-dark) 100%)'
+                              : 'var(--border-color)',
+                            borderRadius: '6px 6px 0 0',
+                            minHeight: data.count > 0 ? '4px' : '2px',
+                            transition: 'all 0.3s ease',
+                            cursor: data.count > 0 ? 'pointer' : 'default',
+                            boxShadow: data.count > 0 ? '0 2px 8px rgba(90, 93, 127, 0.2)' : 'none',
+                          }}
+                          title={`${data.month}/${data.year}: ${data.count} adoção(ões)`}
+                        />
+                        <div style={{
+                          fontSize: '0.7rem',
+                          color: 'var(--text-light)',
+                          textTransform: 'capitalize',
+                          fontWeight: 500
+                        }}>
+                          {data.month}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               )}
             </div>
           </article>

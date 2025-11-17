@@ -16,7 +16,7 @@ const VIEW_MODE_KEY = 'animals-view-mode'
 export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }: AnimalsListProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const [currentStatus, setCurrentStatus] = useState(initialStatus)
+  const [currentStatus, setCurrentStatus] = useState(initialStatus || 'Todos')
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(VIEW_MODE_KEY)
@@ -25,13 +25,18 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
     return 'grid'
   })
 
+  const statusOptions = Array.from(
+    new Set(['Todos', ...availableStatuses.filter((status): status is string => Boolean(status))])
+  )
+
   useEffect(() => {
     localStorage.setItem(VIEW_MODE_KEY, viewMode)
   }, [viewMode])
 
   const handleStatusChange = (status: string) => {
     setCurrentStatus(status)
-    router.push(`${pathname}?status=${status}`)
+    const encodedStatus = encodeURIComponent(status)
+    router.push(`${pathname}?status=${encodedStatus}`)
   }
 
   const getAnimalPhoto = (animal: any) => {
@@ -62,65 +67,125 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
     <main className="main-container">
       <div className="card" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
           padding: '1rem 1.5rem',
-          background: 'var(--background-soft)'
+          background: 'var(--background-soft)',
+          borderBottom: '1px solid var(--border-color)'
         }}>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {availableStatuses.map((status) => (
+          {/* Header com título e botões de ação */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1rem',
+            flexWrap: 'wrap',
+            gap: '1rem'
+          }}>
+            <h2 style={{
+              margin: 0,
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              color: 'var(--text-dark)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <i className="fa-solid fa-paw" style={{ color: 'var(--primary-color)' }}></i>
+              Animais
+            </h2>
+
+            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+              <button
+                onClick={() => router.push('/dashboard/animais/novo')}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  backgroundColor: 'var(--primary-color)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 600
+                }}
+                title="Adicionar novo animal"
+              >
+                <i className="fa-solid fa-plus" style={{ fontSize: '0.875rem' }}></i>
+                Novo Animal
+              </button>
+              <button
+                onClick={() => setViewMode('grid')}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  border: `1px solid ${viewMode === 'grid' ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                  backgroundColor: viewMode === 'grid' ? 'var(--primary-color)' : 'transparent',
+                  color: viewMode === 'grid' ? 'white' : 'var(--text-light)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  fontSize: '0.875rem'
+                }}
+                title="Visualização em grade"
+              >
+                <i className="fa-solid fa-grip" style={{ fontSize: '0.875rem' }}></i>
+                Grade
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  border: `1px solid ${viewMode === 'list' ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                  backgroundColor: viewMode === 'list' ? 'var(--primary-color)' : 'transparent',
+                  color: viewMode === 'list' ? 'white' : 'var(--text-light)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  fontSize: '0.875rem'
+                }}
+                title="Visualização em lista"
+              >
+                <i className="fa-solid fa-list" style={{ fontSize: '0.875rem' }}></i>
+                Lista
+              </button>
+            </div>
+          </div>
+
+          {/* Filtros de status */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            flexWrap: 'wrap'
+          }}>
+            <span style={{
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              color: 'var(--text-light)',
+              marginRight: '0.25rem'
+            }}>
+              Status:
+            </span>
+            {statusOptions.map((status) => (
               <button
                 key={status}
                 className={`tab-btn ${currentStatus === status ? 'active' : ''}`}
                 onClick={() => handleStatusChange(status)}
+                style={{
+                  fontSize: '0.85rem',
+                  padding: '0.5rem 0.85rem'
+                }}
               >
-                {status}s
+                {status}
               </button>
             ))}
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              onClick={() => setViewMode('grid')}
-              style={{
-                padding: '0.5rem 0.75rem',
-                border: `1px solid ${viewMode === 'grid' ? 'var(--primary-color)' : 'var(--border-color)'}`,
-                backgroundColor: viewMode === 'grid' ? 'var(--primary-color)' : 'transparent',
-                color: viewMode === 'grid' ? 'white' : 'var(--text-light)',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                fontSize: '0.875rem'
-              }}
-              title="Visualização em grade"
-            >
-              <i className="fa-solid fa-grip" style={{ fontSize: '0.875rem' }}></i>
-              Grade
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              style={{
-                padding: '0.5rem 0.75rem',
-                border: `1px solid ${viewMode === 'list' ? 'var(--primary-color)' : 'var(--border-color)'}`,
-                backgroundColor: viewMode === 'list' ? 'var(--primary-color)' : 'transparent',
-                color: viewMode === 'list' ? 'white' : 'var(--text-light)',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                fontSize: '0.875rem'
-              }}
-              title="Visualização em lista"
-            >
-              <i className="fa-solid fa-list" style={{ fontSize: '0.875rem' }}></i>
-              Lista
-            </button>
           </div>
         </div>
 
