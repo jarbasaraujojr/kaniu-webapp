@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -104,46 +103,48 @@ export function MedicalRecordsList({
 
   return (
     <main className="main-container">
-      <header className="header" style={{ padding: '1.75rem' }}>
+      <div>
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'flex-start',
+          gap: '0.5rem',
           flexWrap: 'wrap',
-          gap: '1rem',
+          alignItems: 'center',
         }}>
           <div>
-            <h1 style={{
-              fontSize: '1.75rem',
-              fontWeight: 700,
+            <h2 style={{
+              margin: '0 0 0 0.5rem',
+              fontSize: '1.5rem',
+              fontWeight: 600,
               color: 'var(--text-dark)',
-              margin: 0
             }}>
               Histórico Médico
-            </h1>
-            <p style={{
-              color: 'var(--text-light)',
-              fontSize: '0.95rem',
-              marginTop: '0.5rem'
-            }}>
-              Registro de consultas, exames e procedimentos
-            </p>
+            </h2>
           </div>
-
-          <Button
+          <button
             onClick={() => setIsAddModalOpen(true)}
             style={{
+              padding: '0.5rem 0.85rem',
               backgroundColor: 'var(--primary-color)',
               color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              fontSize: '0.875rem',
+              fontWeight: 600,
             }}
+            title="Adicionar novo histórico"
           >
-            <i className="fa-solid fa-plus" style={{ marginRight: '0.5rem' }}></i>
-            Novo Registro
-          </Button>
+            <i className="fa-solid fa-plus" style={{ fontSize: '0.875rem' }}></i>
+            Novo Histórico
+          </button>
         </div>
-      </header>
-
-      <div style={{ padding: '1.75rem' }}>
+      </div>
+      <div>
         {/* Filtros */}
         <div className="card" style={{ marginBottom: '1.5rem', padding: '1.25rem' }}>
           <div style={{

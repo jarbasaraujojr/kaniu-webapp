@@ -75,9 +75,9 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
         <h2 style={{
           margin: 0,
           marginLeft: '0.5rem',
-          fontSize: '1.75rem',
+          fontSize: '1.5rem',
           fontWeight: 600,
-          color: 'var(--text-dark)',
+          color: 'var(--text-primary)',
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem'
