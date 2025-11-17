@@ -40,15 +40,25 @@
     --tab-toolbar-h: 44px;
 
     /* Compatibilidade Shadcn */
-    --background: 238 242 249;
-    --foreground: 22 17 12;
+    --background: 218 48% 95%;
+    --foreground: 35 28% 17%;
     --card: 0 0% 100%;
-    --card-foreground: 22 17 12;
-    --primary: 237 238 246;
-    --primary-foreground: 90 93 127;
-    --muted: 245 246 251;
-    --muted-foreground: 107 114 128;
-    --border: 229 231 242;
+    --card-foreground: 35 28% 17%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 35 28% 17%;
+    --primary: 235 17% 43%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 230 43% 97%;
+    --secondary-foreground: 235 17% 35%;
+    --muted: 228 30% 95%;
+    --muted-foreground: 220 9% 52%;
+    --accent: 232 45% 94%;
+    --accent-foreground: 235 17% 35%;
+    --destructive: 0 66% 47%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 231 33% 92%;
+    --input: 231 33% 92%;
+    --ring: 235 17% 43%;
     --radius: 0.5rem;
   }
 

@@ -65,56 +65,93 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
 
   return (
     <main className="main-container">
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        gap: '0.5rem',
+        flexWrap: 'wrap',
+        alignItems: 'center'
+      }}>
+        <h2 style={{
+          margin: 0,
+          marginLeft: '0.5rem',
+          fontSize: '1.75rem',
+          fontWeight: 600,
+          color: 'var(--text-dark)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}>
+          Animais
+        </h2>
+        <button
+          onClick={() => router.push('/dashboard/animais/novo')}
+          style={{
+            padding: '0.5rem 0.75rem',
+            backgroundColor: 'var(--primary-color)',
+            color: 'white',
+            border: 'none',
+            borderRadius: 'var(--radius-md)',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            fontSize: '0.875rem',
+            fontWeight: 600
+          }}
+          title="Adicionar novo animal"
+        >
+          <i className="fa-solid fa-plus" style={{ fontSize: '0.875rem' }}></i>
+          Novo Animal
+        </button>
+      </div>
       <div className="card" style={{ padding: 0, overflow: 'hidden', gap: 0 }}>
         <div style={{
           padding: '1rem 1.5rem',
-          background: 'var(--background-soft)',
-          borderBottom: '1px solid var(--border-color)'
         }}>
-          {/* Header com título e botões de ação */}
+          {/* Filtros de status e seletores de visualização */}
           <div style={{
             display: 'flex',
-            justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '1rem',
+            gap: '0.5rem',
             flexWrap: 'wrap',
-            gap: '1rem'
+            justifyContent: 'space-between'
           }}>
-            <h2 style={{
-              margin: 0,
-              fontSize: '1.1rem',
-              fontWeight: 600,
-              color: 'var(--text-dark)',
+            <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem'
+              gap: '0.5rem',
+              flexWrap: 'wrap'
             }}>
-              <i className="fa-solid fa-paw" style={{ color: 'var(--primary-color)' }}></i>
-              Animais
-            </h2>
-
-            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
-              <button
-                onClick={() => router.push('/dashboard/animais/novo')}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  backgroundColor: 'var(--primary-color)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 'var(--radius-md)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  fontSize: '0.875rem',
-                  fontWeight: 600
-                }}
-                title="Adicionar novo animal"
-              >
-                <i className="fa-solid fa-plus" style={{ fontSize: '0.875rem' }}></i>
-                Novo Animal
-              </button>
+              <span style={{
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                color: 'var(--text-light)',
+                marginRight: '0.25rem'
+              }}>
+                Status:
+              </span>
+              {statusOptions.map((status) => (
+                <button
+                  key={status}
+                  className={`tab-btn ${currentStatus === status ? 'active' : ''}`}
+                  onClick={() => handleStatusChange(status)}
+                  style={{
+                    fontSize: '0.85rem',
+                    padding: '0.5rem 0.85rem'
+                  }}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+            <div style={{
+              display: 'flex',
+              gap: '0.5rem',
+              justifyContent: 'flex-end',
+              flexWrap: 'wrap'
+            }}>
               <button
                 onClick={() => setViewMode('grid')}
                 style={{
@@ -156,36 +193,6 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                 Lista
               </button>
             </div>
-          </div>
-
-          {/* Filtros de status */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            flexWrap: 'wrap'
-          }}>
-            <span style={{
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              color: 'var(--text-light)',
-              marginRight: '0.25rem'
-            }}>
-              Status:
-            </span>
-            {statusOptions.map((status) => (
-              <button
-                key={status}
-                className={`tab-btn ${currentStatus === status ? 'active' : ''}`}
-                onClick={() => handleStatusChange(status)}
-                style={{
-                  fontSize: '0.85rem',
-                  padding: '0.5rem 0.85rem'
-                }}
-              >
-                {status}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -292,7 +299,7 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
         ) : (
             <div style={{ overflowX: 'auto', marginTop: 0 }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 0 }}>
-                <thead style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <thead style={{ borderTop: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>
                   <tr style={{ background: 'var(--background-soft)' }}>
                     <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Animal</th>
                     <th style={{ padding: '0.75rem 1.5rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Espécie</th>

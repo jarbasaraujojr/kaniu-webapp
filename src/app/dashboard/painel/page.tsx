@@ -495,7 +495,6 @@ export default async function PainelPage() {
                   <thead>
                     <tr>
                       <th>Animal</th>
-                      <th>Abrigo</th>
                       <th>Atualização</th>
                     </tr>
                   </thead>
@@ -506,7 +505,6 @@ export default async function PainelPage() {
                           <div style={{ fontWeight: 600 }}>{animal.name}</div>
                           <span className="muted-text">{animal.catalogs_animals_breed_idTocatalogs?.name ?? 'SRD'}</span>
                         </td>
-                        <td>{animal.shelters?.name ?? 'Sem abrigo'}</td>
                         <td>
                           <span className={`status-pill ${getStatusVariant(animal.catalogs_animals_status_idTocatalogs?.name ?? '')}`}>
                             {animal.catalogs_animals_status_idTocatalogs?.name ?? 'Sem status'}
