@@ -9,6 +9,7 @@ interface Shelter {
   id: string
   name: string
   description: string | null
+  owner_id: string
   location: Prisma.JsonValue
   phone: string | null
   email: string | null
@@ -415,7 +416,7 @@ export function ShelterDetails({ shelter, mode, userRole, admins }: ShelterDetai
                   fontSize: '0.8rem',
                   color: 'var(--text-light)'
                 }}>
-                  {animal.species?.name || 'Espécie não definida'}
+                  {animal.catalogs_animals_species_idTocatalogs?.name || 'Espécie não definida'}
                 </p>
               </div>
             ))}

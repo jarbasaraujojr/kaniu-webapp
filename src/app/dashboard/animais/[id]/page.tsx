@@ -12,6 +12,17 @@ interface AnimalDetailsPageProps {
   }
 }
 
+interface Appearance {
+  coat?: string | null
+  color?: string | null
+}
+
+interface HealthStatus {
+  vaccinated?: boolean
+  dewormed?: boolean
+  deparasitized?: boolean
+}
+
 const parseCatalogId = (value?: string | null) => {
   if (!value) return null
   const trimmed = `${value}`.trim()
@@ -121,15 +132,15 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
   }
 
   // Extract appearance data
-  const appearance = animal.appearance as any
-  const coat = appearance && typeof appearance === 'object' ? appearance.coat : null
-  const color = appearance && typeof appearance === 'object' ? appearance.color : null
+  const appearance = animal.appearance as Appearance | null
+  const coat = appearance && typeof appearance === 'object' ? (appearance.coat ?? null) : null
+  const color = appearance && typeof appearance === 'object' ? (appearance.color ?? null) : null
 
   // Extract health status data
-  const healthStatus = animal.health_status as any
-  const vaccinated = healthStatus && typeof healthStatus === 'object' ? healthStatus.vaccinated : false
-  const dewormed = healthStatus && typeof healthStatus === 'object' ? healthStatus.dewormed : false
-  const deparasitized = healthStatus && typeof healthStatus === 'object' ? healthStatus.deparasitized : false
+  const healthStatus = animal.health_status as HealthStatus | null
+  const vaccinated = healthStatus && typeof healthStatus === 'object' ? (healthStatus.vaccinated ?? false) : false
+  const dewormed = healthStatus && typeof healthStatus === 'object' ? (healthStatus.dewormed ?? false) : false
+  const deparasitized = healthStatus && typeof healthStatus === 'object' ? (healthStatus.deparasitized ?? false) : false
 
   // Calculate age
   const age = calculateAge(animal.birth_date)

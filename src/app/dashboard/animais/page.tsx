@@ -73,7 +73,7 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
     deleted_at: null,
   }
 
-  if (shouldFilterByStatus) {
+  if (shouldFilterByStatus && statusCatalog) {
     whereClause.status_id = statusCatalog.id
   }
 
@@ -161,10 +161,10 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
     species: animal.catalogs_animals_species_idTocatalogs,
     breed: animal.catalogs_animals_breed_idTocatalogs,
     status: animal.catalogs_animals_status_idTocatalogs,
-    gender: resolveCatalogValue(animal.gender, genderMap),
-    size: resolveCatalogValue(animal.size, sizeMap),
+    gender: resolveCatalogValue(animal.gender, genderMap) ?? null,
+    size: resolveCatalogValue(animal.size, sizeMap) ?? null,
     shelter: animal.shelters,
-    weights: animal.animal_weights,
+    weights: animal.animal_weights.map(w => ({ value: Number(w.value) })),
   }))
 
   return (

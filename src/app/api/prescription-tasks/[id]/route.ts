@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db/prisma'
 import { z } from 'zod'
 
 const updateTaskSchema = z.object({
-  was_administered: z.boolean(),
+  is_completed: z.boolean(),
   administered_at: z.string().optional().nullable(),
   administered_by: z.string().uuid().optional().nullable(),
   notes: z.string().optional().nullable(),
@@ -29,7 +29,7 @@ export async function PATCH(
     const validatedData = updateTaskSchema.parse(body)
 
     const existingTask = await prisma.prescription_tasks.findUnique({
-      where: { id: BigInt(params.id) },
+      where: { id: params.id },
     })
 
     if (!existingTask) {
@@ -41,13 +41,13 @@ export async function PATCH(
 
     const task = await prisma.prescription_tasks.update({
       where: {
-        id: BigInt(params.id),
+        id: params.id,
       },
       data: {
-        was_administered: validatedData.was_administered,
+        is_completed: validatedData.is_completed,
         administered_at: validatedData.administered_at
           ? new Date(validatedData.administered_at)
-          : validatedData.was_administered
+          : validatedData.is_completed
             ? new Date()
             : null,
         administered_by: validatedData.administered_by || session.user.id,
@@ -62,13 +62,7 @@ export async function PATCH(
       },
     })
 
-    // Converter BigInt para string para serialização JSON
-    const serializedTask = {
-      ...task,
-      id: task.id.toString(),
-    }
-
-    return NextResponse.json({ task: serializedTask })
+    return NextResponse.json({ task })
   } catch (error) {
     console.error('Erro ao atualizar tarefa:', error)
 

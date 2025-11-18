@@ -36,7 +36,8 @@
       "Bash(.kill-all-services.bat)",
       "Bash(del:*)",
       "Bash(npx tsx:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(timeout 10m npm run build:*)"
     ],
     "deny": [],
     "ask": []

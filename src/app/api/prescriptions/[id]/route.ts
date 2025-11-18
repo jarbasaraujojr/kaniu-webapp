@@ -5,16 +5,15 @@ import { prisma } from '@/lib/db/prisma'
 import { z } from 'zod'
 
 const updatePrescriptionSchema = z.object({
-  medication_name: z.string().min(1, 'Nome do medicamento é obrigatório'),
+  medication_id: z.number().int().positive('Medicamento é obrigatório'),
   dosage: z.string().min(1, 'Dosagem é obrigatória'),
-  dosage_unit_id: z.number().int().positive().optional().nullable(),
-  route_id: z.number().int().positive().optional().nullable(),
-  frequency_hours: z.number().int().positive('Frequência em horas é obrigatória'),
+  route: z.string().min(1, 'Via de administração é obrigatória'),
+  interval_hours: z.number().int().positive('Intervalo em horas é obrigatório'),
   start_date: z.string(),
   duration_days: z.number().int().positive().optional().nullable(),
   is_continuous: z.boolean().default(false),
   is_completed: z.boolean().default(false),
-  notes: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
 })
 
 export async function GET(
@@ -43,16 +42,6 @@ export async function GET(
           },
         },
         users: {
-          select: {
-            name: true,
-          },
-        },
-        catalogs_prescriptions_dosage_unit_idTocatalogs: {
-          select: {
-            name: true,
-          },
-        },
-        catalogs_prescriptions_route_idTocatalogs: {
           select: {
             name: true,
           },
@@ -115,16 +104,15 @@ export async function PUT(
         id: params.id,
       },
       data: {
-        medication_name: validatedData.medication_name,
+        medication_id: validatedData.medication_id,
         dosage: validatedData.dosage,
-        dosage_unit_id: validatedData.dosage_unit_id,
-        route_id: validatedData.route_id,
-        frequency_hours: validatedData.frequency_hours,
+        route: validatedData.route,
+        interval_hours: validatedData.interval_hours,
         start_date: new Date(validatedData.start_date),
         duration_days: validatedData.duration_days,
         is_continuous: validatedData.is_continuous,
         is_completed: validatedData.is_completed,
-        notes: validatedData.notes,
+        description: validatedData.description,
       },
       include: {
         animals: {
@@ -137,12 +125,7 @@ export async function PUT(
             name: true,
           },
         },
-        catalogs_prescriptions_dosage_unit_idTocatalogs: {
-          select: {
-            name: true,
-          },
-        },
-        catalogs_prescriptions_route_idTocatalogs: {
+        medications: {
           select: {
             name: true,
           },

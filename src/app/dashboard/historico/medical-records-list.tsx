@@ -216,7 +216,7 @@ export function MedicalRecordsList({
               Nenhum registro médico encontrado
             </p>
             <p style={{ color: 'var(--text-faded)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-              Clique em "Novo Registro" para adicionar o primeiro
+              Clique em &quot;Novo Registro&quot; para adicionar o primeiro
             </p>
           </div>
         ) : (

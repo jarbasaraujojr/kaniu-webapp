@@ -73,7 +73,7 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
     return 'https://i.ibb.co/KpVTx4vK/pic-none.png'
   }
 
-  const calculateAge = (birthDate: Date | null) => {
+  const calculateAge = (birthDate: Date | null | undefined) => {
     if (!birthDate) return null
     const today = new Date()
     const birth = new Date(birthDate)
@@ -312,7 +312,7 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                   fontSize: '0.75rem'
                 }}>
                   <i className="fa-solid fa-building" style={{ fontSize: '0.7rem' }}></i>
-                  <span>{animal.shelter.name}</span>
+                  <span>{animal.shelter?.name}</span>
                 </div>
               </div>
             ))}

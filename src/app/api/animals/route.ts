@@ -66,13 +66,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = createAnimalSchema.parse(body)
 
-    // Obter shelter_id do usuário
-    const user = await prisma.users.findUnique({
-      where: { id: session.user.id },
-      select: { shelter_id: true },
-    })
+    // Obter shelter_id do usuário da sessão
+    const shelterId = session.user.shelterId
 
-    if (!user?.shelter_id) {
+    if (!shelterId) {
       return NextResponse.json(
         { error: 'Usuário não está associado a um abrigo' },
         { status: 400 }
@@ -95,7 +92,7 @@ export async function POST(request: NextRequest) {
         behavior: validatedData.behavior || {},
         appearance: validatedData.appearance || {},
         status_id: validatedData.status_id,
-        shelter_id: user.shelter_id,
+        shelter_id: shelterId,
         created_by: session.user.id,
         updated_by: session.user.id,
       },

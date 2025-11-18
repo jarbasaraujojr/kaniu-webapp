@@ -273,7 +273,7 @@ export function PrescriptionsList({
               Nenhuma prescrição encontrada
             </p>
             <p style={{ color: 'var(--text-faded)', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-              Clique em "Nova Prescrição" para adicionar o primeiro tratamento
+              Clique em &quot;Nova Prescrição&quot; para adicionar o primeiro tratamento
             </p>
           </div>
         ) : (

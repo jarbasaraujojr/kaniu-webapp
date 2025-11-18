@@ -10,6 +10,7 @@ export interface AuthUser {
   roleId: number
   permissions: Record<string, boolean>
   shelterId?: string
+  shelterName?: string
 }
 
 export function useAuth() {

@@ -4,6 +4,10 @@ import { authOptions } from '@/lib/auth/auth'
 import { prisma } from '@/lib/db/prisma'
 import Link from 'next/link'
 
+interface AnimalAppearance {
+  photo?: string | null
+}
+
 export default async function UserDashboardPage() {
   const session = await getServerSession(authOptions)
 
@@ -142,9 +146,9 @@ export default async function UserDashboardPage() {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  {(fav.animals.appearance as any)?.photo ? (
+                  {(fav.animals.appearance as AnimalAppearance | null)?.photo ? (
                     <img
-                      src={(fav.animals.appearance as any).photo}
+                      src={(fav.animals.appearance as AnimalAppearance).photo || ''}
                       alt={fav.animals.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />

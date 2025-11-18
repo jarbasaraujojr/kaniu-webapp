@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -98,9 +98,9 @@ export function EditAnimalForm({ animal, species, statuses, initialBreeds }: Edi
   const [breeds, setBreeds] = useState<Catalog[]>(initialBreeds)
 
   // Preparar valores iniciais
-  const healthStatus = animal.health_status || {}
-  const behavior = animal.behavior || {}
-  const appearance = animal.appearance || {}
+  const healthStatus = (animal.health_status as { vaccines?: string[]; allergies?: string[]; medications?: string[]; conditions?: string[]; notes?: string }) || {}
+  const behavior = (animal.behavior as { energy_level?: string; sociability?: string; good_with_kids?: boolean; good_with_dogs?: boolean; good_with_cats?: boolean; house_trained?: boolean; special_needs?: string; notes?: string }) || {}
+  const appearance = (animal.appearance as { photo?: string; coat?: string; color?: string; primary_color?: string; secondary_color?: string; coat_type?: string; markings?: string; distinguishing_features?: string; notes?: string }) || {}
 
   const {
     register,
@@ -114,8 +114,8 @@ export function EditAnimalForm({ animal, species, statuses, initialBreeds }: Edi
       name: animal.name,
       species_id: animal.species_id || undefined,
       breed_id: animal.breed_id || undefined,
-      gender: animal.gender as any || undefined,
-      size: animal.size as any || undefined,
+      gender: (animal.gender as 'Macho' | 'Fêmea' | 'Desconhecido') || undefined,
+      size: (animal.size as 'Pequeno' | 'Médio' | 'Grande') || undefined,
       birth_date: animal.birth_date ? new Date(animal.birth_date).toISOString().split('T')[0] : undefined,
       description: animal.description || undefined,
       microchip_id: animal.microchip_id || undefined,
@@ -125,8 +125,8 @@ export function EditAnimalForm({ animal, species, statuses, initialBreeds }: Edi
       medications: healthStatus.medications?.join(', ') || '',
       conditions: healthStatus.conditions?.join(', ') || '',
       health_notes: healthStatus.notes || '',
-      energy_level: behavior.energy_level as any || undefined,
-      sociability: behavior.sociability as any || undefined,
+      energy_level: (behavior.energy_level as 'Baixo' | 'Médio' | 'Alto') || undefined,
+      sociability: (behavior.sociability as 'Tímido' | 'Moderado' | 'Sociável') || undefined,
       good_with_kids: behavior.good_with_kids || false,
       good_with_dogs: behavior.good_with_dogs || false,
       good_with_cats: behavior.good_with_cats || false,

@@ -338,7 +338,7 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
   )
 }
 
-function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: AnimalData, latestAssessment: { date: Date } | null, latestVaccination: { date: Date; name: string } | null }) {
+function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: AnimalData, latestAssessment: { date: Date } | null, latestVaccination: { id: string; type: string; description: string; veterinarian: string | null; date: Date; nextDueDate: Date | null; details: Prisma.JsonValue; createdBy: string } | null }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       {/* Grid de Cards - 2 colunas */}
@@ -535,7 +535,7 @@ function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: An
                           chartData.push({
                             date: now,
                             dateLabel: 'Hoje',
-                            peso: null,
+                            peso: 0,
                             isActual: false
                           })
                         }
@@ -579,7 +579,7 @@ function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: An
                           const date = new Date(timestamp)
                           return date.toLocaleDateString('pt-BR')
                         }}
-                        formatter={(value: number | null) => value ? [`${value} kg`, 'Peso'] : []}
+                        formatter={(value) => (value && typeof value === 'number') ? [`${value} kg`, 'Peso'] : []}
                       />
                       <Line
                         type="monotone"
@@ -587,7 +587,7 @@ function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: An
                         stroke="var(--primary-color)"
                         strokeWidth={2}
                         connectNulls={false}
-                        dot={(props: DotProps) => {
+                        dot={(props) => {
                           const { cx, cy, payload } = props
                           if (!payload.isActual || !payload.peso) return null
                           return (
@@ -688,7 +688,7 @@ function HistoricoTab({ events }: { events: AnimalData['events'] }) {
   )
 }
 
-function AvaliacaoTab({ assessments }: { assessments: Array<{ id: string; date: Date; type: string }> }) {
+function AvaliacaoTab({ assessments }: { assessments: Array<{ id: string; date: Date; type: string; description?: string; veterinarian?: string | null; createdBy?: string }> }) {
   return (
     <div className="card" style={{ padding: '0' }}>
       <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -868,7 +868,7 @@ function PesagemTab({ weights }: { weights: AnimalData['weights'] }) {
                     chartData.push({
                       date: now,
                       dateLabel: 'Hoje',
-                      peso: null,
+                      peso: 0,
                       fullDate: new Date().toLocaleDateString('pt-BR'),
                       isActual: false
                     })
@@ -907,7 +907,7 @@ function PesagemTab({ weights }: { weights: AnimalData['weights'] }) {
                     fontSize: '0.875rem'
                   }}
                   labelStyle={{ color: 'var(--text-dark)', fontWeight: 600 }}
-                  formatter={(value: number | null) => value ? [`${value} kg`, 'Peso'] : []}
+                  formatter={(value) => (value && typeof value === 'number') ? [`${value} kg`, 'Peso'] : []}
                   labelFormatter={(timestamp: number | string) => {
                     const date = new Date(timestamp)
                     return date.toLocaleDateString('pt-BR')
@@ -923,7 +923,7 @@ function PesagemTab({ weights }: { weights: AnimalData['weights'] }) {
                   stroke="var(--primary-color)"
                   strokeWidth={2}
                   connectNulls={false}
-                  dot={(props: DotProps) => {
+                  dot={(props) => {
                     const { cx, cy, payload } = props
                     if (!payload.isActual || !payload.peso) return null
                     return (
@@ -947,7 +947,7 @@ function PesagemTab({ weights }: { weights: AnimalData['weights'] }) {
   )
 }
 
-function ImunizacaoTab({ vaccinations }: { vaccinations: Array<{ id: string; date: Date; name: string; nextDueDate: Date | null }> }) {
+function ImunizacaoTab({ vaccinations }: { vaccinations: Array<{ id: string; type: string; description: string; veterinarian: string | null; date: Date; nextDueDate: Date | null; details: Prisma.JsonValue; createdBy: string }> }) {
   return (
     <div className="card" style={{ padding: '0' }}>
       <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1014,7 +1014,7 @@ function ImunizacaoTab({ vaccinations }: { vaccinations: Array<{ id: string; dat
   )
 }
 
-function TratamentoTab({ treatments }: { treatments: Array<{ id: string; medicationName: string; startDate: Date; endDate: Date | null; dosage: string; frequency: string }> }) {
+function TratamentoTab({ treatments }: { treatments: Array<{ id: string; type: string; description: string; veterinarian: string | null; date: Date; nextDueDate: Date | null; details: Prisma.JsonValue; createdBy: string }> }) {
   return (
     <div className="card" style={{ padding: '0' }}>
       <div style={{ padding: '1rem 1rem 0 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -7,6 +7,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Prisma } from '@prisma/client'
 
+interface LocationData {
+  street?: string
+  number?: string
+  complement?: string
+  neighborhood?: string
+  city?: string
+  state?: string
+  zip?: string
+}
+
 const shelterSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(255, 'Nome muito longo'),
   description: z.string().optional(),
@@ -60,7 +70,7 @@ export function ShelterForm({ admins, shelter }: ShelterFormProps) {
   const isEditing = !!shelter
 
   // Parse location if editing
-  const locationData = shelter?.location || {}
+  const locationData = (shelter?.location as LocationData) || {}
 
   const {
     register,
