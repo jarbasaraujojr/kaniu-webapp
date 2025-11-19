@@ -44,6 +44,7 @@ const animalSchema = z.object({
   // Etapa 2: Saúde
   microchip_id: z.string().optional().nullable(),
   castrated: z.boolean().optional().nullable(),
+  is_available_for_adoption: z.boolean().optional(),
   vaccines: z.string().optional(),
   allergies: z.string().optional(),
   medications: z.string().optional(),
@@ -175,6 +176,7 @@ export function NewAnimalForm({ species, statuses }: NewAnimalFormProps) {
         description: data.description,
         microchip_id: data.microchip_id,
         castrated: data.castrated,
+        is_available_for_adoption: data.is_available_for_adoption,
         health_status,
         behavior,
         appearance,
@@ -360,6 +362,17 @@ export function NewAnimalForm({ species, statuses }: NewAnimalFormProps) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="is_available_for_adoption"
+                checked={watch('is_available_for_adoption') || false}
+                onCheckedChange={(checked) => setValue('is_available_for_adoption', checked as boolean)}
+              />
+              <Label htmlFor="is_available_for_adoption" className="cursor-pointer">
+                Disponível para adoção
+              </Label>
             </div>
 
             <div>

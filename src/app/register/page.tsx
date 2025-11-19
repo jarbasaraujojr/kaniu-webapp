@@ -106,19 +106,14 @@ export default function RegisterPage() {
             src="/logo-kaniu.png"
             alt="Kaniu"
             style={{
-              width: '80px',
+              width: '160px',
               height: 'auto',
-              marginBottom: '1.25rem'
+              marginBottom: '1.25rem',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              display: 'block'
             }}
           />
-          <h1 style={{
-            fontSize: '1.5rem',
-            fontWeight: 700,
-            color: 'var(--primary-color)',
-            marginBottom: '0.4rem'
-          }}>
-            Criar Conta
-          </h1>
           <p style={{
             fontSize: '0.875rem',
             color: 'var(--text-light)'

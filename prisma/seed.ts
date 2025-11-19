@@ -108,9 +108,9 @@ async function main() {
     },
   })
 
-  // Raças de Cães
+  // Raças de Cães (usando parent_id para referenciar a espécie)
   const dogBreeds = [
-    'SRD (Sem Raça Definida)',
+    'SRD (Cão)',
     'Labrador',
     'Golden Retriever',
     'Bulldog',
@@ -130,15 +130,16 @@ async function main() {
   for (const breed of dogBreeds) {
     await prisma.catalogs.create({
       data: {
-        category: 'breed_dog',
+        category: 'breed',
         name: breed,
+        parent_id: dogSpecies.id,
       },
     })
   }
 
-  // Raças de Gatos
+  // Raças de Gatos (usando parent_id para referenciar a espécie)
   const catBreeds = [
-    'SRD (Sem Raça Definida)',
+    'SRD (Gato)',
     'Persa',
     'Siamês',
     'Maine Coon',
@@ -153,19 +154,28 @@ async function main() {
   for (const breed of catBreeds) {
     await prisma.catalogs.create({
       data: {
-        category: 'breed_cat',
+        category: 'breed',
         name: breed,
+        parent_id: catSpecies.id,
       },
     })
   }
 
-  // Tamanhos
-  const sizes = ['Pequeno', 'Médio', 'Grande', 'Gigante']
+  // Tamanhos (com descrição de peso)
+  const sizes = [
+    { name: 'Mini', description: 'Até 5kg' },
+    { name: 'Pequeno', description: 'Até 10kg' },
+    { name: 'Médio', description: 'Até 15kg' },
+    { name: 'Grande', description: 'Até 30kg' },
+    { name: 'Gigante', description: 'Acima de 30kg' },
+  ]
+
   for (const size of sizes) {
     await prisma.catalogs.create({
       data: {
         category: 'size',
-        name: size,
+        name: size.name,
+        description: size.description,
       },
     })
   }
@@ -173,7 +183,9 @@ async function main() {
   // Status dos animais
   const animalStatuses = [
     { name: 'Abrigado', description: 'Animal está abrigado' },
-    { name: 'Disponível', description: 'Animal disponível para adoção' },
+    // NOTA: "Disponível" foi removido como status separado.
+    // Agora, a disponibilidade para adoção é controlada pelo campo
+    // "is_available_for_adoption" nos animais com status "Abrigado"
     { name: 'Adotado', description: 'Animal foi adotado' },
     { name: 'Desaparecido', description: 'Animal desaparecido' },
     { name: 'Internado', description: 'Animal internado para tratamento médico' },
@@ -190,7 +202,7 @@ async function main() {
     })
   }
 
-  console.log(`✅ Criados ${dogBreeds.length + catBreeds.length + sizes.length + animalStatuses.length + 2} itens de catálogo`)
+  console.log(`✅ Criados ${dogBreeds.length + catBreeds.length + sizes.length + animalStatuses.length + 2} itens de catálogo (${dogBreeds.length} raças de cães, ${catBreeds.length} raças de gatos, ${sizes.length} tamanhos, ${animalStatuses.length} status, 2 espécies)`)
 
   // 3. Criar usuários de exemplo
   console.log('👤 Criando usuários de exemplo...')
@@ -293,12 +305,53 @@ async function main() {
 
   console.log(`✅ Criados ${2} abrigos`)
 
-  // 5. Criar animais de exemplo
+  // 5. Criar clínicas veterinárias de exemplo
+  console.log('🏥 Criando clínicas veterinárias...')
+
+  const clinic1 = await prisma.veterinary_clinics.create({
+    data: {
+      name: 'Clínica Veterinária PetCare',
+      address: {
+        street: 'Av. Paulista, 1500',
+        number: '1500',
+        neighborhood: 'Bela Vista',
+        city: 'São Paulo',
+        state: 'SP',
+        zipCode: '01310-100',
+      },
+      phone: '(11) 3333-4444',
+      email: 'contato@petcare.com.br',
+      crmv: 'CRMV-SP 12345',
+      description: 'Clínica veterinária com atendimento 24h, especializada em pequenos animais',
+    },
+  })
+
+  const clinic2 = await prisma.veterinary_clinics.create({
+    data: {
+      name: 'Hospital Veterinário Animal Care',
+      address: {
+        street: 'Rua Augusta, 2500',
+        number: '2500',
+        neighborhood: 'Consolação',
+        city: 'São Paulo',
+        state: 'SP',
+        zipCode: '01412-100',
+      },
+      phone: '(11) 5555-6666',
+      email: 'hospital@animalcare.vet.br',
+      crmv: 'CRMV-SP 67890',
+      description: 'Hospital veterinário completo com centro cirúrgico e internação',
+    },
+  })
+
+  console.log(`✅ Criadas ${2} clínicas veterinárias`)
+
+  // 6. Criar animais de exemplo
   console.log('🐕 Criando animais...')
 
   // Buscar status do catálogo
   const statusAbrigado = await prisma.catalogs.findFirst({
-    where: { category: 'animal_status', name: 'Abrigado' },
+    where: { category: 'status', name: 'Abrigado' },
   })
 
   const animal1 = await prisma.animals.create({
@@ -402,9 +455,10 @@ async function main() {
   console.log('✅ Seed concluído com sucesso!')
   console.log('\n📊 Resumo:')
   console.log(`   - ${5} roles`)
-  console.log(`   - ${dogBreeds.length + catBreeds.length + sizes.length + 2} itens de catálogo`)
+  console.log(`   - ${dogBreeds.length + catBreeds.length + sizes.length + animalStatuses.length + 2} itens de catálogo`)
   console.log(`   - ${3} usuários`)
   console.log(`   - ${2} abrigos`)
+  console.log(`   - ${2} clínicas veterinárias`)
   console.log(`   - ${3} animais`)
 }
 

@@ -108,6 +108,7 @@ model animals {
   birth_date                            DateTime?                @db.Date
   microchip_id                          String?                  @unique @db.VarChar
   castrated                             Boolean?
+  is_available_for_adoption             Boolean                  @default(false)
   health_status                         Json?
   behavior                              Json?
   appearance                            Json

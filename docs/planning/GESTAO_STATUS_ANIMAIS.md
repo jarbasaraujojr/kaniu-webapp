@@ -54,12 +54,17 @@ model AnimalEvent {
 
 | Status | Descrição | Ícone |
 |--------|-----------|-------|
-| **Disponível** | Animal disponível para adoção | `fa-heart` |
+| **Abrigado** | Animal está abrigado | `fa-home` |
 | **Adotado** | Animal foi adotado | `fa-house` |
 | **Desaparecido** | Animal desaparecido | `fa-magnifying-glass` |
 | **Internado** | Animal internado para tratamento | `fa-hospital` |
 | **Falecido** | Animal falecido | `fa-cross` |
-| Abrigado | Animal está no abrigo | - |
+
+**Nota sobre Disponibilidade para Adoção:**
+- A disponibilidade para adoção **não é mais um status separado**
+- Agora é controlada pelo campo booleano `is_available_for_adoption` no model `Animal`
+- Apenas animais com status "Abrigado" podem ter `is_available_for_adoption = true`
+- Exemplo: Animal em tratamento = status "Abrigado" + `is_available_for_adoption = false`
 
 ### Fluxo de Mudança de Status
 
@@ -96,27 +101,28 @@ await prisma.animal.update({
 Um animal pode ter o seguinte histórico:
 
 ```
-10/01/2025 - Status: Abrigado (chegou ao abrigo)
-15/02/2025 - Status: Disponível (liberado para adoção)
+10/01/2025 - Status: Abrigado (chegou ao abrigo) - is_available_for_adoption: false
+15/02/2025 - Disponibilidade alterada (liberado para adoção) - is_available_for_adoption: true
 20/03/2025 - Status: Adotado (família Silva adotou)
 10/04/2025 - Status: Desaparecido (família reportou desaparecimento)
-25/04/2025 - Status: Abrigado (foi encontrado e retornou)
+25/04/2025 - Status: Abrigado (foi encontrado e retornou) - is_available_for_adoption: false
 01/05/2025 - Status: Internado (precisou de tratamento)
-15/05/2025 - Status: Disponível (recuperado, disponível novamente)
+15/05/2025 - Status: Abrigado (recuperado) - is_available_for_adoption: true
 ```
 
-**Status Atual:** Disponível
+**Status Atual:** Abrigado + Disponível para Adoção (`is_available_for_adoption: true`)
 **Histórico:** 7 eventos registrados mostrando toda a jornada
 
 ### Consultas Úteis
 
 ```typescript
-// Buscar animais por status atual
+// Buscar animais disponíveis para adoção
 const animaisDisponiveis = await prisma.animal.findMany({
   where: {
     status: {
-      name: 'Disponível'
-    }
+      name: 'Abrigado'
+    },
+    is_available_for_adoption: true
   }
 })
 
@@ -178,5 +184,10 @@ style={{
 
 ### Arquivos Modificados
 
-1. **`prisma/seed.ts`** - Adicionado status "Disponível"
-2. **`src/app/dashboard/animais/[id]/AnimalDetailsClient.tsx`** - Botões de ação com destaque do status ativo
+1. **`prisma/schema.prisma`** - Adicionado campo `is_available_for_adoption` no model `animals`
+2. **`prisma/seed.ts`** - Removido status "Disponível", mantido apenas "Abrigado"
+3. **`src/app/dashboard/animais/[id]/AnimalDetailsClient.tsx`** - Botões de ação com destaque do status ativo
+4. **`src/app/api/animals/route.ts`** - Validação e tratamento do campo `is_available_for_adoption`
+5. **`src/app/api/animals/[id]/route.ts`** - Validação e tratamento do campo `is_available_for_adoption`
+6. **`src/app/dashboard/animais/novo/new-animal-form.tsx`** - Checkbox para marcar disponibilidade
+7. **`src/app/dashboard/animais/[id]/editar/edit-animal-form.tsx`** - Checkbox para marcar disponibilidade

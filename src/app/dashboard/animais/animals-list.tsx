@@ -11,6 +11,7 @@ interface Animal {
   birthDate?: Date | null
   gender: string | null
   size: string | null
+  is_available_for_adoption?: boolean
   appearance: Prisma.JsonValue
   catalogs_animals_species_idTocatalogs: { name: string } | null
   species?: { name: string } | null
@@ -265,16 +266,30 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                   />
                 </div>
 
-                <h3 style={{
-                  fontFamily: "'GoodDog', 'Inter', sans-serif",
-                  fontSize: '1.6rem',
-                  fontWeight: 'bold',
-                  letterSpacing: '0.01em',
-                  color: 'var(--text-dark)',
-                  marginBottom: '0.5rem'
-                }}>
-                  {animal.name}
-                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <h3 style={{
+                    fontFamily: "'GoodDog', 'Inter', sans-serif",
+                    fontSize: '1.6rem',
+                    fontWeight: 'bold',
+                    letterSpacing: '0.01em',
+                    color: 'var(--text-dark)',
+                    margin: 0
+                  }}>
+                    {animal.name}
+                  </h3>
+                  {animal.is_available_for_adoption && (
+                    <span style={{
+                      fontSize: '0.7rem',
+                      padding: '0.25rem 0.5rem',
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      borderRadius: '4px',
+                      fontWeight: 600
+                    }}>
+                      Disponível
+                    </span>
+                  )}
+                </div>
 
                 <div style={{
                   display: 'flex',
@@ -365,13 +380,27 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                                 objectFit: 'cover'
                               }}
                             />
-                            <span style={{
-                              fontSize: '1rem',
-                              fontWeight: 600,
-                              color: 'var(--text-dark)'
-                            }}>
-                              {animal.name}
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span style={{
+                                fontSize: '1rem',
+                                fontWeight: 600,
+                                color: 'var(--text-dark)'
+                              }}>
+                                {animal.name}
+                              </span>
+                              {animal.is_available_for_adoption && (
+                                <span style={{
+                                  fontSize: '0.7rem',
+                                  padding: '0.2rem 0.4rem',
+                                  backgroundColor: '#10b981',
+                                  color: 'white',
+                                  borderRadius: '4px',
+                                  fontWeight: 600
+                                }}>
+                                  Disponível
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>

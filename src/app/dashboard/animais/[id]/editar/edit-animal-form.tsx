@@ -37,6 +37,7 @@ interface Animal {
   description: string | null
   microchip_id: string | null
   castrated: boolean | null
+  is_available_for_adoption?: boolean
   health_status: Prisma.JsonValue
   behavior: Prisma.JsonValue
   appearance: Prisma.JsonValue
@@ -61,6 +62,7 @@ const animalSchema = z.object({
   description: z.string().optional().nullable(),
   microchip_id: z.string().optional().nullable(),
   castrated: z.boolean().optional().nullable(),
+  is_available_for_adoption: z.boolean().optional(),
   vaccines: z.string().optional(),
   allergies: z.string().optional(),
   medications: z.string().optional(),
@@ -120,6 +122,7 @@ export function EditAnimalForm({ animal, species, statuses, initialBreeds }: Edi
       description: animal.description || undefined,
       microchip_id: animal.microchip_id || undefined,
       castrated: animal.castrated || false,
+      is_available_for_adoption: animal.is_available_for_adoption || false,
       vaccines: healthStatus.vaccines?.join(', ') || '',
       allergies: healthStatus.allergies?.join(', ') || '',
       medications: healthStatus.medications?.join(', ') || '',
@@ -210,6 +213,7 @@ export function EditAnimalForm({ animal, species, statuses, initialBreeds }: Edi
         description: data.description,
         microchip_id: data.microchip_id,
         castrated: data.castrated,
+        is_available_for_adoption: data.is_available_for_adoption,
         health_status,
         behavior,
         appearance,
@@ -398,6 +402,17 @@ export function EditAnimalForm({ animal, species, statuses, initialBreeds }: Edi
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="is_available_for_adoption"
+                checked={watch('is_available_for_adoption') || false}
+                onCheckedChange={(checked) => setValue('is_available_for_adoption', checked as boolean)}
+              />
+              <Label htmlFor="is_available_for_adoption" className="cursor-pointer">
+                Disponível para adoção
+              </Label>
             </div>
 
             <div>

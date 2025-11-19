@@ -18,6 +18,7 @@ const updateAnimalSchema = z.object({
   // Etapa 2: Saúde
   microchip_id: z.string().optional().nullable(),
   castrated: z.boolean().optional().nullable(),
+  is_available_for_adoption: z.boolean().optional(),
   health_status: z.object({
     vaccines: z.array(z.string()).optional(),
     allergies: z.array(z.string()).optional(),
@@ -142,6 +143,7 @@ export async function PUT(
         description: validatedData.description,
         microchip_id: validatedData.microchip_id,
         castrated: validatedData.castrated,
+        is_available_for_adoption: validatedData.is_available_for_adoption,
         health_status: validatedData.health_status || {},
         behavior: validatedData.behavior || {},
         appearance: validatedData.appearance || {},

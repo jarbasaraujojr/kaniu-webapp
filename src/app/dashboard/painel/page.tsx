@@ -156,6 +156,7 @@ export default async function PainelPage() {
     prisma.animals.count({ where: { ...animalFilter, status_id: statusAbrigado?.id } }),
     prisma.animals.count({ where: { ...animalFilter, status_id: statusAdotado?.id } }),
     prisma.animals.count({ where: { ...animalFilter, status_id: statusInternado?.id } }),
+    prisma.animals.count({ where: { ...animalFilter, status_id: statusAbrigado?.id, is_available_for_adoption: true } }),
     userRole === 'shelter_manager' && userShelterId
       ? Promise.resolve(1) // Shelter manager vê apenas seu abrigo
       : prisma.shelters.count(),
@@ -314,7 +315,7 @@ export default async function PainelPage() {
     adoptionsByMonthPromise,
   ])
 
-  const [totalAnimals, totalSheltered, totalAdopted, totalInternados, totalShelters] = stats
+  const [totalAnimals, totalSheltered, totalAdopted, totalInternados, totalAvailableForAdoption, totalShelters] = stats
   const [adoptionsLast30Days, adoptionsPrev30Days] = adoptionCounts
 
   const adoptionTrend =
@@ -369,6 +370,13 @@ export default async function PainelPage() {
       icon: 'fa-paw',
       value: formatNumber(totalAnimals),
       detail: `${formatNumber(totalSheltered)} estão abrigados`,
+    },
+    {
+      id: 'available',
+      label: 'Disponíveis para adoção',
+      icon: 'fa-heart-circle-check',
+      value: formatNumber(totalAvailableForAdoption),
+      detail: `${formatNumber(totalSheltered - totalAvailableForAdoption)} não disponíveis`,
     },
     {
       id: 'adoption-rate',

@@ -89,7 +89,7 @@
 - Recomendações de animais
 
 **Filtros Aplicados:**
-- Animais: apenas disponíveis para adoção (`status = 'Disponível'`)
+- Animais: apenas disponíveis para adoção (`status = 'Abrigado' AND is_available_for_adoption = true`)
 - Favoritos: `userId = currentUser.id`
 - Relatórios: `reporterId = currentUser.id`
 
@@ -163,10 +163,11 @@ const animals = await prisma.animal.findMany({
 
 **Adopter:**
 ```typescript
-// Apenas animais disponíveis + seus favoritos/relatórios
+// Apenas animais disponíveis para adoção + seus favoritos/relatórios
 const animals = await prisma.animal.findMany({
   where: {
-    status: { name: 'Disponível' },
+    status: { name: 'Abrigado' },
+    is_available_for_adoption: true,
     deletedAt: null
   }
 })
