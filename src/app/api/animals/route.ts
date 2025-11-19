@@ -11,7 +11,7 @@ const createAnimalSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   species_id: z.number().int().positive('Espécie é obrigatória'),
   breed_id: z.number().int().positive().optional().nullable(),
-  gender: z.enum(['Macho', 'Fêmea', 'Desconhecido']).optional().nullable(),
+  sex_id: z.number().int().positive().optional().nullable(),
   size: z.enum(['Pequeno', 'Médio', 'Grande']).optional().nullable(),
   birth_date: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         species_id: validatedData.species_id,
         breed_id: validatedData.breed_id,
-        gender: validatedData.gender,
+        sex_id: validatedData.sex_id,
         size: validatedData.size,
         birth_date: validatedData.birth_date ? new Date(validatedData.birth_date) : null,
         description: validatedData.description,
@@ -102,6 +102,7 @@ export async function POST(request: NextRequest) {
         shelters: true,
         catalogs_animals_species_idTocatalogs: true,
         catalogs_animals_breed_idTocatalogs: true,
+        catalogs_animals_sex_idTocatalogs: true,
         catalogs_animals_status_idTocatalogs: true,
       },
     })
@@ -189,6 +190,11 @@ export async function GET(request: NextRequest) {
           },
         },
         catalogs_animals_breed_idTocatalogs: {
+          select: {
+            name: true,
+          },
+        },
+        catalogs_animals_sex_idTocatalogs: {
           select: {
             name: true,
           },

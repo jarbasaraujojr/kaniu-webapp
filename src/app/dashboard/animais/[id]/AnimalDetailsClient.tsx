@@ -54,7 +54,7 @@ interface AnimalData {
   photo: string
   species: string
   breed: string
-  gender: string
+  sex: string
   size: string
   status: string
   coat: string | null
@@ -216,7 +216,7 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
                 fontSize: '0.95rem',
               }}>
                 {animal.species && <span className="chip">{animal.species}</span>}
-                {animal.gender && <span className="chip">{animal.gender}</span>}
+                {animal.sex && <span className="chip">{animal.sex}</span>}
                 {animal.size && <span className="chip">{animal.size}</span>}
                 {animal.breed && <span className="chip">{animal.breed}</span>}
                 {animal.coat && <span className="chip">{animal.coat}</span>}

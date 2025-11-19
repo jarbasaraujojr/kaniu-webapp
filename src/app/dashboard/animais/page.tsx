@@ -102,6 +102,11 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
           name: true,
         },
       },
+      catalogs_animals_sex_idTocatalogs: {
+        select: {
+          name: true,
+        },
+      },
       catalogs_animals_status_idTocatalogs: {
         select: {
           name: true,
@@ -121,14 +126,6 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
     orderBy: { name: 'asc' },
   })
 
-  const genderIds = Array.from(
-    new Set(
-      animals
-        .map(animal => parseCatalogId(animal.gender))
-        .filter((id): id is number => id !== null)
-    )
-  )
-
   const sizeIds = Array.from(
     new Set(
       animals
@@ -137,22 +134,13 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
     )
   )
 
-  const [genderCatalogs, sizeCatalogs] = await Promise.all([
-    genderIds.length
-      ? prisma.catalogs.findMany({
-          where: { id: { in: genderIds } },
-          select: { id: true, name: true },
-        })
-      : Promise.resolve([] as CatalogEntry[]),
-    sizeIds.length
-      ? prisma.catalogs.findMany({
-          where: { id: { in: sizeIds } },
-          select: { id: true, name: true },
-        })
-      : Promise.resolve([] as CatalogEntry[]),
-  ])
+  const sizeCatalogs = sizeIds.length
+    ? await prisma.catalogs.findMany({
+        where: { id: { in: sizeIds } },
+        select: { id: true, name: true },
+      })
+    : ([] as CatalogEntry[])
 
-  const genderMap = new Map(genderCatalogs.map(item => [item.id, item.name]))
   const sizeMap = new Map(sizeCatalogs.map(item => [item.id, item.name]))
 
   // Transformar dados para o formato esperado pelo cliente
@@ -161,7 +149,6 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
     species: animal.catalogs_animals_species_idTocatalogs,
     breed: animal.catalogs_animals_breed_idTocatalogs,
     status: animal.catalogs_animals_status_idTocatalogs,
-    gender: resolveCatalogValue(animal.gender, genderMap) ?? null,
     size: resolveCatalogValue(animal.size, sizeMap) ?? null,
     shelter: animal.shelters,
     weights: animal.animal_weights.map(w => ({ value: Number(w.value) })),

@@ -13,10 +13,19 @@ export default async function NewAnimalPage() {
   }
 
   // Buscar catálogos necessários
-  const [species, statuses] = await Promise.all([
+  const [species, sexes, statuses] = await Promise.all([
     prisma.catalogs.findMany({
       where: {
         category: 'species',
+        is_active: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    }),
+    prisma.catalogs.findMany({
+      where: {
+        category: 'sex',
         is_active: true,
       },
       orderBy: {
@@ -43,7 +52,7 @@ export default async function NewAnimalPage() {
             Cadastre um novo animal no sistema preenchendo as informações abaixo
           </p>
         </div>
-        <NewAnimalForm species={species} statuses={statuses} />
+        <NewAnimalForm species={species} sexes={sexes} statuses={statuses} />
       </div>
     </DashboardLayout>
   )

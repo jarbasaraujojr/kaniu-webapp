@@ -31,7 +31,7 @@ interface Animal {
   name: string
   species_id: number | null
   breed_id: number | null
-  gender: string | null
+  sex_id: number | null
   size: string | null
   birth_date: Date | null
   description: string | null
@@ -47,6 +47,7 @@ interface Animal {
 interface EditAnimalFormProps {
   animal: Animal
   species: Catalog[]
+  sexes: Catalog[]
   statuses: Catalog[]
   initialBreeds: Catalog[]
 }
@@ -56,7 +57,7 @@ const animalSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   species_id: z.number({ required_error: 'Espécie é obrigatória' }),
   breed_id: z.number().optional().nullable(),
-  gender: z.enum(['Macho', 'Fêmea', 'Desconhecido']).optional().nullable(),
+  sex_id: z.number().optional().nullable(),
   size: z.enum(['Pequeno', 'Médio', 'Grande']).optional().nullable(),
   birth_date: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
@@ -93,7 +94,7 @@ const STEPS = [
   { id: 4, title: 'Aparência', description: 'Características físicas' },
 ]
 
-export function EditAnimalForm({ animal, species, statuses, initialBreeds }: EditAnimalFormProps) {
+export function EditAnimalForm({ animal, species, sexes, statuses, initialBreeds }: EditAnimalFormProps) {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -116,7 +117,7 @@ export function EditAnimalForm({ animal, species, statuses, initialBreeds }: Edi
       name: animal.name,
       species_id: animal.species_id || undefined,
       breed_id: animal.breed_id || undefined,
-      gender: (animal.gender as 'Macho' | 'Fêmea' | 'Desconhecido') || undefined,
+      sex_id: animal.sex_id || undefined,
       size: (animal.size as 'Pequeno' | 'Médio' | 'Grande') || undefined,
       birth_date: animal.birth_date ? new Date(animal.birth_date).toISOString().split('T')[0] : undefined,
       description: animal.description || undefined,
@@ -207,7 +208,7 @@ export function EditAnimalForm({ animal, species, statuses, initialBreeds }: Edi
         name: data.name,
         species_id: data.species_id,
         breed_id: data.breed_id,
-        gender: data.gender,
+        sex_id: data.sex_id,
         size: data.size,
         birth_date: data.birth_date,
         description: data.description,
@@ -342,20 +343,22 @@ export function EditAnimalForm({ animal, species, statuses, initialBreeds }: Edi
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="gender">Gênero</Label>
+                <Label htmlFor="sex_id">Sexo</Label>
                 <Select
-                  value={watch('gender') || ''}
+                  value={watch('sex_id')?.toString() || ''}
                   onValueChange={(value) =>
-                    setValue('gender', value as 'Macho' | 'Fêmea' | 'Desconhecido')
+                    setValue('sex_id', value ? parseInt(value) : null)
                   }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Macho">Macho</SelectItem>
-                    <SelectItem value="Fêmea">Fêmea</SelectItem>
-                    <SelectItem value="Desconhecido">Desconhecido</SelectItem>
+                    {sexes.map((sex) => (
+                      <SelectItem key={sex.id} value={sex.id.toString()}>
+                        {sex.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

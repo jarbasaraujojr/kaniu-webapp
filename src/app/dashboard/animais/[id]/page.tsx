@@ -84,6 +84,7 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
     include: {
       catalogs_animals_species_idTocatalogs: true,
       catalogs_animals_breed_idTocatalogs: true,
+      catalogs_animals_sex_idTocatalogs: true,
       catalogs_animals_status_idTocatalogs: true,
       shelters: true,
       animal_weights: {
@@ -152,10 +153,8 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
   // Get photo
   const photo = getAnimalPhoto(animal)
 
-  const [genderName, sizeName] = await Promise.all([
-    getCatalogDisplayName(animal.gender),
-    getCatalogDisplayName(animal.size),
-  ])
+  const sexName = animal.catalogs_animals_sex_idTocatalogs?.name || ''
+  const sizeName = await getCatalogDisplayName(animal.size)
 
   // Prepare animal data
   const animalData = {
@@ -165,7 +164,7 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
     photo,
     species: animal.catalogs_animals_species_idTocatalogs?.name || '',
     breed: animal.catalogs_animals_breed_idTocatalogs?.name || '',
-    gender: genderName,
+    sex: sexName,
     size: sizeName,
     status: animal.catalogs_animals_status_idTocatalogs?.name || '',
     coat,

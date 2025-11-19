@@ -27,6 +27,7 @@ export default async function EditAnimalPage({ params }: EditAnimalPageProps) {
     include: {
       catalogs_animals_species_idTocatalogs: true,
       catalogs_animals_breed_idTocatalogs: true,
+      catalogs_animals_sex_idTocatalogs: true,
       catalogs_animals_status_idTocatalogs: true,
     },
   })
@@ -36,10 +37,19 @@ export default async function EditAnimalPage({ params }: EditAnimalPageProps) {
   }
 
   // Buscar catálogos necessários
-  const [species, statuses] = await Promise.all([
+  const [species, sexes, statuses] = await Promise.all([
     prisma.catalogs.findMany({
       where: {
         category: 'species',
+        is_active: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    }),
+    prisma.catalogs.findMany({
+      where: {
+        category: 'sex',
         is_active: true,
       },
       orderBy: {
@@ -84,6 +94,7 @@ export default async function EditAnimalPage({ params }: EditAnimalPageProps) {
         <EditAnimalForm
           animal={animal}
           species={species}
+          sexes={sexes}
           statuses={statuses}
           initialBreeds={breeds}
         />

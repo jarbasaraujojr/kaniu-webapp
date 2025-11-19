@@ -9,7 +9,8 @@ interface Animal {
   name: string
   birth_date: Date | null
   birthDate?: Date | null
-  gender: string | null
+  sex_id: number | null
+  catalogs_animals_sex_idTocatalogs?: { name: string } | null
   size: string | null
   is_available_for_adoption?: boolean
   appearance: Prisma.JsonValue
@@ -300,8 +301,8 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                   {animal.species && (
                     <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem' }}>{animal.species.name}</span>
                   )}
-                  {animal.gender && (
-                    <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem' }}>{animal.gender}</span>
+                  {animal.catalogs_animals_sex_idTocatalogs?.name && (
+                    <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem' }}>{animal.catalogs_animals_sex_idTocatalogs.name}</span>
                   )}
                   {animal.size && (
                     <span className="chip" style={{ fontSize: '0.8rem', padding: '0.35rem 0.6rem' }}>{animal.size}</span>
@@ -410,7 +411,7 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                           {animal.breed?.name || '-'}
                         </td>
                         <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
-                          {animal.gender || '-'}
+                          {animal.catalogs_animals_sex_idTocatalogs?.name || '-'}
                         </td>
                         <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
                           {animal.size || '-'}

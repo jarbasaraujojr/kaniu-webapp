@@ -110,21 +110,21 @@ async function main() {
 
   // Raças de Cães (usando parent_id para referenciar a espécie)
   const dogBreeds = [
-    'SRD (Cão)',
-    'Labrador',
-    'Golden Retriever',
-    'Bulldog',
-    'Poodle',
-    'Pastor Alemão',
+    'Sem raça definida',
     'Beagle',
-    'Rottweiler',
-    'Yorkshire',
     'Boxer',
-    'Dachshund (Salsicha)',
-    'Shih Tzu',
-    'Pug',
+    'Bulldog',
     'Chihuahua',
+    'Dachshund',
+    'Golden Retriever',
     'Husky Siberiano',
+    'Labrador',
+    'Pastor Alemão',
+    'Poodle',
+    'Pug',
+    'Rottweiler',
+    'Shih Tzu',
+    'Yorkshire',
   ]
 
   for (const breed of dogBreeds) {
@@ -139,16 +139,16 @@ async function main() {
 
   // Raças de Gatos (usando parent_id para referenciar a espécie)
   const catBreeds = [
-    'SRD (Gato)',
-    'Persa',
-    'Siamês',
-    'Maine Coon',
-    'Bengal',
-    'Sphynx',
-    'Ragdoll',
-    'British Shorthair',
-    'Scottish Fold',
+    'Sem raça',
     'Abissínio',
+    'Bengal',
+    'British Shorthair',
+    'Maine Coon',
+    'Persa',
+    'Ragdoll',
+    'Scottish Fold',
+    'Siamês',
+    'Sphynx',
   ]
 
   for (const breed of catBreeds) {
@@ -180,6 +180,17 @@ async function main() {
     })
   }
 
+  // Sexo dos animais
+  const sexes = ['Macho', 'Fêmea', 'Indefinido']
+  for (const sex of sexes) {
+    await prisma.catalogs.create({
+      data: {
+        category: 'sex',
+        name: sex,
+      },
+    })
+  }
+
   // Status dos animais
   const animalStatuses = [
     { name: 'Abrigado', description: 'Animal está abrigado' },
@@ -202,7 +213,7 @@ async function main() {
     })
   }
 
-  console.log(`✅ Criados ${dogBreeds.length + catBreeds.length + sizes.length + animalStatuses.length + 2} itens de catálogo (${dogBreeds.length} raças de cães, ${catBreeds.length} raças de gatos, ${sizes.length} tamanhos, ${animalStatuses.length} status, 2 espécies)`)
+  console.log(`✅ Criados ${dogBreeds.length + catBreeds.length + sizes.length + sexes.length + animalStatuses.length + 2} itens de catálogo (${dogBreeds.length} raças de cães, ${catBreeds.length} raças de gatos, ${sizes.length} tamanhos, ${sexes.length} sexos, ${animalStatuses.length} status, 2 espécies)`)
 
   // 3. Criar usuários de exemplo
   console.log('👤 Criando usuários de exemplo...')
@@ -349,9 +360,17 @@ async function main() {
   // 6. Criar animais de exemplo
   console.log('🐕 Criando animais...')
 
-  // Buscar status do catálogo
+  // Buscar status e sexos do catálogo
   const statusAbrigado = await prisma.catalogs.findFirst({
     where: { category: 'status', name: 'Abrigado' },
+  })
+
+  const sexMacho = await prisma.catalogs.findFirst({
+    where: { category: 'sex', name: 'Macho' },
+  })
+
+  const sexFemea = await prisma.catalogs.findFirst({
+    where: { category: 'sex', name: 'Fêmea' },
   })
 
   const animal1 = await prisma.animals.create({
@@ -361,7 +380,7 @@ async function main() {
       shelter_id: shelter1.id,
       species_id: dogSpecies.id,
       breed_id: (await prisma.catalogs.findFirst({ where: { name: 'Labrador' } }))?.id,
-      gender: 'male',
+      sex_id: sexMacho?.id,
       size: 'Grande',
       birth_date: new Date('2020-05-15'),
       status_id: statusAbrigado?.id,
@@ -393,7 +412,7 @@ async function main() {
       shelter_id: shelter1.id,
       species_id: catSpecies.id,
       breed_id: (await prisma.catalogs.findFirst({ where: { name: 'Siamês' } }))?.id,
-      gender: 'female',
+      sex_id: sexFemea?.id,
       size: 'Pequeno',
       birth_date: new Date('2021-08-20'),
       status_id: statusAbrigado?.id,
@@ -425,7 +444,7 @@ async function main() {
       shelter_id: shelter2.id,
       species_id: dogSpecies.id,
       breed_id: (await prisma.catalogs.findFirst({ where: { name: 'Beagle' } }))?.id,
-      gender: 'male',
+      sex_id: sexMacho?.id,
       size: 'Médio',
       birth_date: new Date('2022-03-10'),
       status_id: statusAbrigado?.id,
