@@ -30,7 +30,6 @@ model adoption_events {
 model animal_events {
   id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   animal_id       String    @db.Uuid
-  event_type      String?   @db.VarChar(50) // Deprecated: use event_type_id instead
   event_type_id   Int?
   description     String
   details         Json?
@@ -43,7 +42,6 @@ model animal_events {
 
   @@index([animal_id])
   @@index([created_at(sort: Desc)])
-  @@index([event_type])
   @@index([event_type_id])
 }
 
