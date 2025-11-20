@@ -45,6 +45,18 @@ model animal_events {
   @@index([event_type_id])
 }
 
+model animal_colors {
+  animal_id String @db.Uuid
+  color_id  Int
+
+  animals  animals  @relation(fields: [animal_id], references: [id], onDelete: Cascade)
+  color    catalogs @relation("animal_color_catalog", fields: [color_id], references: [id])
+
+  @@id([animal_id, color_id])
+  @@index([animal_id])
+  @@index([color_id])
+}
+
 model animal_medical_records {
   id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   animal_id          String              @db.Uuid
@@ -113,7 +125,7 @@ model animals {
   is_available_for_adoption             Boolean                  @default(false)
   health_status                         Json?
   behavior                              Json?
-  appearance                            Json
+  fur_type_id                           Int?
   created_at                            DateTime                 @default(now()) @db.Timestamptz(6)
   updated_at                            DateTime                 @default(now()) @db.Timestamptz(6)
   created_by                            String?                  @db.Uuid
@@ -125,7 +137,9 @@ model animals {
   animal_medical_records                animal_medical_records[]
   animal_photos                         animal_photos[]
   animal_weights                        animal_weights[]
+  animal_colors                         animal_colors[]
   catalogs_animals_breed_idTocatalogs   catalogs?                @relation("animals_breed_idTocatalogs", fields: [breed_id], references: [id])
+  catalogs_animals_fur_type_idTocatalogs catalogs?               @relation("animals_fur_type_idTocatalogs", fields: [fur_type_id], references: [id])
   users_animals_created_byTousers       users?                   @relation("animals_created_byTousers", fields: [created_by], references: [id])
   shelters                              shelters                 @relation(fields: [shelter_id], references: [id])
   catalogs_animals_sex_idTocatalogs     catalogs?                @relation("animals_sex_idTocatalogs", fields: [sex_id], references: [id])
@@ -145,6 +159,7 @@ model animals {
   @@index([shelter_id])
   @@index([species_id])
   @@index([status_id])
+  @@index([fur_type_id])
 }
 
 model audit_logs {
@@ -182,7 +197,9 @@ model catalogs {
   animals_animals_sex_idTocatalogs     animals[]   @relation("animals_sex_idTocatalogs")
   animals_animals_species_idTocatalogs animals[]   @relation("animals_species_idTocatalogs")
   animals_animals_status_idTocatalogs  animals[]   @relation("animals_status_idTocatalogs")
+  animals_animals_fur_type_idTocatalogs animals[]  @relation("animals_fur_type_idTocatalogs")
   animal_events                        animal_events[] @relation("event_type_catalog")
+  animal_colors                        animal_colors[] @relation("animal_color_catalog")
 
   @@unique([category, name, shelter_id])
   @@index([category])
@@ -338,6 +355,7 @@ model shelters {
   deleted_at  DateTime?     @db.Timestamptz(6)
   animals     animals[]
   medications medications[]
+  catalogs    catalogs[]
   users       users         @relation(fields: [owner_id], references: [id])
 
   @@index([deleted_at])

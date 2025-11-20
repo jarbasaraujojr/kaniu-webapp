@@ -17,6 +17,29 @@ const globalCatalogs = {
     { name: 'Indefinido' },
   ],
 
+  // Colors
+  colors: [
+    // Cores sólidas
+    'Preto', 'Branco', 'Marrom', 'Bege', 'Caramelo', 'Cinza',
+    'Dourado', 'Creme', 'Chocolate', 'Canela', 'Laranja', 'Vermelho',
+
+    // Padrões
+    'Tricolor', 'Bicolor', 'Malhado', 'Tigrado', 'Merle',
+    'Brindle', 'Sable', 'Particolor', 'Smoke', 'Tabby'
+  ],
+
+  // Fur Types
+  furTypes: [
+    { name: 'Curto', description: 'Pelo curto' },
+    { name: 'Médio', description: 'Pelo de tamanho médio' },
+    { name: 'Longo', description: 'Pelo longo' },
+    { name: 'Sem pelo', description: 'Sem pelagem (raças como Sphynx)' },
+    { name: 'Cacheado', description: 'Pelo cacheado ou encaracolado' },
+    { name: 'Ondulado', description: 'Pelo ondulado' },
+    { name: 'Liso', description: 'Pelo liso' },
+    { name: 'Duplo', description: 'Pelo duplo (subpelo + pelo de guarda)' },
+  ],
+
   // Dog Breeds
   dogBreeds: [
     'Sem raça definida',
@@ -280,7 +303,54 @@ async function seedCatalogs() {
       }
     }
 
-    // 5. Seed Animal Status
+    // 5. Seed Colors
+    console.log('\n🎨 Seeding colors...')
+    for (const colorName of globalCatalogs.colors) {
+      const existing = await prisma.catalogs.findFirst({
+        where: {
+          category: 'color',
+          name: colorName,
+          shelter_id: null,
+        },
+      })
+
+      if (!existing) {
+        await prisma.catalogs.create({
+          data: {
+            category: 'color',
+            name: colorName,
+            shelter_id: null,
+          },
+        })
+        console.log(`  ✓ Created color: ${colorName}`)
+      }
+    }
+
+    // 6. Seed Fur Types
+    console.log('\n✂️ Seeding fur types...')
+    for (const furType of globalCatalogs.furTypes) {
+      const existing = await prisma.catalogs.findFirst({
+        where: {
+          category: 'fur_type',
+          name: furType.name,
+          shelter_id: null,
+        },
+      })
+
+      if (!existing) {
+        await prisma.catalogs.create({
+          data: {
+            category: 'fur_type',
+            name: furType.name,
+            description: furType.description,
+            shelter_id: null,
+          },
+        })
+        console.log(`  ✓ Created fur type: ${furType.name}`)
+      }
+    }
+
+    // 7. Seed Animal Status
     console.log('\n📊 Seeding animal statuses...')
     for (const status of globalCatalogs.animalStatus) {
       const existing = await prisma.catalogs.findFirst({
@@ -307,7 +377,7 @@ async function seedCatalogs() {
       }
     }
 
-    // 6. Seed Event Types
+    // 8. Seed Event Types
     console.log('\n📅 Seeding event types...')
     for (const eventType of globalCatalogs.eventTypes) {
       const existing = await prisma.catalogs.findFirst({
