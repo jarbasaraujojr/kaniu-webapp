@@ -278,16 +278,16 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                   }}>
                     {animal.name}
                   </h3>
-                  {animal.is_available_for_adoption && (
+                  {animal.is_available_for_adoption === false && (
                     <span style={{
                       fontSize: '0.7rem',
                       padding: '0.25rem 0.5rem',
-                      backgroundColor: '#10b981',
+                      backgroundColor: '#ef4444',
                       color: 'white',
                       borderRadius: '4px',
                       fontWeight: 600
                     }}>
-                      Disponível
+                      Indisponível
                     </span>
                   )}
                 </div>
@@ -389,16 +389,16 @@ export function AnimalsList({ initialStatus, initialAnimals, availableStatuses }
                               }}>
                                 {animal.name}
                               </span>
-                              {animal.is_available_for_adoption && (
+                              {animal.is_available_for_adoption === false && (
                                 <span style={{
                                   fontSize: '0.7rem',
                                   padding: '0.2rem 0.4rem',
-                                  backgroundColor: '#10b981',
+                                  backgroundColor: '#ef4444',
                                   color: 'white',
                                   borderRadius: '4px',
                                   fontWeight: 600
                                 }}>
-                                  Disponível
+                                  Indisponível
                                 </span>
                               )}
                             </div>
