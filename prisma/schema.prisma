@@ -170,11 +170,13 @@ model catalogs {
   name                                 String      @db.VarChar(100)
   description                          String?
   parent_id                            Int?        @map("parent_id")
+  shelter_id                           String?     @db.Uuid
   is_active                            Boolean     @default(true)
   created_at                           DateTime    @default(now()) @db.Timestamptz(6)
 
   parent                               catalogs?   @relation("catalog_hierarchy", fields: [parent_id], references: [id], onDelete: Cascade)
   children                             catalogs[]  @relation("catalog_hierarchy")
+  shelter                              shelters?   @relation(fields: [shelter_id], references: [id], onDelete: Cascade)
 
   animals_animals_breed_idTocatalogs   animals[]   @relation("animals_breed_idTocatalogs")
   animals_animals_sex_idTocatalogs     animals[]   @relation("animals_sex_idTocatalogs")
@@ -182,10 +184,12 @@ model catalogs {
   animals_animals_status_idTocatalogs  animals[]   @relation("animals_status_idTocatalogs")
   animal_events                        animal_events[] @relation("event_type_catalog")
 
-  @@unique([category, name])
+  @@unique([category, name, shelter_id])
   @@index([category])
   @@index([name])
   @@index([parent_id])
+  @@index([shelter_id])
+  @@index([category, shelter_id])
 }
 
 model documents {
