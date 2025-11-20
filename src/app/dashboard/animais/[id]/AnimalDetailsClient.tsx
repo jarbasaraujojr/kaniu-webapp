@@ -383,10 +383,13 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
         {activeTab === 'tratamento' && <TratamentoTab treatments={treatments} />}
         {activeTab === 'arquivos' && <ArquivosTab />}
       </div>
+    </main>
 
-      {/* Confirmation Modal */}
-      {showConfirmModal && (
-        <div style={{
+    {/* Confirmation Modal */}
+    {showConfirmModal && (
+      <div
+        onClick={handleCancelStatusChange}
+        style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -397,97 +400,100 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 1000,
-        }}>
-          <div style={{
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
             background: 'var(--card-background)',
             borderRadius: '12px',
             padding: '2rem',
             maxWidth: '400px',
             width: '90%',
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+          }}
+        >
+          <h3 style={{
+            margin: '0 0 1rem 0',
+            fontSize: '1.3rem',
+            fontWeight: 600,
+            color: 'var(--text-dark)',
           }}>
-            <h3 style={{
-              margin: '0 0 1rem 0',
-              fontSize: '1.3rem',
-              fontWeight: 600,
-              color: 'var(--text-dark)',
-            }}>
-              Confirmar Alteração de Status
-            </h3>
-            <p style={{
-              margin: '0 0 1.5rem 0',
-              fontSize: '0.95rem',
-              color: 'var(--text-light)',
-              lineHeight: 1.5,
-            }}>
-              Você confirma a alteração do status de <strong>{animal.name}</strong> para <strong>{pendingStatus}</strong>?
-              <br /><br />
-              Esta ação criará um registro no histórico do animal.
-            </p>
-            <div style={{
-              display: 'flex',
-              gap: '0.75rem',
-              justifyContent: 'flex-end',
-            }}>
-              <button
-                onClick={handleCancelStatusChange}
-                disabled={isUpdating}
-                style={{
-                  padding: '0.65rem 1.25rem',
-                  background: 'var(--background-soft)',
-                  color: 'var(--text-dark)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-md)',
-                  cursor: isUpdating ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: 500,
-                  transition: 'all 0.2s',
-                  opacity: isUpdating ? 0.5 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isUpdating) {
-                    e.currentTarget.style.background = 'var(--border-color)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--background-soft)'
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleConfirmStatusChange}
-                disabled={isUpdating}
-                style={{
-                  padding: '0.65rem 1.25rem',
-                  background: 'var(--primary-color)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 'var(--radius-md)',
-                  cursor: isUpdating ? 'not-allowed' : 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  transition: 'all 0.2s',
-                  opacity: isUpdating ? 0.7 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isUpdating) {
-                    e.currentTarget.style.background = 'var(--primary-dark)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isUpdating) {
-                    e.currentTarget.style.background = 'var(--primary-color)'
-                  }
-                }}
-              >
-                {isUpdating ? 'Atualizando...' : 'Confirmar'}
-              </button>
-            </div>
+            Confirmar Alteração de Status
+          </h3>
+          <p style={{
+            margin: '0 0 1.5rem 0',
+            fontSize: '0.95rem',
+            color: 'var(--text-light)',
+            lineHeight: 1.5,
+          }}>
+            Você confirma a alteração do status de <strong>{animal.name}</strong> para <strong>{pendingStatus}</strong>?
+            <br /><br />
+            Esta ação criará um registro no histórico do animal.
+          </p>
+          <div style={{
+            display: 'flex',
+            gap: '0.75rem',
+            justifyContent: 'flex-end',
+          }}>
+            <button
+              onClick={handleCancelStatusChange}
+              disabled={isUpdating}
+              style={{
+                padding: '0.65rem 1.25rem',
+                background: 'var(--background-soft)',
+                color: 'var(--text-dark)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-md)',
+                cursor: isUpdating ? 'not-allowed' : 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: 500,
+                transition: 'all 0.2s',
+                opacity: isUpdating ? 0.5 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.background = 'var(--border-color)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--background-soft)'
+              }}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleConfirmStatusChange}
+              disabled={isUpdating}
+              style={{
+                padding: '0.65rem 1.25rem',
+                background: 'var(--primary-color)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 'var(--radius-md)',
+                cursor: isUpdating ? 'not-allowed' : 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                transition: 'all 0.2s',
+                opacity: isUpdating ? 0.7 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.background = 'var(--primary-dark)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isUpdating) {
+                  e.currentTarget.style.background = 'var(--primary-color)'
+                }
+              }}
+            >
+              {isUpdating ? 'Atualizando...' : 'Confirmar'}
+            </button>
           </div>
         </div>
-      )}
-    </main>
+      </div>
+    )}
   )
 }
 
