@@ -522,7 +522,7 @@ function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: An
                     <LineChart
                       data={(() => {
                         const recentWeights = [...animal.weights].reverse().slice(-10)
-                        const chartData = recentWeights.map(w => ({
+                        const chartData: Array<{ date: number; dateLabel: string; peso: number | null; isActual: boolean }> = recentWeights.map(w => ({
                           date: new Date(w.date).getTime(),
                           dateLabel: new Date(w.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
                           peso: Number(w.value),
@@ -876,7 +876,7 @@ function PesagemTab({ weights }: { weights: AnimalData['weights'] }) {
               <LineChart
                 data={(() => {
                   const allWeights = [...weights].reverse()
-                  const chartData = allWeights.map(w => ({
+                  const chartData: Array<{ date: number; dateLabel: string; peso: number | null; fullDate: string; isActual: boolean }> = allWeights.map(w => ({
                     date: new Date(w.date).getTime(),
                     dateLabel: new Date(w.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
                     peso: Number(w.value),
