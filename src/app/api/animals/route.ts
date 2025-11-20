@@ -108,14 +108,24 @@ export async function POST(request: NextRequest) {
     })
 
     // Registrar evento de entrada
-    await prisma.animal_events.create({
-      data: {
-        animal_id: animal.id,
-        event_type: 'entrada',
-        description: 'Animal cadastrado no sistema',
-        triggered_by: session.user.id,
-      },
+    // Buscar o tipo de evento 'entrada' no catálogo
+    const entradaEventType = await prisma.catalogs.findFirst({
+      where: {
+        category: 'event_types',
+        description: { contains: '"key":"entrada"' }
+      }
     })
+
+    if (entradaEventType) {
+      await prisma.animal_events.create({
+        data: {
+          animal_id: animal.id,
+          event_type_id: entradaEventType.id,
+          description: 'Animal cadastrado no sistema',
+          triggered_by: session.user.id,
+        },
+      })
+    }
 
     return NextResponse.json({ animal }, { status: 201 })
   } catch (error) {
