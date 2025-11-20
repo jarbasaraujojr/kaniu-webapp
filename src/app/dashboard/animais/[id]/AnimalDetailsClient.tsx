@@ -89,7 +89,7 @@ interface AnimalData {
   }>
   events: Array<{
     id: string
-    type: string
+    type: string | null
     description: string
     details: Prisma.JsonValue
     date: Date
@@ -692,7 +692,7 @@ function HistoricoTab({ events }: { events: AnimalData['events'] }) {
                   <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
                     {new Date(event.date).toLocaleDateString('pt-BR')}
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>{event.type}</td>
+                  <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>{event.type || 'Evento'}</td>
                   <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>{event.description}</td>
                   <td style={{ padding: '1rem 1.5rem', fontSize: '0.9rem', color: 'var(--text-dark)' }}>{event.triggeredBy}</td>
                   <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
