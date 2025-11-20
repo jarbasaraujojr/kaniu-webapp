@@ -115,6 +115,12 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
               name: true,
             },
           },
+          event_type_catalog: {
+            select: {
+              name: true,
+              description: true,
+            },
+          },
         },
       },
     },
@@ -201,7 +207,7 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
     })),
     events: animal.animal_events.map(e => ({
       id: e.id.toString(),
-      type: e.event_type,
+      type: e.event_type_catalog?.name || 'Evento',
       description: e.description,
       details: e.details,
       date: e.created_at,

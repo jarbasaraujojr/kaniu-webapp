@@ -50,22 +50,6 @@ const getEventIcon = (eventTypeCatalog: { description: string | null } | null): 
   }
 }
 
-// Fallback for legacy events without event_type_id
-const iconForEvent = (type: string) => {
-  const normalized = normalizeLabel(type)
-  if (normalized.includes('ado')) return 'fa-heart-circle-check'
-  if (normalized.includes('peso')) return 'fa-weight-scale'
-  if (normalized.includes('vacina') || normalized.includes('trat')) return 'fa-syringe'
-  if (normalized.includes('saud') || normalized.includes('medic') || normalized.includes('exame')) {
-    return 'fa-stethoscope'
-  }
-  if (normalized.includes('resgate') || normalized.includes('abrig') || normalized.includes('entrada')) return 'fa-hand-holding-heart'
-  if (normalized.includes('castra')) return 'fa-scissors'
-  if (normalized.includes('banho') || normalized.includes('tosa')) return 'fa-shower'
-  if (normalized.includes('social')) return 'fa-users'
-  return 'fa-circle-check'
-}
-
 const hasToNumber = (value: unknown): value is { toNumber: () => number } =>
   typeof value === 'object' &&
   value !== null &&
@@ -702,8 +686,8 @@ export default async function PainelPage() {
                 {recentEvents.map((event) => {
                   const icon = event.event_type_catalog
                     ? getEventIcon(event.event_type_catalog)
-                    : iconForEvent(event.event_type || '')
-                  const eventTypeName = event.event_type_catalog?.name || event.event_type || 'Evento'
+                    : 'fa-circle-check'
+                  const eventTypeName = event.event_type_catalog?.name || 'Evento'
 
                   return (
                     <div key={event.id} className="timeline-item">
