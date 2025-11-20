@@ -40,7 +40,8 @@
       "Bash(timeout 10m npm run build:*)",
       "Bash(git push)",
       "Bash(timeout:*)",
-      "Bash(curl -X POST \"http://31.97.251.141:3000/api/deploy/47aa21bb36b3870448bfb8f23fff5b45e7970026bf7d36ea\")"
+      "Bash(curl -X POST \"http://31.97.251.141:3000/api/deploy/47aa21bb36b3870448bfb8f23fff5b45e7970026bf7d36ea\")",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
