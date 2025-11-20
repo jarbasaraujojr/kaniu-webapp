@@ -180,6 +180,7 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
   const latestVaccination = vaccinations[0]
 
   return (
+    <>
     <main className="main-container">
       {/* Header Section */}
       <header className="header">
@@ -494,6 +495,7 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
         </div>
       </div>
     )}
+    </>
   )
 }
 
