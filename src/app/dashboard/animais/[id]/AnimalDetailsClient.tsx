@@ -105,6 +105,54 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('painel')
   const [hoveredButton, setHoveredButton] = useState<number | null>(null)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  const handleStatusClick = (statusName: string) => {
+    // Don't open modal if already in this status
+    if (animal.status === statusName) {
+      return
+    }
+    setPendingStatus(statusName)
+    setShowConfirmModal(true)
+  }
+
+  const handleConfirmStatusChange = async () => {
+    if (!pendingStatus) return
+
+    setIsUpdating(true)
+    try {
+      const response = await fetch(`/api/animals/${animal.id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ statusName: pendingStatus }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Refresh the page to show updated data
+        router.refresh()
+        setShowConfirmModal(false)
+        setPendingStatus(null)
+      } else {
+        alert(data.error || 'Erro ao atualizar status')
+      }
+    } catch (error) {
+      console.error('Error updating status:', error)
+      alert('Erro ao atualizar status')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleCancelStatusChange = () => {
+    setShowConfirmModal(false)
+    setPendingStatus(null)
+  }
 
   const tabs = [
     { id: 'painel', label: 'Resumo', icon: 'fa-chart-line' },
@@ -248,6 +296,7 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
                       onMouseLeave={() => setHoveredButton(null)}
                     >
                       <button
+                        onClick={() => handleStatusClick(action.status)}
                         style={{
                           width: '40px',
                           height: '40px',
@@ -255,7 +304,7 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
                           border: isActive ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
                           background: isActive ? 'var(--primary-color)' : 'var(--card-background)',
                           color: isActive ? 'white' : 'var(--text-light)',
-                          cursor: 'pointer',
+                          cursor: isActive ? 'default' : 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -334,6 +383,110 @@ export default function AnimalDetailsClient({ animal }: AnimalDetailsClientProps
         {activeTab === 'tratamento' && <TratamentoTab treatments={treatments} />}
         {activeTab === 'arquivos' && <ArquivosTab />}
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            background: 'var(--card-background)',
+            borderRadius: '12px',
+            padding: '2rem',
+            maxWidth: '400px',
+            width: '90%',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+          }}>
+            <h3 style={{
+              margin: '0 0 1rem 0',
+              fontSize: '1.3rem',
+              fontWeight: 600,
+              color: 'var(--text-dark)',
+            }}>
+              Confirmar Alteração de Status
+            </h3>
+            <p style={{
+              margin: '0 0 1.5rem 0',
+              fontSize: '0.95rem',
+              color: 'var(--text-light)',
+              lineHeight: 1.5,
+            }}>
+              Você confirma a alteração do status de <strong>{animal.name}</strong> para <strong>{pendingStatus}</strong>?
+              <br /><br />
+              Esta ação criará um registro no histórico do animal.
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '0.75rem',
+              justifyContent: 'flex-end',
+            }}>
+              <button
+                onClick={handleCancelStatusChange}
+                disabled={isUpdating}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  background: 'var(--background-soft)',
+                  color: 'var(--text-dark)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: isUpdating ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                  transition: 'all 0.2s',
+                  opacity: isUpdating ? 0.5 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!isUpdating) {
+                    e.currentTarget.style.background = 'var(--border-color)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--background-soft)'
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmStatusChange}
+                disabled={isUpdating}
+                style={{
+                  padding: '0.65rem 1.25rem',
+                  background: 'var(--primary-color)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: isUpdating ? 'not-allowed' : 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  transition: 'all 0.2s',
+                  opacity: isUpdating ? 0.7 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!isUpdating) {
+                    e.currentTarget.style.background = 'var(--primary-dark)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isUpdating) {
+                    e.currentTarget.style.background = 'var(--primary-color)'
+                  }
+                }}
+              >
+                {isUpdating ? 'Atualizando...' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
