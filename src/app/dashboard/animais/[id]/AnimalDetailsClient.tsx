@@ -535,7 +535,7 @@ function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: An
                           chartData.push({
                             date: now,
                             dateLabel: 'Hoje',
-                            peso: 0,
+                            peso: null,
                             isActual: false
                           })
                         }
@@ -552,13 +552,35 @@ function PainelTab({ animal, latestAssessment, latestVaccination }: { animal: An
                         stroke="var(--text-light)"
                         style={{ fontSize: '0.65rem' }}
                         tick={{ fill: 'var(--text-light)' }}
+                        ticks={(() => {
+                          const recentWeights = [...animal.weights].reverse().slice(-10)
+                          if (recentWeights.length === 0) return []
+
+                          const minDate = new Date(recentWeights[0].date)
+                          const maxDate = new Date()
+                          const ticks = []
+
+                          let year = minDate.getFullYear()
+                          const maxYear = maxDate.getFullYear()
+
+                          // Adicionar tick para o ano inicial (1 de janeiro)
+                          const firstTick = new Date(year, 0, 1).getTime()
+                          if (firstTick >= minDate.getTime()) {
+                            ticks.push(firstTick)
+                          }
+
+                          // Adicionar ticks para os anos seguintes
+                          year++
+                          while (year <= maxYear) {
+                            ticks.push(new Date(year, 0, 1).getTime())
+                            year++
+                          }
+
+                          return ticks
+                        })()}
                         tickFormatter={(timestamp) => {
                           const date = new Date(timestamp)
-                          const month = date.getMonth()
-                          if (month === 0) { // Janeiro
-                            return date.getFullYear().toString()
-                          }
-                          return ''
+                          return date.getFullYear().toString()
                         }}
                       />
                       <YAxis
@@ -868,7 +890,7 @@ function PesagemTab({ weights }: { weights: AnimalData['weights'] }) {
                     chartData.push({
                       date: now,
                       dateLabel: 'Hoje',
-                      peso: 0,
+                      peso: null,
                       fullDate: new Date().toLocaleDateString('pt-BR'),
                       isActual: false
                     })
@@ -885,13 +907,35 @@ function PesagemTab({ weights }: { weights: AnimalData['weights'] }) {
                   domain={['dataMin', 'dataMax']}
                   stroke="var(--text-light)"
                   style={{ fontSize: '0.75rem' }}
+                  ticks={(() => {
+                    const allWeights = [...weights].reverse()
+                    if (allWeights.length === 0) return []
+
+                    const minDate = new Date(allWeights[0].date)
+                    const maxDate = new Date()
+                    const ticks = []
+
+                    let year = minDate.getFullYear()
+                    const maxYear = maxDate.getFullYear()
+
+                    // Adicionar tick para o ano inicial (1 de janeiro)
+                    const firstTick = new Date(year, 0, 1).getTime()
+                    if (firstTick >= minDate.getTime()) {
+                      ticks.push(firstTick)
+                    }
+
+                    // Adicionar ticks para os anos seguintes
+                    year++
+                    while (year <= maxYear) {
+                      ticks.push(new Date(year, 0, 1).getTime())
+                      year++
+                    }
+
+                    return ticks
+                  })()}
                   tickFormatter={(timestamp) => {
                     const date = new Date(timestamp)
-                    const month = date.getMonth()
-                    if (month === 0) { // Janeiro
-                      return date.getFullYear().toString()
-                    }
-                    return ''
+                    return date.getFullYear().toString()
                   }}
                 />
                 <YAxis

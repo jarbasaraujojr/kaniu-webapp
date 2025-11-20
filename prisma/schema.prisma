@@ -28,19 +28,23 @@ model adoption_events {
 }
 
 model animal_events {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  animal_id    String   @db.Uuid
-  event_type   String   @db.VarChar(50)
-  description  String
-  details      Json?
-  triggered_by String   @db.Uuid
-  created_at   DateTime @default(now()) @db.Timestamptz(6)
-  animals      animals  @relation(fields: [animal_id], references: [id], onDelete: Cascade)
-  users        users    @relation(fields: [triggered_by], references: [id])
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id       String    @db.Uuid
+  event_type      String?   @db.VarChar(50) // Deprecated: use event_type_id instead
+  event_type_id   Int?
+  description     String
+  details         Json?
+  triggered_by    String    @db.Uuid
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+
+  animals         animals   @relation(fields: [animal_id], references: [id], onDelete: Cascade)
+  users           users     @relation(fields: [triggered_by], references: [id])
+  event_type_catalog catalogs? @relation("event_type_catalog", fields: [event_type_id], references: [id], onDelete: Restrict)
 
   @@index([animal_id])
   @@index([created_at(sort: Desc)])
   @@index([event_type])
+  @@index([event_type_id])
 }
 
 model animal_medical_records {
@@ -178,6 +182,7 @@ model catalogs {
   animals_animals_sex_idTocatalogs     animals[]   @relation("animals_sex_idTocatalogs")
   animals_animals_species_idTocatalogs animals[]   @relation("animals_species_idTocatalogs")
   animals_animals_status_idTocatalogs  animals[]   @relation("animals_status_idTocatalogs")
+  animal_events                        animal_events[] @relation("event_type_catalog")
 
   @@unique([category, name])
   @@index([category])

@@ -36,6 +36,21 @@ const normalizeLabel = (value: string) =>
         .toLowerCase()
     : ''
 
+// Helper to get icon from event type catalog
+const getEventIcon = (eventTypeCatalog: { description: string | null } | null): string => {
+  if (!eventTypeCatalog?.description) {
+    return 'fa-circle-check'
+  }
+
+  try {
+    const details = JSON.parse(eventTypeCatalog.description)
+    return details.icon || 'fa-circle-check'
+  } catch {
+    return 'fa-circle-check'
+  }
+}
+
+// Fallback for legacy events without event_type_id
 const iconForEvent = (type: string) => {
   const normalized = normalizeLabel(type)
   if (normalized.includes('ado')) return 'fa-heart-circle-check'
@@ -44,8 +59,11 @@ const iconForEvent = (type: string) => {
   if (normalized.includes('saud') || normalized.includes('medic') || normalized.includes('exame')) {
     return 'fa-stethoscope'
   }
-  if (normalized.includes('resgate') || normalized.includes('abrig')) return 'fa-hand-holding-heart'
-  return 'fa-bell'
+  if (normalized.includes('resgate') || normalized.includes('abrig') || normalized.includes('entrada')) return 'fa-hand-holding-heart'
+  if (normalized.includes('castra')) return 'fa-scissors'
+  if (normalized.includes('banho') || normalized.includes('tosa')) return 'fa-shower'
+  if (normalized.includes('social')) return 'fa-users'
+  return 'fa-circle-check'
 }
 
 const hasToNumber = (value: unknown): value is { toNumber: () => number } =>
@@ -275,6 +293,7 @@ export default async function PainelPage() {
     include: {
       animals: { select: { name: true } },
       users: { select: { name: true } },
+      event_type_catalog: { select: { name: true, description: true } },
     },
   })
 
@@ -458,29 +477,36 @@ export default async function PainelPage() {
                     <tr>
                       <th>Animal</th>
                       <th>Tipo</th>
-                      <th>Prazo</th>
+                      <th>Atraso</th>
                     </tr>
                   </thead>
                   <tbody>
                     {medicalFollowUps.map((record) => {
                       if (!record.next_due_date) return null
-                      const dueInfo = describeDueDate(record.next_due_date, now)
+                      const diffDays = Math.ceil((record.next_due_date.getTime() - now.getTime()) / MS_PER_DAY)
+                      const absoluteDays = Math.abs(diffDays)
+                      const variant = diffDays < 0 ? 'danger' : diffDays === 0 ? 'warning' : diffDays <= 3 ? 'warning' : ''
+
+                      const recordTypeMap: Record<string, string> = {
+                        'vaccination': 'Vacinação',
+                        'deworming': 'Vermifugação',
+                        'consultation': 'Consulta',
+                        'examination': 'Exame',
+                        'surgery': 'Cirurgia',
+                        'treatment': 'Tratamento'
+                      }
 
                       return (
                         <tr key={record.id}>
                           <td>
                             <div style={{ fontWeight: 600 }}>{record.animals.name}</div>
-                            <span className="muted-text">
-                              {record.animals.shelters?.name ?? 'Sem abrigo'}
-                            </span>
                           </td>
-                          <td>{record.record_type}</td>
+                          <td>{recordTypeMap[record.record_type] || record.record_type}</td>
                           <td>
-                            <div>{formatDate(record.next_due_date)}</div>
                             <span
-                              className={`status-pill ${dueInfo.variant ? dueInfo.variant : ''}`}
+                              className={`status-pill ${variant}`}
                             >
-                              {dueInfo.label}
+                              {absoluteDays} dias
                             </span>
                           </td>
                         </tr>
@@ -512,7 +538,6 @@ export default async function PainelPage() {
                       <tr key={animal.id}>
                         <td>
                           <div style={{ fontWeight: 600 }}>{animal.name}</div>
-                          <span className="muted-text">{animal.catalogs_animals_breed_idTocatalogs?.name ?? 'SRD'}</span>
                         </td>
                         <td>
                           <span className={`status-pill ${getStatusVariant(animal.catalogs_animals_status_idTocatalogs?.name ?? '')}`}>
@@ -551,9 +576,6 @@ export default async function PainelPage() {
                           <div style={{ fontWeight: 600 }}>
                             {event.animals?.name ?? 'Animal removido'}
                           </div>
-                          <span className="muted-text">
-                            {event.animals?.shelters?.name ?? 'Sem abrigo vinculado'}
-                          </span>
                         </td>
                         <td>{event.users_adoption_events_adopter_idTousers?.name ?? 'Adotante não informado'}</td>
                         <td>
@@ -591,7 +613,6 @@ export default async function PainelPage() {
                       <tr key={record.id}>
                         <td>
                           <div style={{ fontWeight: 600 }}>{record.animalName}</div>
-                          <span className="muted-text">{record.shelterName}</span>
                         </td>
                         <td>
                           {formatDecimal(record.value)} {record.unit}
@@ -678,29 +699,36 @@ export default async function PainelPage() {
               <div className="empty-state">Nenhum evento registrado</div>
             ) : (
               <div className="timeline-list">
-                {recentEvents.map((event) => (
-                  <div key={event.id} className="timeline-item">
-                    <div className="timeline-marker">
-                      <i className={`fa-solid ${iconForEvent(event.event_type)}`}></i>
-                    </div>
-                    <div className="timeline-content">
-                      <div className="timeline-title">
-                        {event.event_type} · {event.animals?.name ?? 'Animal removido'}
+                {recentEvents.map((event) => {
+                  const icon = event.event_type_catalog
+                    ? getEventIcon(event.event_type_catalog)
+                    : iconForEvent(event.event_type || '')
+                  const eventTypeName = event.event_type_catalog?.name || event.event_type || 'Evento'
+
+                  return (
+                    <div key={event.id} className="timeline-item">
+                      <div className="timeline-marker">
+                        <i className={`fa-solid ${icon}`}></i>
                       </div>
-                      <p className="timeline-description">{event.description}</p>
-                      <div className="timeline-meta">
-                        <span>
-                          <i className="fa-solid fa-user"></i>{' '}
-                          {event.users?.name ?? 'Sistema'}
-                        </span>
-                        <span>
-                          <i className="fa-solid fa-calendar-day"></i>{' '}
-                          {formatDateTime(event.created_at)} ({formatRelativeDay(event.created_at, now)})
-                        </span>
+                      <div className="timeline-content">
+                        <div className="timeline-title">
+                          {eventTypeName} · {event.animals?.name ?? 'Animal removido'}
+                        </div>
+                        <p className="timeline-description">{event.description}</p>
+                        <div className="timeline-meta">
+                          <span>
+                            <i className="fa-solid fa-user"></i>{' '}
+                            {event.users?.name ?? 'Sistema'}
+                          </span>
+                          <span>
+                            <i className="fa-solid fa-calendar-day"></i>{' '}
+                            {formatDateTime(event.created_at)} ({formatRelativeDay(event.created_at, now)})
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </article>

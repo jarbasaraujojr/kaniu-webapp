@@ -151,6 +151,7 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
     status: animal.catalogs_animals_status_idTocatalogs,
     size: resolveCatalogValue(animal.size, sizeMap) ?? null,
     shelter: animal.shelters,
+    birthDate: animal.birth_date,
     weights: animal.animal_weights.map(w => ({ value: Number(w.value) })),
   }))
 

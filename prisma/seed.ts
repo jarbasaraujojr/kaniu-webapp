@@ -111,20 +111,64 @@ async function main() {
   // Raças de Cães (usando parent_id para referenciar a espécie)
   const dogBreeds = [
     'Sem raça definida',
+    'Akita',
+    'American Bully',
+    'American Pit Bull Terrier',
+    'American Staffordshire Terrier',
+    'Basset Hound',
     'Beagle',
+    'Bichon Frisé',
+    'Border Collie',
+    'Boston Terrier',
     'Boxer',
-    'Bulldog',
+    'Bull Terrier',
+    'Bulldog Francês',
+    'Bulldog Inglês',
+    'Cane Corso',
+    'Cavalier King Charles Spaniel',
     'Chihuahua',
+    'Chow Chow',
+    'Cocker Spaniel',
     'Dachshund',
+    'Dálmata',
+    'Dobermann',
+    'Dogo Argentino',
+    'Fila Brasileiro',
+    'Fox Terrier',
     'Golden Retriever',
+    'Greyhound',
     'Husky Siberiano',
-    'Labrador',
+    'Jack Russell Terrier',
+    'Labrador Retriever',
+    'Lhasa Apso',
+    'Lulu da Pomerânia',
+    'Maltês',
+    'Mastiff',
+    'Mastiff Inglês',
     'Pastor Alemão',
+    'Pastor Australiano',
+    'Pastor Belga',
+    'Pastor de Shetland',
+    'Pequinês',
+    'Pinscher',
+    'Pit Bull',
+    'Pointer',
     'Poodle',
     'Pug',
     'Rottweiler',
+    'Samoieda',
+    'Schnauzer',
+    'Setter Irlandês',
+    'Shar-Pei',
+    'Shiba Inu',
     'Shih Tzu',
-    'Yorkshire',
+    'Staffordshire Bull Terrier',
+    'Teckel',
+    'Terra Nova',
+    'Weimaraner',
+    'West Highland White Terrier',
+    'Whippet',
+    'Yorkshire Terrier',
   ]
 
   for (const breed of dogBreeds) {
@@ -141,14 +185,33 @@ async function main() {
   const catBreeds = [
     'Sem raça',
     'Abissínio',
+    'Angorá',
+    'Azul Russo',
     'Bengal',
+    'Birmanês',
+    'Bombaim',
     'British Shorthair',
+    'Burmês',
+    'Chartreux',
+    'Cornish Rex',
+    'Devon Rex',
+    'Exótico',
+    'Himalaio',
     'Maine Coon',
+    'Manx',
+    'Munchkin',
+    'Norueguês da Floresta',
     'Persa',
     'Ragdoll',
+    'Savannah',
     'Scottish Fold',
     'Siamês',
+    'Siberiano',
+    'Singapura',
+    'Somali',
     'Sphynx',
+    'Tonquinês',
+    'Van Turco',
   ]
 
   for (const breed of catBreeds) {
@@ -471,14 +534,511 @@ async function main() {
 
   console.log(`✅ Criados ${3} animais`)
 
+  // 7. Criar registros de peso
+  console.log('⚖️  Criando registros de peso...')
+
+  // Rex - 3 registros de peso (evolução de 28kg para 30kg)
+  await prisma.animal_weights.createMany({
+    data: [
+      {
+        animal_id: animal1.id,
+        value: 28.5,
+        unit: 'kg',
+        recorded_by: shelterManager.id,
+        date_time: new Date('2024-09-01'),
+        notes: 'Peso na entrada',
+      },
+      {
+        animal_id: animal1.id,
+        value: 29.2,
+        unit: 'kg',
+        recorded_by: shelterManager.id,
+        date_time: new Date('2024-10-15'),
+        notes: 'Ganho de peso saudável',
+      },
+      {
+        animal_id: animal1.id,
+        value: 30.0,
+        unit: 'kg',
+        recorded_by: shelterManager.id,
+        date_time: new Date('2024-11-15'),
+        notes: 'Peso ideal atingido',
+      },
+    ],
+  })
+
+  // Luna - 2 registros de peso
+  await prisma.animal_weights.createMany({
+    data: [
+      {
+        animal_id: animal2.id,
+        value: 3.2,
+        unit: 'kg',
+        recorded_by: shelterManager.id,
+        date_time: new Date('2024-08-20'),
+        notes: 'Peso na entrada',
+      },
+      {
+        animal_id: animal2.id,
+        value: 3.5,
+        unit: 'kg',
+        recorded_by: shelterManager.id,
+        date_time: new Date('2024-11-01'),
+        notes: 'Peso estável e saudável',
+      },
+    ],
+  })
+
+  // Toby - 2 registros de peso
+  await prisma.animal_weights.createMany({
+    data: [
+      {
+        animal_id: animal3.id,
+        value: 11.0,
+        unit: 'kg',
+        recorded_by: shelterManager.id,
+        date_time: new Date('2024-10-10'),
+        notes: 'Peso na entrada',
+      },
+      {
+        animal_id: animal3.id,
+        value: 11.8,
+        unit: 'kg',
+        recorded_by: shelterManager.id,
+        date_time: new Date('2024-11-18'),
+        notes: 'Crescimento normal',
+      },
+    ],
+  })
+
+  console.log(`✅ Criados ${7} registros de peso`)
+
+  // 8. Criar registros médicos (vacinas, vermifugação, exames)
+  console.log('💉 Criando registros médicos...')
+
+  // Rex - Vacinação completa
+  await prisma.animal_medical_records.create({
+    data: {
+      animal_id: animal1.id,
+      record_type: 'vaccination',
+      description: 'Vacina V10',
+      veterinarian: 'Dr. Carlos Silva',
+      record_date: new Date('2024-09-05'),
+      next_due_date: new Date('2025-09-05'),
+      clinic_id: clinic1.id,
+      created_by: shelterManager.id,
+      details: {
+        vaccine_name: 'V10',
+        batch: 'ABC123',
+        manufacturer: 'Zoetis',
+      },
+    },
+  })
+
+  await prisma.animal_medical_records.create({
+    data: {
+      animal_id: animal1.id,
+      record_type: 'vaccination',
+      description: 'Vacina Antirrábica',
+      veterinarian: 'Dr. Carlos Silva',
+      record_date: new Date('2024-09-05'),
+      next_due_date: new Date('2025-09-05'),
+      clinic_id: clinic1.id,
+      created_by: shelterManager.id,
+      details: {
+        vaccine_name: 'Antirrábica',
+        batch: 'RAB456',
+        manufacturer: 'Zoetis',
+      },
+    },
+  })
+
+  await prisma.animal_medical_records.create({
+    data: {
+      animal_id: animal1.id,
+      record_type: 'deworming',
+      description: 'Vermifugação',
+      veterinarian: 'Dr. Carlos Silva',
+      record_date: new Date('2024-09-10'),
+      next_due_date: new Date('2025-03-10'),
+      clinic_id: clinic1.id,
+      created_by: shelterManager.id,
+      details: {
+        medication: 'Drontal Plus',
+        dosage: '1 comprimido',
+      },
+    },
+  })
+
+  // Luna - Vacinação
+  await prisma.animal_medical_records.create({
+    data: {
+      animal_id: animal2.id,
+      record_type: 'vaccination',
+      description: 'Vacina V4',
+      veterinarian: 'Dra. Ana Paula',
+      record_date: new Date('2024-08-25'),
+      next_due_date: new Date('2025-08-25'),
+      clinic_id: clinic2.id,
+      created_by: shelterManager.id,
+      details: {
+        vaccine_name: 'V4 Felina',
+        batch: 'FEL789',
+        manufacturer: 'Biovet',
+      },
+    },
+  })
+
+  await prisma.animal_medical_records.create({
+    data: {
+      animal_id: animal2.id,
+      record_type: 'vaccination',
+      description: 'Vacina Antirrábica',
+      veterinarian: 'Dra. Ana Paula',
+      record_date: new Date('2024-08-25'),
+      next_due_date: new Date('2025-08-25'),
+      clinic_id: clinic2.id,
+      created_by: shelterManager.id,
+      details: {
+        vaccine_name: 'Antirrábica',
+        batch: 'RAB789',
+        manufacturer: 'Biovet',
+      },
+    },
+  })
+
+  // Toby - Consulta e exame
+  await prisma.animal_medical_records.create({
+    data: {
+      animal_id: animal3.id,
+      record_type: 'consultation',
+      description: 'Consulta de rotina',
+      veterinarian: 'Dr. Carlos Silva',
+      record_date: new Date('2024-10-12'),
+      clinic_id: clinic1.id,
+      created_by: shelterManager.id,
+      details: {
+        diagnosis: 'Animal saudável',
+        observations: 'Energia alta, socialização excelente',
+        recommendations: 'Manter dieta balanceada e exercícios diários',
+      },
+    },
+  })
+
+  await prisma.animal_medical_records.create({
+    data: {
+      animal_id: animal3.id,
+      record_type: 'exam',
+      description: 'Exame de sangue completo',
+      veterinarian: 'Dr. Carlos Silva',
+      record_date: new Date('2024-10-12'),
+      clinic_id: clinic1.id,
+      created_by: shelterManager.id,
+      details: {
+        exam_type: 'Hemograma completo',
+        results: 'Todos os valores dentro da normalidade',
+      },
+    },
+  })
+
+  console.log(`✅ Criados ${8} registros médicos`)
+
+  // 9. Criar medicamentos
+  console.log('💊 Criando medicamentos...')
+
+  const medicamento1 = await prisma.medications.create({
+    data: {
+      name: 'Amoxicilina 500mg',
+      shelter_id: shelter1.id,
+      is_active: true,
+    },
+  })
+
+  const medicamento2 = await prisma.medications.create({
+    data: {
+      name: 'Carprofeno 75mg',
+      shelter_id: shelter1.id,
+      is_active: true,
+    },
+  })
+
+  const medicamento3 = await prisma.medications.create({
+    data: {
+      name: 'Prednisolona 5mg',
+      shelter_id: shelter1.id,
+      is_active: true,
+    },
+  })
+
+  console.log(`✅ Criados ${3} medicamentos`)
+
+  // 10. Criar prescrições e tarefas de medicação
+  console.log('📋 Criando prescrições...')
+
+  // Rex - Tratamento preventivo (já completado)
+  const prescricaoRex = await prisma.prescriptions.create({
+    data: {
+      animal_id: animal1.id,
+      medication_id: medicamento1.id,
+      dosage: '500mg',
+      route: 'Oral',
+      interval_hours: 12,
+      start_date: new Date('2024-09-15'),
+      start_time: new Date('2024-09-15T08:00:00'),
+      duration_days: 7,
+      is_continuous: false,
+      is_completed: true,
+      description: 'Tratamento preventivo pós-castração',
+      prescribed_by: shelterManager.id,
+    },
+  })
+
+  // Criar tarefas para a prescrição do Rex (todas completas)
+  const tarefasRex = []
+  for (let i = 0; i < 7; i++) {
+    const data = new Date('2024-09-15')
+    data.setDate(data.getDate() + i)
+
+    // Manhã
+    tarefasRex.push({
+      prescription_id: prescricaoRex.id,
+      scheduled_date: data,
+      scheduled_time: new Date('2024-01-01T08:00:00'),
+      administered_at: new Date(data.getTime() + 8 * 60 * 60 * 1000),
+      administered_by: shelterManager.id,
+      is_completed: true,
+      notes: i === 0 ? 'Primeira dose' : undefined,
+    })
+
+    // Noite
+    tarefasRex.push({
+      prescription_id: prescricaoRex.id,
+      scheduled_date: data,
+      scheduled_time: new Date('2024-01-01T20:00:00'),
+      administered_at: new Date(data.getTime() + 20 * 60 * 60 * 1000),
+      administered_by: shelterManager.id,
+      is_completed: true,
+      notes: i === 6 ? 'Última dose - tratamento concluído' : undefined,
+    })
+  }
+
+  await prisma.prescription_tasks.createMany({
+    data: tarefasRex,
+  })
+
+  // Luna - Tratamento em andamento
+  const prescricaoLuna = await prisma.prescriptions.create({
+    data: {
+      animal_id: animal2.id,
+      medication_id: medicamento2.id,
+      dosage: '75mg',
+      route: 'Oral',
+      interval_hours: 24,
+      start_date: new Date('2024-11-10'),
+      start_time: new Date('2024-11-10T09:00:00'),
+      duration_days: 10,
+      is_continuous: false,
+      is_completed: false,
+      description: 'Anti-inflamatório para leve claudicação',
+      prescribed_by: shelterManager.id,
+    },
+  })
+
+  // Criar tarefas para Luna (algumas completas, algumas pendentes)
+  const tarefasLuna = []
+  const hoje = new Date()
+  for (let i = 0; i < 10; i++) {
+    const data = new Date('2024-11-10')
+    data.setDate(data.getDate() + i)
+
+    const isPassado = data < hoje
+    const isHoje = data.toDateString() === hoje.toDateString()
+
+    tarefasLuna.push({
+      prescription_id: prescricaoLuna.id,
+      scheduled_date: data,
+      scheduled_time: new Date('2024-01-01T09:00:00'),
+      administered_at: isPassado ? new Date(data.getTime() + 9 * 60 * 60 * 1000) : null,
+      administered_by: isPassado ? shelterManager.id : null,
+      is_completed: isPassado,
+      notes: i === 0 ? 'Início do tratamento' : isHoje ? 'Dose de hoje - pendente' : undefined,
+    })
+  }
+
+  await prisma.prescription_tasks.createMany({
+    data: tarefasLuna,
+  })
+
+  // Toby - Tratamento contínuo
+  const prescricaoToby = await prisma.prescriptions.create({
+    data: {
+      animal_id: animal3.id,
+      medication_id: medicamento3.id,
+      dosage: '5mg',
+      route: 'Oral',
+      interval_hours: 24,
+      start_date: new Date('2024-11-01'),
+      start_time: new Date('2024-11-01T10:00:00'),
+      duration_days: null,
+      is_continuous: true,
+      is_completed: false,
+      description: 'Controle de alergia sazonal - uso contínuo',
+      prescribed_by: shelterManager.id,
+    },
+  })
+
+  // Criar tarefas para Toby (últimos 18 dias)
+  const tarefasToby = []
+  for (let i = 17; i >= 0; i--) {
+    const data = new Date()
+    data.setDate(data.getDate() - i)
+
+    const isHoje = i === 0
+
+    tarefasToby.push({
+      prescription_id: prescricaoToby.id,
+      scheduled_date: data,
+      scheduled_time: new Date('2024-01-01T10:00:00'),
+      administered_at: !isHoje ? new Date(data.getTime() + 10 * 60 * 60 * 1000) : null,
+      administered_by: !isHoje ? shelterManager.id : null,
+      is_completed: !isHoje,
+      notes: i === 17 ? 'Início do tratamento contínuo' : isHoje ? 'Dose de hoje - pendente' : undefined,
+    })
+  }
+
+  await prisma.prescription_tasks.createMany({
+    data: tarefasToby,
+  })
+
+  console.log(`✅ Criadas ${3} prescrições com ${tarefasRex.length + tarefasLuna.length + tarefasToby.length} tarefas de medicação`)
+
+  // 11. Criar eventos
+  console.log('📅 Criando eventos...')
+
+  // Helper function to get event type ID by key
+  const getEventTypeId = async (key: string): Promise<number> => {
+    const eventType = await prisma.catalogs.findFirst({
+      where: {
+        category: 'event_types',
+        description: {
+          contains: `"key":"${key}"`
+        }
+      }
+    })
+    if (!eventType) {
+      throw new Error(`Event type not found: ${key}`)
+    }
+    return eventType.id
+  }
+
+  const entradaId = await getEventTypeId('entrada')
+  const castracaoId = await getEventTypeId('castracao')
+  const socializacaoId = await getEventTypeId('socializacao')
+  const banhoTosaId = await getEventTypeId('banho_tosa')
+  const adestramentoId = await getEventTypeId('adestramento')
+
+  const eventos = [
+    // Rex
+    {
+      animal_id: animal1.id,
+      event_type_id: entradaId,
+      description: 'Animal resgatado das ruas',
+      triggered_by: shelterManager.id,
+      created_at: new Date('2024-09-01'),
+      details: {
+        local: 'Bairro Centro',
+        condicao: 'Bom estado geral, mas com sinais de abandono',
+      },
+    },
+    {
+      animal_id: animal1.id,
+      event_type_id: castracaoId,
+      description: 'Procedimento de castração realizado',
+      triggered_by: shelterManager.id,
+      created_at: new Date('2024-09-14'),
+      details: {
+        veterinario: 'Dr. Carlos Silva',
+        clinica: 'Clínica Veterinária PetCare',
+      },
+    },
+    {
+      animal_id: animal1.id,
+      event_type_id: socializacaoId,
+      description: 'Sessão de socialização com outros cães',
+      triggered_by: shelterManager.id,
+      created_at: new Date('2024-10-05'),
+      details: {
+        comportamento: 'Excelente - muito sociável',
+        duracao: '2 horas',
+      },
+    },
+    // Luna
+    {
+      animal_id: animal2.id,
+      event_type_id: entradaId,
+      description: 'Doação de tutor anterior',
+      triggered_by: shelterManager.id,
+      created_at: new Date('2024-08-20'),
+      details: {
+        motivo: 'Mudança para apartamento que não aceita pets',
+        documentacao: 'Completa com histórico médico',
+      },
+    },
+    {
+      animal_id: animal2.id,
+      event_type_id: banhoTosaId,
+      description: 'Banho e tosa higiênica',
+      triggered_by: shelterManager.id,
+      created_at: new Date('2024-09-15'),
+      details: {
+        tipo: 'Banho e tosa higiênica',
+        observacoes: 'Pelagem em bom estado',
+      },
+    },
+    // Toby
+    {
+      animal_id: animal3.id,
+      event_type_id: entradaId,
+      description: 'Resgate de animal perdido',
+      triggered_by: shelterManager.id,
+      created_at: new Date('2024-10-10'),
+      details: {
+        local: 'Parque Municipal',
+        condicao: 'Saudável, usando coleira',
+      },
+    },
+    {
+      animal_id: animal3.id,
+      event_type_id: adestramentoId,
+      description: 'Sessão de adestramento básico',
+      triggered_by: shelterManager.id,
+      created_at: new Date('2024-11-01'),
+      details: {
+        comandos: 'Senta, fica, vem',
+        progresso: 'Excelente aprendizado',
+      },
+    },
+  ]
+
+  await prisma.animal_events.createMany({
+    data: eventos,
+  })
+
+  console.log(`✅ Criados ${eventos.length} eventos`)
+
   console.log('✅ Seed concluído com sucesso!')
   console.log('\n📊 Resumo:')
   console.log(`   - ${5} roles`)
-  console.log(`   - ${dogBreeds.length + catBreeds.length + sizes.length + animalStatuses.length + 2} itens de catálogo`)
+  console.log(`   - ${dogBreeds.length + catBreeds.length + sizes.length + 3 + animalStatuses.length + 2} itens de catálogo (incluindo sexos)`)
   console.log(`   - ${3} usuários`)
   console.log(`   - ${2} abrigos`)
   console.log(`   - ${2} clínicas veterinárias`)
   console.log(`   - ${3} animais`)
+  console.log(`   - ${7} registros de peso`)
+  console.log(`   - ${8} registros médicos`)
+  console.log(`   - ${3} medicamentos`)
+  console.log(`   - ${3} prescrições com ${tarefasRex.length + tarefasLuna.length + tarefasToby.length} tarefas`)
+  console.log(`   - ${eventos.length} eventos`)
 }
 
 main()

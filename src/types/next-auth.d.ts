@@ -11,6 +11,7 @@ declare module 'next-auth' {
       roleId: number
       permissions: Record<string, boolean>
       shelterId: string | null
+      shelterName: string | null
     }
   }
 
@@ -22,6 +23,7 @@ declare module 'next-auth' {
     roleId: number
     permissions: Record<string, boolean>
     shelterId: string | null
+    shelterName: string | null
   }
 }
 
@@ -32,5 +34,6 @@ declare module 'next-auth/jwt' {
     roleId: number
     permissions: Record<string, boolean>
     shelterId: string | null
+    shelterName: string | null
   }
 }

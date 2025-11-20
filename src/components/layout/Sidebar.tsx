@@ -134,15 +134,6 @@ export function Sidebar() {
                   }}>
                     {user.name}
                   </div>
-                  <div style={{
-                    fontSize: '0.7rem',
-                    color: 'var(--text-light)',
-                    marginTop: '0.1rem'
-                  }}>
-                    {isAdmin && 'Administrador'}
-                    {isShelterManager && 'Gerente de Abrigo'}
-                    {isAdopter && 'Usuário'}
-                  </div>
                 </div>
               )}
             </div>
@@ -172,14 +163,7 @@ export function Sidebar() {
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap'
                   }}>
-                    {user.shelterName || 'Sistema Kaniu'}
-                  </div>
-                  <div style={{
-                    fontSize: '0.7rem',
-                    color: 'var(--text-light)',
-                    marginTop: '0.1rem'
-                  }}>
-                    {user.shelterName ? 'Abrigo' : 'Administração'}
+                    {isShelterManager && user.shelterName ? user.shelterName : 'Sistema Kaniu'}
                   </div>
                 </div>
               )}
