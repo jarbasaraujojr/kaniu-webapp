@@ -72,8 +72,15 @@ export async function PATCH(
     })
 
     if (!eventTypeCatalog) {
-      return NextResponse.json({ error: 'Tipo de evento não encontrado no catálogo' }, { status: 404 })
+      console.error('[STATUS] Event type not found for key:', mapping.eventKey)
+      return NextResponse.json({
+        error: 'Tipo de evento não encontrado no catálogo',
+        details: `Event type "${mapping.eventKey}" not found`
+      }, { status: 404 })
     }
+
+    console.log('[STATUS] Found status catalog:', statusCatalog.id, statusCatalog.name)
+    console.log('[STATUS] Found event type catalog:', eventTypeCatalog.id, eventTypeCatalog.name)
 
     // Update animal status and create event in a transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -109,9 +116,13 @@ export async function PATCH(
       data: result,
     })
   } catch (error) {
-    console.error('Error updating animal status:', error)
+    console.error('[STATUS] Error updating animal status:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Erro ao atualizar status do animal' },
+      {
+        error: 'Erro ao atualizar status do animal',
+        details: errorMessage
+      },
       { status: 500 }
     )
   }
