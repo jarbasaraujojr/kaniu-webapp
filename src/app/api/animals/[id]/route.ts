@@ -40,13 +40,10 @@ const updateAnimalSchema = z.object({
   }).optional().nullable(),
 
   // Etapa 4: Aparência
-  appearance: z.object({
-    primary_color: z.string().optional(),
-    secondary_color: z.string().optional(),
-    coat_type: z.string().optional(),
-    markings: z.string().optional(),
-    distinguishing_features: z.string().optional(),
-  }).optional(),
+  fur_type_id: z.number().int().positive().optional().nullable(),
+  color_ids: z.array(z.number().int().positive()).optional(),
+  markings: z.string().optional().nullable(),
+  distinguishing_features: z.string().optional().nullable(),
 
   // Status
   status_id: z.number().int().positive().optional().nullable(),
@@ -77,6 +74,12 @@ export async function GET(
         catalogs_animals_breed_idTocatalogs: true,
         catalogs_animals_sex_idTocatalogs: true,
         catalogs_animals_status_idTocatalogs: true,
+        catalogs_animals_fur_type_idTocatalogs: true,
+        animal_colors: {
+          include: {
+            color: true,
+          },
+        },
       },
     })
 
@@ -129,36 +132,63 @@ export async function PUT(
       )
     }
 
-    // Atualizar animal
-    const animal = await prisma.animals.update({
-      where: {
-        id: params.id,
-      },
-      data: {
-        name: validatedData.name,
-        species_id: validatedData.species_id,
-        breed_id: validatedData.breed_id,
-        sex_id: validatedData.sex_id,
-        size: validatedData.size,
-        birth_date: validatedData.birth_date ? new Date(validatedData.birth_date) : null,
-        description: validatedData.description,
-        microchip_id: validatedData.microchip_id,
-        castrated: validatedData.castrated,
-        is_available_for_adoption: validatedData.is_available_for_adoption,
-        health_status: validatedData.health_status || {},
-        behavior: validatedData.behavior || {},
-        appearance: validatedData.appearance || {},
-        status_id: validatedData.status_id,
-        updated_by: session.user.id,
-        updated_at: new Date(),
-      },
-      include: {
-        shelters: true,
-        catalogs_animals_species_idTocatalogs: true,
-        catalogs_animals_breed_idTocatalogs: true,
-        catalogs_animals_sex_idTocatalogs: true,
-        catalogs_animals_status_idTocatalogs: true,
-      },
+    // Atualizar animal usando transação para lidar com cores
+    const animal = await prisma.$transaction(async (tx) => {
+      // Se color_ids foi fornecido, atualizar cores
+      if (validatedData.color_ids !== undefined) {
+        // Deletar cores existentes
+        await tx.animal_colors.deleteMany({
+          where: { animal_id: params.id },
+        })
+
+        // Criar novas cores
+        if (validatedData.color_ids.length > 0) {
+          await tx.animal_colors.createMany({
+            data: validatedData.color_ids.map((colorId) => ({
+              animal_id: params.id,
+              color_id: colorId,
+            })),
+          })
+        }
+      }
+
+      // Atualizar dados do animal
+      return await tx.animals.update({
+        where: {
+          id: params.id,
+        },
+        data: {
+          name: validatedData.name,
+          species_id: validatedData.species_id,
+          breed_id: validatedData.breed_id,
+          sex_id: validatedData.sex_id,
+          size: validatedData.size,
+          birth_date: validatedData.birth_date ? new Date(validatedData.birth_date) : null,
+          description: validatedData.description,
+          microchip_id: validatedData.microchip_id,
+          castrated: validatedData.castrated,
+          is_available_for_adoption: validatedData.is_available_for_adoption,
+          health_status: validatedData.health_status || {},
+          behavior: validatedData.behavior || {},
+          fur_type_id: validatedData.fur_type_id,
+          status_id: validatedData.status_id,
+          updated_by: session.user.id,
+          updated_at: new Date(),
+        },
+        include: {
+          shelters: true,
+          catalogs_animals_species_idTocatalogs: true,
+          catalogs_animals_breed_idTocatalogs: true,
+          catalogs_animals_sex_idTocatalogs: true,
+          catalogs_animals_status_idTocatalogs: true,
+          catalogs_animals_fur_type_idTocatalogs: true,
+          animal_colors: {
+            include: {
+              color: true,
+            },
+          },
+        },
+      })
     })
 
     return NextResponse.json({ animal })

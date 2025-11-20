@@ -29,6 +29,8 @@ interface NewAnimalFormProps {
   species: Catalog[]
   sexes: Catalog[]
   statuses: Catalog[]
+  colors: Catalog[]
+  furTypes: Catalog[]
 }
 
 // Schema de validação
@@ -63,9 +65,8 @@ const animalSchema = z.object({
   behavior_notes: z.string().optional(),
 
   // Etapa 4: Aparência
-  primary_color: z.string().optional(),
-  secondary_color: z.string().optional(),
-  coat_type: z.string().optional(),
+  fur_type_id: z.number().optional().nullable(),
+  color_ids: z.array(z.number()).optional(),
   markings: z.string().optional(),
   distinguishing_features: z.string().optional(),
 
@@ -82,11 +83,12 @@ const STEPS = [
   { id: 4, title: 'Aparência', description: 'Características físicas' },
 ]
 
-export function NewAnimalForm({ species, sexes, statuses }: NewAnimalFormProps) {
+export function NewAnimalForm({ species, sexes, statuses, colors, furTypes }: NewAnimalFormProps) {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [breeds, setBreeds] = useState<Catalog[]>([])
+  const [selectedColors, setSelectedColors] = useState<number[]>([])
 
   const {
     register,
@@ -158,15 +160,6 @@ export function NewAnimalForm({ species, sexes, statuses }: NewAnimalFormProps) 
         notes: data.behavior_notes || '',
       }
 
-      // Preparar dados de aparência
-      const appearance = {
-        primary_color: data.primary_color || '',
-        secondary_color: data.secondary_color || '',
-        coat_type: data.coat_type || '',
-        markings: data.markings || '',
-        distinguishing_features: data.distinguishing_features || '',
-      }
-
       const payload = {
         name: data.name,
         species_id: data.species_id,
@@ -180,7 +173,10 @@ export function NewAnimalForm({ species, sexes, statuses }: NewAnimalFormProps) 
         is_available_for_adoption: data.is_available_for_adoption,
         health_status,
         behavior,
-        appearance,
+        fur_type_id: data.fur_type_id,
+        color_ids: selectedColors,
+        markings: data.markings,
+        distinguishing_features: data.distinguishing_features,
         status_id: data.status_id,
       }
 
@@ -588,33 +584,50 @@ export function NewAnimalForm({ species, sexes, statuses }: NewAnimalFormProps) 
           <div className="bg-white p-6 rounded-lg shadow space-y-4">
             <h2 className="text-xl font-semibold mb-4">Aparência</h2>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="primary_color">Cor Primária</Label>
-                <Input
-                  id="primary_color"
-                  {...register('primary_color')}
-                  placeholder="Ex: Preto, Branco, Marrom"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="secondary_color">Cor Secundária</Label>
-                <Input
-                  id="secondary_color"
-                  {...register('secondary_color')}
-                  placeholder="Ex: Branco, Caramelo"
-                />
-              </div>
+            <div>
+              <Label htmlFor="fur_type_id">Tipo de Pelagem</Label>
+              <Select
+                value={watch('fur_type_id')?.toString()}
+                onValueChange={(value) => setValue('fur_type_id', Number(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo de pelagem" />
+                </SelectTrigger>
+                <SelectContent>
+                  {furTypes.map((furType) => (
+                    <SelectItem key={furType.id} value={furType.id.toString()}>
+                      {furType.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
-              <Label htmlFor="coat_type">Tipo de Pelagem</Label>
-              <Input
-                id="coat_type"
-                {...register('coat_type')}
-                placeholder="Ex: Curto, Longo, Liso, Encaracolado"
-              />
+              <Label>Cores</Label>
+              <div className="grid grid-cols-3 gap-2 mt-2 max-h-60 overflow-y-auto p-2 border rounded">
+                {colors.map((color) => (
+                  <div key={color.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`color-${color.id}`}
+                      checked={selectedColors.includes(color.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedColors([...selectedColors, color.id])
+                        } else {
+                          setSelectedColors(selectedColors.filter((id) => id !== color.id))
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor={`color-${color.id}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {color.name}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div>

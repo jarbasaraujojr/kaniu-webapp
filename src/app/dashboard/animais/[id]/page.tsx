@@ -12,11 +12,6 @@ interface AnimalDetailsPageProps {
   }
 }
 
-interface Appearance {
-  coat?: string | null
-  color?: string | null
-}
-
 interface HealthStatus {
   vaccinated?: boolean
   dewormed?: boolean
@@ -55,14 +50,7 @@ const calculateAge = (birthDate: Date | null) => {
   return `${years} ${years === 1 ? 'ano' : 'anos'}`
 }
 
-const getAnimalPhoto = (animal: { appearance: Prisma.JsonValue; catalogs_animals_species_idTocatalogs: { name: string } | null }) => {
-  if (typeof animal.appearance === 'object' && animal.appearance !== null && !Array.isArray(animal.appearance)) {
-    const appearance = animal.appearance as Record<string, unknown>
-    if (typeof appearance.photo === 'string') {
-      return appearance.photo
-    }
-  }
-
+const getAnimalPhoto = (animal: { catalogs_animals_species_idTocatalogs: { name: string } | null }) => {
   const speciesName = animal.catalogs_animals_species_idTocatalogs?.name
   if (speciesName === 'Cachorro' || speciesName === 'Cão') {
     return 'https://i.ibb.co/Z6dPncCH/pic-dog.png'
@@ -86,6 +74,16 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
       catalogs_animals_breed_idTocatalogs: true,
       catalogs_animals_sex_idTocatalogs: true,
       catalogs_animals_status_idTocatalogs: true,
+      catalogs_animals_fur_type_idTocatalogs: true,
+      animal_colors: {
+        include: {
+          color: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
       shelters: true,
       animal_weights: {
         orderBy: { date_time: 'desc' },
@@ -138,10 +136,9 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
     notFound() // Retorna 404 se tentar acessar animal de outro abrigo
   }
 
-  // Extract appearance data
-  const appearance = animal.appearance as Appearance | null
-  const coat = appearance && typeof appearance === 'object' ? (appearance.coat ?? null) : null
-  const color = appearance && typeof appearance === 'object' ? (appearance.color ?? null) : null
+  // Extract colors and fur type
+  const colors = animal.animal_colors.map((ac) => ac.color.name).join(', ') || null
+  const furType = animal.catalogs_animals_fur_type_idTocatalogs?.name || null
 
   // Extract health status data
   const healthStatus = animal.health_status as HealthStatus | null
@@ -173,8 +170,8 @@ export default async function AnimalDetailsPage({ params }: AnimalDetailsPagePro
     sex: sexName,
     size: sizeName,
     status: animal.catalogs_animals_status_idTocatalogs?.name || '',
-    coat,
-    color,
+    coat: furType,
+    color: colors,
     birthDate: animal.birth_date,
     age,
     castrated: animal.castrated,

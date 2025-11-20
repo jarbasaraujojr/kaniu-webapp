@@ -41,13 +41,10 @@ const createAnimalSchema = z.object({
   }).optional().nullable(),
 
   // Etapa 4: Aparência
-  appearance: z.object({
-    primary_color: z.string().optional(),
-    secondary_color: z.string().optional(),
-    coat_type: z.string().optional(),
-    markings: z.string().optional(),
-    distinguishing_features: z.string().optional(),
-  }).optional(),
+  fur_type_id: z.number().int().positive().optional().nullable(),
+  color_ids: z.array(z.number().int().positive()).optional(),
+  markings: z.string().optional().nullable(),
+  distinguishing_features: z.string().optional().nullable(),
 
   // Status inicial
   status_id: z.number().int().positive().optional().nullable(),
@@ -92,11 +89,19 @@ export async function POST(request: NextRequest) {
         is_available_for_adoption: validatedData.is_available_for_adoption ?? false,
         health_status: validatedData.health_status || {},
         behavior: validatedData.behavior || {},
-        appearance: validatedData.appearance || {},
+        fur_type_id: validatedData.fur_type_id,
         status_id: validatedData.status_id,
         shelter_id: shelterId,
         created_by: session.user.id,
         updated_by: session.user.id,
+        // Criar relações de cores se fornecidas
+        animal_colors: validatedData.color_ids && validatedData.color_ids.length > 0
+          ? {
+              create: validatedData.color_ids.map((colorId) => ({
+                color_id: colorId,
+              })),
+            }
+          : undefined,
       },
       include: {
         shelters: true,
@@ -104,6 +109,12 @@ export async function POST(request: NextRequest) {
         catalogs_animals_breed_idTocatalogs: true,
         catalogs_animals_sex_idTocatalogs: true,
         catalogs_animals_status_idTocatalogs: true,
+        catalogs_animals_fur_type_idTocatalogs: true,
+        animal_colors: {
+          include: {
+            color: true,
+          },
+        },
       },
     })
 
@@ -212,6 +223,20 @@ export async function GET(request: NextRequest) {
         catalogs_animals_status_idTocatalogs: {
           select: {
             name: true,
+          },
+        },
+        catalogs_animals_fur_type_idTocatalogs: {
+          select: {
+            name: true,
+          },
+        },
+        animal_colors: {
+          include: {
+            color: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
         animal_weights: {
