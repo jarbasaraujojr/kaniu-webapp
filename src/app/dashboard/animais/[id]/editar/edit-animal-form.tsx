@@ -40,8 +40,9 @@ interface Animal {
   is_available_for_adoption?: boolean
   health_status: Prisma.JsonValue
   behavior: Prisma.JsonValue
-  appearance: Prisma.JsonValue
+  fur_type_id: number | null
   status_id: number | null
+  animal_colors?: Array<{ color: { id: number; name: string } }>
 }
 
 interface EditAnimalFormProps {
@@ -49,6 +50,8 @@ interface EditAnimalFormProps {
   species: Catalog[]
   sexes: Catalog[]
   statuses: Catalog[]
+  colors: Catalog[]
+  furTypes: Catalog[]
   initialBreeds: Catalog[]
 }
 
@@ -77,9 +80,8 @@ const animalSchema = z.object({
   house_trained: z.boolean().optional(),
   special_needs: z.string().optional(),
   behavior_notes: z.string().optional(),
-  primary_color: z.string().optional(),
-  secondary_color: z.string().optional(),
-  coat_type: z.string().optional(),
+  fur_type_id: z.number().optional().nullable(),
+  color_ids: z.array(z.number()).optional(),
   markings: z.string().optional(),
   distinguishing_features: z.string().optional(),
   status_id: z.number().optional().nullable(),
@@ -94,16 +96,18 @@ const STEPS = [
   { id: 4, title: 'Aparência', description: 'Características físicas' },
 ]
 
-export function EditAnimalForm({ animal, species, sexes, statuses, initialBreeds }: EditAnimalFormProps) {
+export function EditAnimalForm({ animal, species, sexes, statuses, colors, furTypes, initialBreeds }: EditAnimalFormProps) {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedColors, setSelectedColors] = useState<number[]>(
+    animal.animal_colors?.map(ac => ac.color.id) || []
+  )
   const [breeds, setBreeds] = useState<Catalog[]>(initialBreeds)
 
   // Preparar valores iniciais
   const healthStatus = (animal.health_status as { vaccines?: string[]; allergies?: string[]; medications?: string[]; conditions?: string[]; notes?: string }) || {}
   const behavior = (animal.behavior as { energy_level?: string; sociability?: string; good_with_kids?: boolean; good_with_dogs?: boolean; good_with_cats?: boolean; house_trained?: boolean; special_needs?: string; notes?: string }) || {}
-  const appearance = (animal.appearance as { photo?: string; coat?: string; color?: string; primary_color?: string; secondary_color?: string; coat_type?: string; markings?: string; distinguishing_features?: string; notes?: string }) || {}
 
   const {
     register,
@@ -137,11 +141,9 @@ export function EditAnimalForm({ animal, species, sexes, statuses, initialBreeds
       house_trained: behavior.house_trained || false,
       special_needs: behavior.special_needs || '',
       behavior_notes: behavior.notes || '',
-      primary_color: appearance.primary_color || '',
-      secondary_color: appearance.secondary_color || '',
-      coat_type: appearance.coat_type || '',
-      markings: appearance.markings || '',
-      distinguishing_features: appearance.distinguishing_features || '',
+      fur_type_id: animal.fur_type_id || undefined,
+      markings: '',
+      distinguishing_features: '',
       status_id: animal.status_id || undefined,
     },
   })
@@ -196,14 +198,6 @@ export function EditAnimalForm({ animal, species, sexes, statuses, initialBreeds
         notes: data.behavior_notes || '',
       }
 
-      const appearance = {
-        primary_color: data.primary_color || '',
-        secondary_color: data.secondary_color || '',
-        coat_type: data.coat_type || '',
-        markings: data.markings || '',
-        distinguishing_features: data.distinguishing_features || '',
-      }
-
       const payload = {
         name: data.name,
         species_id: data.species_id,
@@ -217,7 +211,10 @@ export function EditAnimalForm({ animal, species, sexes, statuses, initialBreeds
         is_available_for_adoption: data.is_available_for_adoption,
         health_status,
         behavior,
-        appearance,
+        fur_type_id: data.fur_type_id,
+        color_ids: selectedColors,
+        markings: data.markings,
+        distinguishing_features: data.distinguishing_features,
         status_id: data.status_id,
       }
 
@@ -628,33 +625,50 @@ export function EditAnimalForm({ animal, species, sexes, statuses, initialBreeds
           <div className="bg-white p-6 rounded-lg shadow space-y-4">
             <h2 className="text-xl font-semibold mb-4">Aparência</h2>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="primary_color">Cor Primária</Label>
-                <Input
-                  id="primary_color"
-                  {...register('primary_color')}
-                  placeholder="Ex: Preto, Branco, Marrom"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="secondary_color">Cor Secundária</Label>
-                <Input
-                  id="secondary_color"
-                  {...register('secondary_color')}
-                  placeholder="Ex: Branco, Caramelo"
-                />
-              </div>
+            <div>
+              <Label htmlFor="fur_type_id">Tipo de Pelagem</Label>
+              <Select
+                value={watch('fur_type_id')?.toString()}
+                onValueChange={(value) => setValue('fur_type_id', Number(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo de pelagem" />
+                </SelectTrigger>
+                <SelectContent>
+                  {furTypes.map((furType) => (
+                    <SelectItem key={furType.id} value={furType.id.toString()}>
+                      {furType.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
-              <Label htmlFor="coat_type">Tipo de Pelagem</Label>
-              <Input
-                id="coat_type"
-                {...register('coat_type')}
-                placeholder="Ex: Curto, Longo, Liso, Encaracolado"
-              />
+              <Label>Cores</Label>
+              <div className="grid grid-cols-3 gap-2 mt-2 max-h-60 overflow-y-auto p-2 border rounded">
+                {colors.map((color) => (
+                  <div key={color.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`color-${color.id}`}
+                      checked={selectedColors.includes(color.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedColors([...selectedColors, color.id])
+                        } else {
+                          setSelectedColors(selectedColors.filter((id) => id !== color.id))
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor={`color-${color.id}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {color.name}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div>

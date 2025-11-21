@@ -29,6 +29,17 @@ export default async function EditAnimalPage({ params }: EditAnimalPageProps) {
       catalogs_animals_breed_idTocatalogs: true,
       catalogs_animals_sex_idTocatalogs: true,
       catalogs_animals_status_idTocatalogs: true,
+      catalogs_animals_fur_type_idTocatalogs: true,
+      animal_colors: {
+        include: {
+          color: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
     },
   })
 
