@@ -179,7 +179,7 @@ export async function GET(request: NextRequest) {
     if (status && status !== 'Todos') {
       const statusCatalog = await prisma.catalogs.findFirst({
         where: {
-          category: 'status',
+          category: 'animal_status',
           name: status,
         },
       })

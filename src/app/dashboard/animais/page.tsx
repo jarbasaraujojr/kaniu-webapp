@@ -49,7 +49,7 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
   const statusCatalog = effectiveStatus
     ? await prisma.catalogs.findFirst({
         where: {
-          category: 'status',
+          category: 'animal_status',
           name: effectiveStatus,
         },
       })
@@ -58,7 +58,7 @@ export default async function AnimaisPage({ searchParams }: AnimaisPageProps) {
   // Buscar todos os status disponíveis
   const allStatuses = await prisma.catalogs.findMany({
     where: {
-      category: 'status',
+      category: 'animal_status',
       is_active: true,
     },
     orderBy: {

@@ -142,9 +142,9 @@ export default async function PainelPage() {
 
   // Buscar IDs dos status no catálogo
   const [statusAbrigado, statusAdotado, statusInternado] = await Promise.all([
-    prisma.catalogs.findFirst({ where: { category: 'status', name: 'Abrigado' } }),
-    prisma.catalogs.findFirst({ where: { category: 'status', name: 'Adotado' } }),
-    prisma.catalogs.findFirst({ where: { category: 'status', name: 'Internado' } }),
+    prisma.catalogs.findFirst({ where: { category: 'animal_status', name: 'Disponível' } }),
+    prisma.catalogs.findFirst({ where: { category: 'animal_status', name: 'Adotado' } }),
+    prisma.catalogs.findFirst({ where: { category: 'animal_status', name: 'Internado' } }),
   ])
 
   // Construir filtro baseado no role

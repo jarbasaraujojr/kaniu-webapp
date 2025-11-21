@@ -37,7 +37,7 @@ export default async function EditAnimalPage({ params }: EditAnimalPageProps) {
   }
 
   // Buscar catálogos necessários
-  const [species, sexes, statuses] = await Promise.all([
+  const [species, sexes, statuses, colors, furTypes] = await Promise.all([
     prisma.catalogs.findMany({
       where: {
         category: 'species',
@@ -58,7 +58,25 @@ export default async function EditAnimalPage({ params }: EditAnimalPageProps) {
     }),
     prisma.catalogs.findMany({
       where: {
-        category: 'status',
+        category: 'animal_status',
+        is_active: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    }),
+    prisma.catalogs.findMany({
+      where: {
+        category: 'color',
+        is_active: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    }),
+    prisma.catalogs.findMany({
+      where: {
+        category: 'fur_type',
         is_active: true,
       },
       orderBy: {
@@ -96,6 +114,8 @@ export default async function EditAnimalPage({ params }: EditAnimalPageProps) {
           species={species}
           sexes={sexes}
           statuses={statuses}
+          colors={colors}
+          furTypes={furTypes}
           initialBreeds={breeds}
         />
       </div>
